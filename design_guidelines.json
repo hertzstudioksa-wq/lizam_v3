@@ -1,0 +1,141 @@
+{
+  "theme": "light",
+  "archetype": "Editorial & High-Contrast (Institutional)",
+  "color_palette": {
+    "primary": "#23324D",
+    "primary_hover": "#1A253A",
+    "deep_navy": "#121A2A",
+    "accent_gold": "#B89B5E",
+    "accent_gold_hover": "#A18751",
+    "background_soft": "#F7F8FA",
+    "background_paper": "#FAF9F6",
+    "border_gray": "#E4E7EC",
+    "text_dark": "#1D2939",
+    "text_muted": "#667085",
+    "white": "#FFFFFF"
+  },
+  "typography": {
+    "arabic": {
+      "headings": {
+        "fontFamily": "IBM Plex Sans Arabic, sans-serif",
+        "weights": ["600", "700"],
+        "letterSpacing": "tracking-normal",
+        "lineHeight": "leading-tight"
+      },
+      "body": {
+        "fontFamily": "IBM Plex Sans Arabic, sans-serif",
+        "weights": ["400", "500"],
+        "lineHeight": "leading-relaxed"
+      }
+    },
+    "english": {
+      "headings": {
+        "fontFamily": "Source Serif 4, serif",
+        "weights": ["400", "600", "700"],
+        "letterSpacing": "tracking-tight",
+        "lineHeight": "leading-none"
+      },
+      "body": {
+        "fontFamily": "Inter, sans-serif",
+        "weights": ["400", "500"],
+        "lineHeight": "leading-relaxed"
+      },
+      "eyebrow": {
+        "fontFamily": "Inter, sans-serif",
+        "weights": ["600"],
+        "letterSpacing": "tracking-[0.2em]",
+        "textTransform": "uppercase",
+        "fontSize": "text-xs sm:text-sm"
+      }
+    },
+    "scale": {
+      "h1": "text-4xl sm:text-5xl lg:text-6xl",
+      "h2": "text-3xl sm:text-4xl lg:text-5xl",
+      "h3": "text-2xl sm:text-3xl",
+      "h4": "text-xl sm:text-2xl",
+      "body": "text-base md:text-lg",
+      "small": "text-sm"
+    }
+  },
+  "spacing_and_layout": {
+    "generous_spacing": true,
+    "container_padding": "px-6 md:px-12 lg:px-24",
+    "section_gap": "py-24 md:py-32",
+    "grid_system": "grid-cols-1 md:grid-cols-12 gap-6 md:gap-12",
+    "alignment": "optical_alignment_over_geometrical",
+    "hero_layout": "asymmetric split layout, deep navy left side / paper texture right side or overlapping structure",
+    "radius": "rounded-none or minimal rounded-sm (2px to 4px max, strict institutional feel)",
+    "shadows": "shadow-sm for subtle elevation, no soft colorful dropshadows; stick to crisp 1px borders"
+  },
+  "motion": {
+    "transition": "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+    "hover_state": "subtle opacity shifts, slow line drawing, elegant background darkening",
+    "entrance": "fade-in with slight vertical shift (10px max), no bouncing",
+    "duration": "slow and calm"
+  },
+  "components": {
+    "header": {
+      "style": "thin institutional masthead",
+      "background": "bg-white/95 backdrop-blur-md border-b border-border_gray",
+      "elements": "Bilingual logo, primary navigation, language toggle (AR/EN), Login CTA",
+      "rules": "Must not be bulky. Logo properly sized. No hamburger on desktop."
+    },
+    "hero": {
+      "style": "Editorial composition, high tension between massive Arabic headline and refined English serif.",
+      "layout": "Asymmetric bento or split grid. Example: Left side solid Deep Navy containing the text, Right side an image slot with a very subtle geometric texture or library interior.",
+      "elements": "Eyebrow tag, strong Arabic headline, English counterpart, meta-data (volume/issue style), two CTAs (Explore, Contact)",
+      "rules": "Do not use standard centered layout. Include a subtle vertical rule."
+    },
+    "footer": {
+      "style": "Academic/Research Institute structure",
+      "background": "bg-deep_navy text-white",
+      "elements": "Logo, brand blurb, sitemap, contact, social, legal copyright",
+      "rules": "Py-24 spacing. Distinct sections. Restrained links."
+    },
+    "buttons": {
+      "primary": "bg-primary text-white border border-transparent hover:bg-primary_hover transition-colors rounded-sm",
+      "secondary": "bg-transparent text-primary border border-border_gray hover:border-primary transition-colors rounded-sm"
+    }
+  },
+  "media": {
+    "logo": {
+      "url": "/brand/lizam-logo-raw.png",
+      "description": "LIZAM brand logo (Navy)",
+      "category": "logo"
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1716003797342-55f8fe2e395f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxjb250ZW1wb3JhcnklMjBpc2xhbWljJTIwZ2VvbWV0cmljJTIwYXJjaGl0ZWN0dXJlJTIwbmV1dHJhbHxlbnwwfHx8fDE3Nzc2OTc1MDN8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Close up of contemporary geometric pattern/window",
+        "category": "hero_background_abstract"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1613282201990-d766b5e4f32f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwzfHxzdWJ0bGUlMjBwYXBlciUyMHRleHR1cmUlMjBpdm9yeXxlbnwwfHx8fDE3Nzc2OTc0OTh8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Subtle paper texture ivory",
+        "category": "texture_overlay"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1768226911839-6358bf44eee5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwyfHxjb250ZW1wb3JhcnklMjBpc2xhbWljJTIwZ2VvbWV0cmljJTIwYXJjaGl0ZWN0dXJlJTIwbmV1dHJhbHxlbnwwfHx8fDE3Nzc2OTc1MDN8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Ornate geometric screen on a building facade.",
+        "category": "hero_image"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1772081014501-cf52c3e0bf76?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxjYWxtJTIwbW9kZXJuJTIwbGlicmFyeSUyMGludGVyaW9yJTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc3NzY5NzUwNnww&ixlib=rb-4.1.0&q=85",
+        "description": "A dimly lit library with bookshelves and a large window.",
+        "category": "hero_image_alternate"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Follow Arabic-first/RTL layout using Tailwind 'rtl:' and 'ltr:' directives if applicable, or manage direction based on html dir attribute.",
+    "Ensure 'IBM Plex Sans Arabic' is imported and applied properly via Tailwind config.",
+    "Ensure 'Source Serif 4' and 'Inter' are imported.",
+    "Do NOT use typical SaaS centered hero layout. Create an asymmetric editorial layout.",
+    "Maintain high contrast. Use the provided deep navy and ivory colors.",
+    "Apply rigorous 'data-testid' attributes to all interactive and structural components.",
+    "Ensure the hero layout conveys a serious institutional vibe without generic stock photos of scales or gavels.",
+    "Footer should be deeply styled with Deep Navy (#121A2A), providing a solid grounding for the page.",
+    "Do not invent new colors, adhere strictly to the color_palette.",
+    "Make use of the geometric or library images for the hero section."
+  ]
+}
