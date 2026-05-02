@@ -18,7 +18,7 @@ ALLOWED_ATTRS = {
     "td": ["colspan", "rowspan"],
     "*": ["dir", "lang", "class", "id", "style"],
 }
-ALLOWED_PROTOCOLS = ["http", "https", "mailto", "data"]
+ALLOWED_PROTOCOLS = ["http", "https", "mailto"]
 
 # Minimal inline style whitelist (text-align and direction only)
 _STYLE_SAFE = re.compile(r"^(text-align|direction):\s*(left|right|center|justify|rtl|ltr)\s*;?$", re.I)

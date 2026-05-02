@@ -75,25 +75,52 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 
 **Test results:** 37/37 backend tests passing (Phase 1 + Phase 2).
 
+### Phase 3 (May 2026) — CMS Authoring + Technical Hardening ✅
+**Backend hardening (modular):**
+- `server.py` split into `app/routers/{auth,admin,public,uploads}.py`, `app/models.py`, `app/security.py`, `app/sanitize.py`, `app/seed.py`, `app/config.py`
+- Migrated to FastAPI `lifespan` (replaces `@on_event`)
+- `slowapi` rate limiting + per-account/per-ip lockout on `/api/auth/login` (note: in-memory; multi-worker deployments need a Redis/Mongo store)
+- `bleach`-based HTML sanitization for TipTap output (whitelisted tags/attrs, `data:` protocol removed from links — XSS hardened)
+- Tokenized PDF streaming: `/api/public/publications/{id}/pdf` returns short-lived `stream_url` + token; stream endpoint enforces token + access_level/pdf_access_level
+- Seed idempotency: every seeded record stamps `created_by="system-seed"` and `_seed_origin`; admin updates set `_seed_origin="admin"`; restart-time seed only `$set`s on records still owned by seed → CMS edits are never overwritten
+
+**CMS frontend (admin-only, /admin/*):**
+- Admin Overview / Dashboard
+- Site Settings (bilingual names, taglines, contact, socials)
+- Branding (colors, fonts, logo/favicon)
+- Home Page CMS (hero, about, mission, vision, objectives, fields_of_work, visible_sections)
+- Publications list + TipTap bilingual editor (RTL toggle on AR field, LTR on EN, toolbar: B/I, H2/H3, lists, blockquote, link, undo/redo)
+- Researchers (Authors), Categories/Fields, Users, Roles & Permissions, Messages, Feature Toggles
+- "Cite this Publication" button on public publication detail (APA + Chicago, AR + EN, copy-to-clipboard)
+
+**Test results:** 50/50 backend tests passing (Phase 1 + 2 + 3). Frontend smoke + admin-flow verified by testing agent (iteration_3.json). Visual checkpoint screenshots captured for: Login, Admin Overview, Site Settings, Branding, Home CMS, Publications List, Authors, Categories, Users, Roles, Feature Toggles, TipTap editor.
+
+> **Visual design note:** Public site UX/UI is current **Theme A — Baseline** only. NOT yet final-approved. A separate **Theme B — Premium Editorial Redesign** checkpoint is planned (not part of this iteration).
+
 ## Admin credentials (seeded)
 - Super Admin: `admin@lizam.sa` / `Lizam@2026` → /login → /admin
 
 ## Prioritized backlog
 
-### P0 (Phase 3 — CMS authoring)
-- Site Settings CMS (bilingual names, tagline, contact, social, footer)
-- Design & Branding CMS (colors, fonts with Thmanyah + fallback picker, logo/favicon upload)
-- Home Page CMS (all bilingual sections, section visibility)
-- Publications CMS with TipTap bilingual rich-text editor + PDF upload/URL
-- Authors CMS + Categories/Fields CMS
-- `created_by` seed guard to prevent seed overwriting admin edits
+### P0 (Phase 3 — CMS authoring) — ✅ DONE
+- ~~Site Settings CMS (bilingual names, tagline, contact, social, footer)~~
+- ~~Design & Branding CMS (colors, fonts with Thmanyah + fallback picker, logo/favicon upload)~~
+- ~~Home Page CMS (all bilingual sections, section visibility)~~
+- ~~Publications CMS with TipTap bilingual rich-text editor + PDF upload/URL~~
+- ~~Authors CMS + Categories/Fields CMS~~
+- ~~`created_by` seed guard to prevent seed overwriting admin edits~~
+- ~~Users CMS + Roles & Permissions UI~~
+- ~~Feature toggles page~~
+- ~~Brute-force lockout on `/auth/login`~~
+- ~~PDF streaming proxy with short-lived signed tokens~~
 
 ### P1 (Phase 4 — Auth & Access hardening)
-- Users CMS + Roles & Permissions UI
-- Feature toggles page
-- Google OAuth (toggleable)
-- Brute-force lockout on `/auth/login`
-- PDF streaming proxy with short-lived signed tokens (harden current endpoint)
+- Google OAuth (toggleable, deferred behind feature toggle)
+- Promote in-memory rate-limit lockout to Redis or Mongo TTL store (multi-worker safe)
+
+### P1 (Theme B — Premium Editorial Redesign)
+- Separate visual redesign checkpoint, to be initiated by user with explicit prompt
+- Phase 3 baseline (Theme A) remains live until Theme B is approved
 
 ### P1 (Phase 5 — Responses & Messages)
 - Public response submission (with consent)
