@@ -44,9 +44,10 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        arabic: ['"IBM Plex Sans Arabic"', "system-ui", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
-        serif: ['"Source Serif 4"', "Georgia", "serif"],
+        arabic: ['"Thmanyah Sans"', '"IBM Plex Sans Arabic"', "system-ui", "sans-serif"],
+        sans: ['"Thmanyah Sans"', "Inter", "system-ui", "sans-serif"],
+        serif: ['"Thmanyah Serif Display"', '"Source Serif 4"', "Georgia", "serif"],
+        serifText: ['"Thmanyah Serif Text"', '"Source Serif 4"', "Georgia", "serif"],
       },
       fontSize: {
         "display-ar": ["clamp(2.4rem, 5vw, 4.5rem)", { lineHeight: "1.15", letterSpacing: "-0.01em" }],

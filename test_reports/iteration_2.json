@@ -1,0 +1,40 @@
+{
+  "summary": "LIZAM Phase 2 backend fully tested against external URL. 21 new pytest cases in test_lizam_phase2.py all pass (100%). Covers: refined site-settings (tagline_ar/en, Thmanyah Sans), refined home-content (hero_subtitle_ar with 'سعودي متخصص', mission_points_ar/en=4, vision_points_ar/en=4, objectives=5 with AR/EN title+description+points, fields_of_work=5 with icon), publications list with content_html projected out + all required fields, Arabic query search (q=ذكاء), sort=most_viewed desc order, category filter, pub_type=policy_paper filter, publication detail hydration (authors[], category{}, related[] excluding self, up to 3), view_count increment verified +1 per call, gating: preview_login without auth → _gated=true/reason=preview_only + preview_html served, with admin auth → full <h2>-containing HTML; registered without auth → _gated=true/reason=login_required + empty content; registered with admin auth → full content; 404 for non-existent slug; PDF endpoint: public (pub-2) returns {ok,url,title} unauth; login_required (pub-1) returns 401 unauth and 200 with admin auth; responses endpoint returns 503 placeholder; Phase 1 regression (health, admin login/me/overview) still green. No MongoDB _id leaks detected across any response (recursive dict/list scan).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/public/publications/{slug}", "issue": "view_count is incremented on EVERY call including from bots/crawlers and admin preview — no session/IP dedup or admin-exclude. Acceptable for MVP but will inflate analytics; consider rate-limiting or excluding authenticated admin traffic later."},
+      {"endpoint": "GET /api/public/publications/{slug}/pdf", "issue": "Returns {url,...} exposing the external_pdf_url directly rather than streaming/proxying; clients could cache/share the raw URL bypassing future access checks. Documented as Phase 2 behaviour — flagged for later streaming hardening."},
+      {"endpoint": "POST /api/public/publications/{slug}/responses", "issue": "Placeholder returns 503 as expected; accepts any JSON body silently (no validation) — fine for Phase 2 placeholder, just note when wiring Phase 5 moderation."}
+    ]
+  },
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_lizam_phase2.py",
+    "/app/backend/tests/test_lizam_backend.py",
+    "/app/test_reports/pytest/phase2_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is now 1010 lines — exceeds the 700-line guideline. Please split into modules (routers/public.py, routers/admin.py, routers/auth.py, seed/home.py, seed/publications.py, models.py, security.py) before Phase 3 CMS work, or it will become unmaintainable.",
+    "`get_publication` silently swallows view_count increment failures with bare except — acceptable but log at warning level at minimum (currently pass) so ops notice if Mongo writes degrade.",
+    "Gating logic relies on string literals ('public','preview_login','registered','hidden') duplicated across detail + pdf handlers. Extract an enum or Literal type and a single `_is_accessible(user, pub)` helper to avoid drift once moderator/admin gates expand.",
+    "PDF endpoint returns the raw external URL in JSON — frontend will expose it in network tab. For truly-gated PDFs add a short-lived signed-token redirect or backend streaming proxy in a later phase.",
+    "FastAPI deprecated @app.on_event still in use (line 999/1007); migrate to lifespan() before production.",
+    "CORS allow_origin_regex=r'https?://.*' with allow_credentials=True is still very permissive. Tighten to the specific Emergent preview + production origins before public launch.",
+    "`list_publications` uses case-insensitive regex over title/summary/tags for `q` — works for Arabic (Unicode aware) but won't match diacritics or tatweel variants; acceptable for Phase 2, plan MongoDB text index w/ Arabic language analyzer later.",
+    "Seed refreshes publication content_html_ar/en on every startup (line 964 comment says so) — this overwrites any admin edits made to those fields until CMS lands in Phase 3. Make sure Phase 3 guards against accidental overwrite, e.g., skip if `created_by != 'system-seed'`.",
+    "`related` projection hand-lists 15 fields; once the pub model grows, prefer a shared PUBLIC_LIST_PROJECTION constant reused by list + related handlers to stay in sync.",
+    "Still no brute-force lockout on /auth/login (flagged in iteration_1); becomes more important now that gated content is real. Plan for Phase 3."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_lizam_phase2.py"
+  ],
+  "success_rate": {"backend": "100% (37/37 across phase1+phase2)", "frontend": "n/a (skipped per request)"},
+  "test_credentials": "Super Admin admin@lizam.sa / Lizam@2026 — verified working. No new credentials created.",
+  "seed_data_creation": "No test seed data created. Verified existing seed: lizam-pub-1 (preview_login, pdf=login_required), lizam-pub-2 (public, pdf=public), lizam-pub-3 (registered, pdf=login_required). view_count mutated by +N where N = number of GET /publications/{slug} calls run during tests (expected behaviour).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run `pytest /app/backend/tests/ -v` for full regression (phase 1 + 2). test_lizam_phase2.py is the source of truth for Phase 2 gating/hydration/pdf/responses behaviour. Auth via httpOnly cookies (requests.Session across calls). Admin fixture `admin_session` is module-scoped. view_count increments on each detail GET — if a future test asserts an exact number, capture vc at start of test. No MongoDB _id leaks anywhere. Phase 5 (responses) should flip the 503 to 202 and persist; update test_responses_returns_503 accordingly.",
+  "rca of the issue": "N/A — all 21 Phase 2 tests + 16 Phase 1 regression tests pass on first run."
+}

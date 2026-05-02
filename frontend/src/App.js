@@ -11,6 +11,9 @@ import PlaceholderPage from "@/pages/PlaceholderPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import AccountPage from "@/pages/AccountPage";
+import PublicationsPage from "@/pages/PublicationsPage";
+import PublicationDetailPage from "@/pages/PublicationDetailPage";
+import ContactPage from "@/pages/ContactPage";
 import AdminLayout from "@/admin/AdminLayout";
 import AdminOverview from "@/admin/pages/AdminOverview";
 import AdminComingSoon from "@/admin/pages/AdminComingSoon";
@@ -44,18 +47,13 @@ function App() {
           <Routes>
             {/* Public */}
             <Route path="/" element={<HomePage />} />
-            <Route
-              path="/publications"
-              element={<PlaceholderPage titleKey="nav.publications" noteKey="admin.comingSoon" />}
-            />
+            <Route path="/publications" element={<PublicationsPage />} />
+            <Route path="/publications/:slug" element={<PublicationDetailPage />} />
             <Route
               path="/about"
               element={<PlaceholderPage titleKey="nav.about" noteKey="admin.comingSoon" />}
             />
-            <Route
-              path="/contact"
-              element={<PlaceholderPage titleKey="nav.contact" noteKey="admin.comingSoon" />}
-            />
+            <Route path="/contact" element={<ContactPage />} />
             <Route
               path="/policy"
               element={<PlaceholderPage titleKey="footer.legal" noteKey="admin.comingSoon" />}
