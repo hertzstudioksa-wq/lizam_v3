@@ -35,7 +35,7 @@ export const STRINGS = {
     hero: {
       explore: "استعراض الإصدارات",
       contact: "تواصل مع المركز",
-      established: "تأسس في المملكة العربية السعودية",
+      established: "مقرّه المملكة العربية السعودية",
     },
     admin: {
       title: "لوحة تحكم المركز",
