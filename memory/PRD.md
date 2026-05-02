@@ -111,6 +111,22 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 
 **Test results:** 61/61 backend tests passing (Phase 1 + 2 + 3 + Theme B). iteration_4.json: frontend renders Theme B globally (data-theme="b" + Thmanyah Sans computed font-family), Theme A switchable via admin and persists in DB, all Phase 3 CMS pages still functional, mobile hamburger + full-screen menu work, Cite + tokenized PDF + access gating untouched.
 
+### Theme B Refinement Pass (Feb 2026) ✅
+**Visual refinements (per user feedback):**
+- **Refined radius system** — `--tb-radius-xs/sm/md/lg/pill` (4 / 8 / 12 / 18 / 999 px). Cards now use 12px radius with `tb-shadow-rest` → `tb-shadow-hover` lift on hover.
+- **Section variety** — alternating paper-base / paper-deep / paper-warm / navy / image-backed bands for editorial rhythm.
+- **Removed book/journal mimicry** — deleted "Volume I / 2026" editorial inset block from hero; replaced with paper-warm focus-areas panel; HeroB also overrides any seeded "Volume / Edition / مجلد / إصدار" eyebrow with institutional phrasing ("Independent Research Center" / "مركز بحثي مستقل").
+- **Mission/Vision rewrite** — single section eyebrow "Foundations / المنطلقات" + single section heading; below it two paired panels with single elegant labels (Mission / Vision · الرسالة / الرؤية) — no double-labeling. One panel uses `tb-panel` (warm paper), the other `tb-panel-dark` (deep navy).
+- **Atmospheric imagery** — hero, About, and Featured Publications band now support background/paired imagery via the new `image_assets` admin slots.
+- **Refined components** — HeroB, AboutB (paired image), ObjectivesB (gold figure numerals), FieldsOfWorkB (softer cards with gold pill icon backdrops), FeaturedPublicationsB (two-band: image-backed dark intro + paper-warm cards), PublicationCardB (pill access badge with gold-faint background, refined radius).
+
+**New: Image management infrastructure**
+- Backend collection `image_assets` + endpoints: `GET /api/public/image-assets`, `GET /api/admin/image-assets`, `PATCH /api/admin/image-assets/{slot_key}`. Seeded with 5 default slots: `hero_background` (12:7), `about_image` (4:5), `featured_band_background` (2:1), `objectives_background` (12:7, inactive by default), `publications_hero` (8:3). Each slot stores: `url`, `alt_ar`, `alt_en`, `active`, `recommended_width`, `recommended_height`, `aspect_ratio`, `usage_note_ar`, `usage_note_en`, `_seed_origin`.
+- Admin page `/admin/images` with sidebar nav "Image Management". Each slot card shows: live preview (with correct aspect ratio), recommended dimensions text, aspect-ratio chip, AR + EN titles, AR + EN usage notes, URL field with file upload, AR + EN alt text fields, Active/Inactive toggle, dirty-state Save button.
+- `useImageAssets()` hook fetches public slots with module-level cache; `resetImageAssetsCache()` invalidates after admin save.
+
+**Test results:** 69/69 backend tests passing (Phase 1 + 2 + 3 + Theme B + Image Assets). iteration_5.json. Zero regressions.
+
 > **Visual design note:** Theme A remains the baseline (selectable). Theme B is the new premium option, seeded as default, awaiting user review for final approval.
 
 ## Admin credentials (seeded)

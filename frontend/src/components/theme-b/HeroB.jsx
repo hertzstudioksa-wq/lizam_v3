@@ -19,7 +19,13 @@ export default function HeroB() {
 
   const title = pick(home, "hero_title", "");
   const subtitle = pick(home, "hero_subtitle", "");
-  const eyebrow = pick(home, "hero_eyebrow", "");
+  // Eyebrow: prefer institutional phrasing over journal-issue mimicry.
+  // If seeded content uses "Volume I / مجلد" framing, override with institutional copy.
+  const seededEyebrow = pick(home, "hero_eyebrow", "");
+  const isJournalEyebrow = /(volume|مجلد|edition|إصدار)/i.test(seededEyebrow || "");
+  const eyebrow = isJournalEyebrow
+    ? (lang === "ar" ? "مركز بحثي مستقل" : "Independent Research Center")
+    : (seededEyebrow || (lang === "ar" ? "مركز بحثي مستقل" : "Independent Research Center"));
   const ctaPrimary = pick(home, "hero_cta_primary", "") || t("hero.explore");
   const ctaSecondary = pick(home, "hero_cta_secondary", "") || t("hero.contact");
 
@@ -47,7 +53,7 @@ export default function HeroB() {
         {/* Eyebrow — kept short and editorial; no Volume/Year mimicry */}
         <div className="tb-section-eyebrow tb-rise" data-testid="hero-eyebrow">
           <span className="rule" />
-          <span className="tb-overline">{eyebrow || (lang === "ar" ? "مركز بحثي مستقل" : "Independent Research Center")}</span>
+          <span className="tb-overline">{eyebrow}</span>
         </div>
 
         {/* Headline */}

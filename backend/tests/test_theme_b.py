@@ -59,11 +59,16 @@ def test_admin_patch_invalid_theme_rejected(admin_session, bad):
 
 def test_admin_patch_none_theme_is_ignored(admin_session):
     # None is allowed (Optional) but should not overwrite existing value (router filters None)
-    before = requests.get(f"{API}/public/site-settings", timeout=15).json().get("active_theme")
+    before_doc = requests.get(f"{API}/public/site-settings", timeout=15).json()
+    before = before_doc.get("active_theme")
+    original_tagline = before_doc.get("tagline_en")
     r = admin_session.patch(f"{API}/admin/site-settings", json={"active_theme": None, "tagline_en": "theme-b-none-test"}, timeout=15)
     assert r.status_code == 200
     after = requests.get(f"{API}/public/site-settings", timeout=15).json().get("active_theme")
     assert after == before, "None value should not overwrite active_theme"
+    # Restore tagline_en to prevent cross-suite pollution
+    if original_tagline:
+        admin_session.patch(f"{API}/admin/site-settings", json={"tagline_en": original_tagline}, timeout=15)
 
 
 # --- Seed idempotency: admin-edited active_theme survives backend restart ---
