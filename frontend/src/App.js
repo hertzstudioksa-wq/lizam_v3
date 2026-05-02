@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import "@/App.css";
+import "@/admin/tiptap.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { LanguageProvider } from "@/i18n/LanguageContext";
@@ -14,6 +15,11 @@ import AccountPage from "@/pages/AccountPage";
 import PublicationsPage from "@/pages/PublicationsPage";
 import PublicationDetailPage from "@/pages/PublicationDetailPage";
 import ContactPage from "@/pages/ContactPage";
+import SiteSettingsAdmin from "@/admin/pages/SiteSettingsAdmin";
+import BrandingAdmin from "@/admin/pages/BrandingAdmin";
+import HomeAdmin from "@/admin/pages/HomeAdmin";
+import { PublicationsListAdmin, PublicationEditAdmin } from "@/admin/pages/PublicationsAdmin";
+import { AuthorsAdmin, CategoriesAdmin, UsersAdmin, RolesAdmin, TogglesAdmin, MessagesAdmin } from "@/admin/pages/SimpleAdmins";
 import AdminLayout from "@/admin/AdminLayout";
 import AdminOverview from "@/admin/pages/AdminOverview";
 import AdminComingSoon from "@/admin/pages/AdminComingSoon";
@@ -75,15 +81,18 @@ function App() {
             {/* Admin shell */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminOverview />} />
-              <Route path="publications" element={<AdminComingSoon titleAr="إدارة الإصدارات" titleEn="Publications Management" />} />
-              <Route path="authors" element={<AdminComingSoon titleAr="الباحثون" titleEn="Researchers" />} />
+              <Route path="publications" element={<PublicationsListAdmin />} />
+              <Route path="publications/:id" element={<PublicationEditAdmin />} />
+              <Route path="authors" element={<AuthorsAdmin />} />
               <Route path="responses" element={<AdminComingSoon titleAr="مراجعة الردود البحثية" titleEn="Research Responses" />} />
-              <Route path="users" element={<AdminComingSoon titleAr="المستخدمون والأدوار" titleEn="Users & Roles" />} />
-              <Route path="messages" element={<AdminComingSoon titleAr="صندوق الرسائل" titleEn="Messages" />} />
-              <Route path="home" element={<AdminComingSoon titleAr="محتوى الصفحة الرئيسية" titleEn="Home Content" />} />
-              <Route path="branding" element={<AdminComingSoon titleAr="الهوية والتصميم" titleEn="Branding & Design" />} />
-              <Route path="settings" element={<AdminComingSoon titleAr="إعدادات الموقع" titleEn="Site Settings" />} />
-              <Route path="toggles" element={<AdminComingSoon titleAr="مفاتيح الميزات" titleEn="Feature Toggles" />} />
+              <Route path="users" element={<UsersAdmin />} />
+              <Route path="roles" element={<RolesAdmin />} />
+              <Route path="messages" element={<MessagesAdmin />} />
+              <Route path="home" element={<HomeAdmin />} />
+              <Route path="branding" element={<BrandingAdmin />} />
+              <Route path="settings" element={<SiteSettingsAdmin />} />
+              <Route path="categories" element={<CategoriesAdmin />} />
+              <Route path="toggles" element={<TogglesAdmin />} />
             </Route>
 
             {/* Fallback */}

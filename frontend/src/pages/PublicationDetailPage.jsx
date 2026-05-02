@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Eye, Clock, Lock, FileDown, Share2, Copy, Twitter, Linkedin,
-  ChevronLeft, ChevronRight, MessageSquare, Check, Mail,
+  ChevronLeft, ChevronRight, MessageSquare, Check, Mail, Quote,
 } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import PublicationCard from "@/components/publications/PublicationCard";
@@ -78,8 +78,10 @@ export default function PublicationDetailPage() {
     setPdfState(null);
     try {
       const { data } = await api.get(`/public/publications/${pub.id}/pdf`);
-      setPdfState({ ok: true, url: data.url });
-      window.open(data.url, "_blank", "noopener");
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const fullUrl = `${backendUrl}${data.stream_url}`;
+      setPdfState({ ok: true, url: fullUrl });
+      window.open(fullUrl, "_blank", "noopener");
     } catch (e) {
       setPdfState({ ok: false, error: formatApiError(e.response?.data?.detail) || e.message, status: e.response?.status });
     }
@@ -90,6 +92,30 @@ export default function PublicationDetailPage() {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+    } catch { /* noop */ }
+  }
+
+  function buildCitation(style) {
+    const authorsText = authors.length
+      ? authors.map((a) => a[`name_${lang}`] || a.name_en || a.name_ar).join(", ")
+      : (lang === "ar" ? "مركز لزام للدراسات القانونية" : "LIZAM Center for Legal Research");
+    const year = (pub.published_at || "").slice(0, 4) || new Date().getFullYear();
+    const publisher = lang === "ar" ? "مركز لزام للدراسات القانونية" : "LIZAM Center for Legal Research";
+    const url = window.location.href;
+    if (style === "apa") {
+      return `${authorsText} (${year}). ${title}. ${publisher}. ${url}`;
+    }
+    // chicago
+    return `${authorsText}. "${title}." ${publisher}, ${year}. ${url}`;
+  }
+
+  const [showCite, setShowCite] = useState(false);
+  const [citedStyle, setCitedStyle] = useState(null);
+  async function copyCitation(style) {
+    try {
+      await navigator.clipboard.writeText(buildCitation(style));
+      setCitedStyle(style);
+      setTimeout(() => setCitedStyle(null), 1500);
     } catch { /* noop */ }
   }
 
@@ -184,6 +210,35 @@ export default function PublicationDetailPage() {
             )}
 
             <div className="flex items-center gap-2 ms-auto">
+              <div className="relative">
+                <button onClick={() => setShowCite((s) => !s)}
+                  className="h-10 px-3 border border-rule hover:border-navy transition-colors inline-flex items-center gap-2 text-[12.5px] text-navy"
+                  data-testid="cite-btn">
+                  <Quote size={14} />
+                  <span>{lang === "ar" ? "استشهاد" : "Cite"}</span>
+                </button>
+                {showCite && (
+                  <div className="absolute top-full end-0 mt-2 w-[320px] bg-white border border-rule shadow-sm z-10" data-testid="cite-dropdown">
+                    <div className="p-4 border-b border-rule">
+                      <div className="lz-eyebrow text-mute">{lang === "ar" ? "نسق الاستشهاد" : "Citation format"}</div>
+                    </div>
+                    {["apa", "chicago"].map((s) => (
+                      <button key={s} onClick={() => copyCitation(s)}
+                        className="w-full text-start px-4 py-3 text-[13px] hover:bg-ivory-cream transition-colors border-b border-rule last:border-0 flex items-start justify-between gap-2"
+                        data-testid={`cite-${s}`}>
+                        <div>
+                          <div className="font-medium text-navy uppercase tracking-wider text-[11px] mb-1">{s}</div>
+                          <div className="text-ink/70 leading-[1.7] text-[12.5px]" dir="auto">{buildCitation(s).slice(0, 120)}…</div>
+                        </div>
+                        {citedStyle === s && <Check size={14} className="text-green-700 mt-0.5 shrink-0" />}
+                      </button>
+                    ))}
+                    <div className="px-4 py-2 text-[11.5px] text-mute">
+                      {lang === "ar" ? "اضغط للنسخ" : "Click to copy"}
+                    </div>
+                  </div>
+                )}
+              </div>
               <button onClick={shareCopy} className="h-10 px-3 border border-rule hover:border-navy transition-colors inline-flex items-center gap-2 text-[12.5px] text-navy" data-testid="share-copy">
                 {copied ? <Check size={14} className="text-green-700" /> : <Copy size={14} />}
                 <span>{copied ? (lang === "ar" ? "تم النسخ" : "Copied") : (lang === "ar" ? "نسخ الرابط" : "Copy link")}</span>

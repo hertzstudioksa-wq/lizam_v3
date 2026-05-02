@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
@@ -12,8 +12,10 @@ const nav = (lang) => [
   { to: "/admin", icon: LayoutDashboard, label: lang === "ar" ? "نظرة عامة" : "Overview", end: true, testid: "admin-nav-overview" },
   { to: "/admin/publications", icon: FileText, label: lang === "ar" ? "الإصدارات" : "Publications", testid: "admin-nav-publications" },
   { to: "/admin/authors", icon: Users, label: lang === "ar" ? "الباحثون" : "Researchers", testid: "admin-nav-authors" },
+  { to: "/admin/categories", icon: Tag, label: lang === "ar" ? "مجالات العمل" : "Categories", testid: "admin-nav-categories" },
   { to: "/admin/responses", icon: MessageSquare, label: lang === "ar" ? "الردود البحثية" : "Responses", testid: "admin-nav-responses" },
-  { to: "/admin/users", icon: ShieldCheck, label: lang === "ar" ? "المستخدمون والأدوار" : "Users & Roles", testid: "admin-nav-users" },
+  { to: "/admin/users", icon: ShieldCheck, label: lang === "ar" ? "المستخدمون" : "Users", testid: "admin-nav-users" },
+  { to: "/admin/roles", icon: ShieldCheck, label: lang === "ar" ? "الأدوار والصلاحيات" : "Roles & Permissions", testid: "admin-nav-roles" },
   { to: "/admin/messages", icon: Mail, label: lang === "ar" ? "الرسائل" : "Messages", testid: "admin-nav-messages" },
   { to: "/admin/home", icon: BookOpen, label: lang === "ar" ? "محتوى الرئيسية" : "Home Content", testid: "admin-nav-home" },
   { to: "/admin/branding", icon: Palette, label: lang === "ar" ? "الهوية والتصميم" : "Branding & Design", testid: "admin-nav-branding" },

@@ -1,0 +1,11 @@
+/* TipTap editor prose */
+.lz-tiptap:focus { outline: none; }
+.lz-tiptap p { margin: 0 0 0.9em; }
+.lz-tiptap h2 { font-family: "Thmanyah Serif Display", serif; font-weight: 500; font-size: 1.4em; margin: 1.2em 0 0.5em; color: #121A2A; }
+.lz-tiptap h3 { font-family: "Thmanyah Serif Display", serif; font-weight: 500; font-size: 1.15em; margin: 1em 0 0.4em; color: #121A2A; }
+.lz-tiptap ul, .lz-tiptap ol { padding-inline-start: 1.4em; margin: 0 0 1em; }
+.lz-tiptap blockquote { border-inline-start: 2px solid #B89B5E; padding-inline-start: 1em; margin: 1em 0; color: rgba(29,41,57,0.82); }
+.lz-tiptap hr { border: 0; border-top: 1px solid #E4E7EC; margin: 1.5em 0; }
+.lz-tiptap a { color: #23324D; text-decoration: underline; text-decoration-color: rgba(35,50,77,0.4); }
+.lz-tiptap[dir="rtl"] { font-family: "Thmanyah Serif Text", "Thmanyah Sans", sans-serif; }
+.lz-tiptap[dir="ltr"] { font-family: "Thmanyah Serif Text", serif; }
