@@ -1,141 +1,114 @@
 {
-  "theme": "light",
-  "archetype": "Editorial & High-Contrast (Institutional)",
-  "color_palette": {
-    "primary": "#23324D",
-    "primary_hover": "#1A253A",
-    "deep_navy": "#121A2A",
-    "accent_gold": "#B89B5E",
-    "accent_gold_hover": "#A18751",
-    "background_soft": "#F7F8FA",
-    "background_paper": "#FAF9F6",
-    "border_gray": "#E4E7EC",
-    "text_dark": "#1D2939",
-    "text_muted": "#667085",
-    "white": "#FFFFFF"
-  },
-  "typography": {
-    "arabic": {
-      "headings": {
-        "fontFamily": "IBM Plex Sans Arabic, sans-serif",
-        "weights": ["600", "700"],
-        "letterSpacing": "tracking-normal",
-        "lineHeight": "leading-tight"
+  "theme_id": "theme_b_premium_editorial",
+  "css_tokens": {
+    "colors": {
+      "paper_base": "#F9F7F3",
+      "paper_surface": "#FFFFFF",
+      "navy_900": "#0A111C",
+      "navy_800": "#121A2A",
+      "navy_700": "#1C283F",
+      "antique_gold": "#B4914A",
+      "pale_gold": "#D4B982",
+      "graphite_hairline": "#D4D0C8",
+      "text_primary": "#0A111C",
+      "text_secondary": "#5C6066"
+    },
+    "css_variables": {
+      "--theme-b-bg": "#F9F7F3",
+      "--theme-b-surface": "#FFFFFF",
+      "--theme-b-navy": "#0A111C",
+      "--theme-b-navy-light": "#121A2A",
+      "--theme-b-gold": "#B4914A",
+      "--theme-b-gold-light": "#D4B982",
+      "--theme-b-hairline": "#D4D0C8",
+      "--theme-b-text-main": "#0A111C",
+      "--theme-b-text-muted": "#5C6066"
+    },
+    "typography": {
+      "font_family": {
+        "display": "'Thmanyah Serif Display', 'Source Serif 4', serif",
+        "text": "'Thmanyah Serif Text', 'Source Serif 4', serif",
+        "sans": "'Thmanyah Sans', 'IBM Plex Sans Arabic', 'Inter', sans-serif"
       },
-      "body": {
-        "fontFamily": "IBM Plex Sans Arabic, sans-serif",
-        "weights": ["400", "500"],
-        "lineHeight": "leading-relaxed"
+      "scale_arabic": {
+        "hero": "text-[3.5rem] sm:text-[4.5rem] leading-[1.2] tracking-normal",
+        "h1": "text-4xl sm:text-5xl leading-[1.3] tracking-normal",
+        "h2": "text-3xl sm:text-4xl leading-[1.35]",
+        "h3": "text-2xl sm:text-3xl leading-[1.4]",
+        "body_large": "text-lg sm:text-xl leading-[1.8]",
+        "body_base": "text-base leading-[1.8]",
+        "metadata": "text-sm leading-[1.5]",
+        "overline": "text-xs font-bold tracking-[0.05em] uppercase"
       }
     },
-    "english": {
-      "headings": {
-        "fontFamily": "Source Serif 4, serif",
-        "weights": ["400", "600", "700"],
-        "letterSpacing": "tracking-tight",
-        "lineHeight": "leading-none"
-      },
-      "body": {
-        "fontFamily": "Inter, sans-serif",
-        "weights": ["400", "500"],
-        "lineHeight": "leading-relaxed"
-      },
-      "eyebrow": {
-        "fontFamily": "Inter, sans-serif",
-        "weights": ["600"],
-        "letterSpacing": "tracking-[0.2em]",
-        "textTransform": "uppercase",
-        "fontSize": "text-xs sm:text-sm"
-      }
+    "spacing_scale": {
+      "section_gap": "gap-24 md:gap-32",
+      "editorial_gap": "gap-12 md:gap-16",
+      "component_gap": "gap-6 md:gap-8",
+      "reading_width": "max-w-[70ch]",
+      "composition_width": "max-w-7xl"
     },
-    "scale": {
-      "h1": "text-4xl sm:text-5xl lg:text-6xl",
-      "h2": "text-3xl sm:text-4xl lg:text-5xl",
-      "h3": "text-2xl sm:text-3xl",
-      "h4": "text-xl sm:text-2xl",
-      "body": "text-base md:text-lg",
-      "small": "text-sm"
+    "radii": {
+      "editorial_sharp": "rounded-none",
+      "editorial_subtle": "rounded-sm"
+    },
+    "shadows": {
+      "card_rest": "shadow-[0_2px_10px_rgba(10,17,28,0.03)]",
+      "card_hover": "shadow-[0_12px_30px_rgba(10,17,28,0.08)]",
+      "dropdown": "shadow-[0_4px_24px_rgba(10,17,28,0.12)]"
+    },
+    "motion": {
+      "duration_fast": "150ms",
+      "duration_premium": "400ms",
+      "easing_editorial": "cubic-bezier(0.22, 1, 0.36, 1)"
     }
   },
-  "spacing_and_layout": {
-    "generous_spacing": true,
-    "container_padding": "px-6 md:px-12 lg:px-24",
-    "section_gap": "py-24 md:py-32",
-    "grid_system": "grid-cols-1 md:grid-cols-12 gap-6 md:gap-12",
-    "alignment": "optical_alignment_over_geometrical",
-    "hero_layout": "asymmetric split layout, deep navy left side / paper texture right side or overlapping structure",
-    "radius": "rounded-none or minimal rounded-sm (2px to 4px max, strict institutional feel)",
-    "shadows": "shadow-sm for subtle elevation, no soft colorful dropshadows; stick to crisp 1px borders"
+  "component_patterns": {
+    "header": "bg-paper_surface/95 backdrop-blur-md border-b border-graphite_hairline/50. Nav links use Thmanyah Sans, text-sm, text_secondary. Hover state: text_primary with a 1px antique_gold line expanding from center bottom.",
+    "hero": "bg-paper_base pt-32 pb-24. Layout: single layered ivory composition. Left (or Right for RTL): vertical issue marker (1px gold line + small text rotated). Center: massive Thmanyah Serif Display headline. Right: navy editorial block with Thmanyah Sans summary text. NO split-screen. Hairline gold rules separating sections.",
+    "section_dividers": "flex items-center gap-6. A 1px antique_gold line spanning width, interrupted by an eyebrow metadata tag (Thmanyah Sans, text-sm, antique_gold) and a section heading (Thmanyah Serif Display).",
+    "editorial_card": "bg-paper_surface border border-graphite_hairline/40 rounded-none. Inner padding p-6 md:p-8. Top: metadata rail (Type, Date) separated by tiny gold dots. Middle: Thmanyah Serif Display title. Bottom: Author. Hover state: border-antique_gold, subtle lift (-translate-y-1), shadow-card_hover, and a subtle left-to-right arrow shift in the CTA.",
+    "filter_bar": "sticky top-0 bg-paper_base/90 backdrop-blur z-40 py-4. Chips: border border-graphite_hairline bg-transparent rounded-full px-4 py-1.5 Thmanyah Sans text-sm. Active state: border-antique_gold bg-antique_gold/5 text-navy_900.",
+    "publication_masthead": "bg-navy_900 text-paper_base py-20. Thmanyah Serif Display for title. Gold accents for metadata separators. Breadcrumbs in pale_gold.",
+    "meta_rail": "flex flex-wrap gap-x-6 gap-y-2 text-sm Thmanyah Sans text_secondary. Items separated by a 1px w-4 h-px bg-antique_gold inline-block align-middle.",
+    "article_reader": "max-w-[70ch] mx-auto Thmanyah Serif Text text-lg leading-[2] text-navy_900. First letter drop cap in Thmanyah Serif Display (text-6xl, text-antique_gold). Highlight quotes with a left border-l-2 border-antique_gold pl-6.",
+    "footer": "bg-navy_900 text-paper_base pt-24 pb-12. Separated by 1px pale_gold/20 rules. Institutional layout: Logo left, 3 column links right. Bottom legal bar."
   },
-  "motion": {
-    "transition": "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-    "hover_state": "subtle opacity shifts, slow line drawing, elegant background darkening",
-    "entrance": "fade-in with slight vertical shift (10px max), no bouncing",
-    "duration": "slow and calm"
+  "hover_focus_active_spec": {
+    "primary_button": "bg-navy_900 text-paper_surface rounded-none px-6 py-3 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]. Hover: bg-navy_800 translate-y-[-2px] shadow-[0_8px_20px_rgba(10,17,28,0.15)]. Focus: ring-2 ring-antique_gold ring-offset-2 ring-offset-paper_base.",
+    "secondary_button": "border border-navy_900 text-navy_900 bg-transparent rounded-none px-6 py-3 transition-all duration-400. Hover: bg-navy_900/5 border-antique_gold text-navy_900. Focus: ring-2 ring-antique_gold ring-offset-2.",
+    "ghost_button": "text-text_secondary transition-colors duration-400. Hover: text-antique_gold bg-antique_gold/5. Focus: ring-2 ring-antique_gold rounded-none.",
+    "links": "relative text-text_primary. Hover: after:scale-x-100. After pseudo-element: absolute bottom-0 left-0 w-full h-[1px] bg-antique_gold origin-left scale-x-0 transition-transform duration-400 ease-[cubic-bezier(0.22,1,0.36,1)].",
+    "icon_buttons": "text-text_secondary hover:text-antique_gold transition-transform duration-400 hover:rotate-[-5deg] hover:scale-110."
   },
-  "components": {
-    "header": {
-      "style": "thin institutional masthead",
-      "background": "bg-white/95 backdrop-blur-md border-b border-border_gray",
-      "elements": "Bilingual logo, primary navigation, language toggle (AR/EN), Login CTA",
-      "rules": "Must not be bulky. Logo properly sized. No hamburger on desktop."
-    },
-    "hero": {
-      "style": "Editorial composition, high tension between massive Arabic headline and refined English serif.",
-      "layout": "Asymmetric bento or split grid. Example: Left side solid Deep Navy containing the text, Right side an image slot with a very subtle geometric texture or library interior.",
-      "elements": "Eyebrow tag, strong Arabic headline, English counterpart, meta-data (volume/issue style), two CTAs (Explore, Contact)",
-      "rules": "Do not use standard centered layout. Include a subtle vertical rule."
-    },
-    "footer": {
-      "style": "Academic/Research Institute structure",
-      "background": "bg-deep_navy text-white",
-      "elements": "Logo, brand blurb, sitemap, contact, social, legal copyright",
-      "rules": "Py-24 spacing. Distinct sections. Restrained links."
-    },
-    "buttons": {
-      "primary": "bg-primary text-white border border-transparent hover:bg-primary_hover transition-colors rounded-sm",
-      "secondary": "bg-transparent text-primary border border-border_gray hover:border-primary transition-colors rounded-sm"
-    }
+  "differentiation_from_theme_a": [
+    "Theme A hero is split navy/ivory; Theme B hero is a single layered ivory composition with a navy editorial block, large serif display headline, hairline gold rule above eyebrow, and vertical issue marker.",
+    "Theme A uses heavily rounded borders; Theme B uses sharp or extremely subtle 2px radii for a print/editorial feel.",
+    "Theme A relies on standard shadows; Theme B uses ultra-refined, low-opacity spread shadows combined with physical 1px graphite hairlines.",
+    "Theme A utilizes a modern sans-serif dominance; Theme B heavily emphasizes Thmanyah Serif Display for all major headings and Thmanyah Serif Text for long-form reading, saving Sans exclusively for UI elements.",
+    "Theme A hover states are basic background/opacity changes; Theme B features premium motion: 400ms cubic-bezier transitions with gold line reveals, arrow shifts, and slight physical lift on cards.",
+    "Theme A uses flat blocks of color to divide sections; Theme B relies on disciplined whitespace (gap-32) and fine 1px antique gold rules combined with eyebrow text to delineate sections.",
+    "Theme A metadata is standard text; Theme B metadata uses 'meta rails' with subtle gold typographic separators (bullets/lines) for a scholarly aesthetic.",
+    "Theme A filter chips are solid fills; Theme B filter chips are delicate outlines that turn gold and slightly tinted on active states.",
+    "Theme A article reader is standard web typography; Theme B article reader mimics a premium broadsheet with optimal 70ch measure, taller 2.0 line-height for Arabic, and drop caps for visual entry points.",
+    "Theme A overall color palette is a stark navy/ivory; Theme B introduces an intermediate 'paper base' vs 'paper surface' distinction, allowing cards to sit on a subtly warmer background, creating depth without heavy shadows."
+  ],
+  "mobile_considerations": {
+    "typography": "Arabic headings require careful fluid scaling; do not drop below text-3xl for H1s on mobile to retain Serif details. Ensure leading is relaxed (min 1.6) to prevent diacritic clipping.",
+    "touch_targets": "All interactive elements (buttons, links, filters) must be min 44x44px. Increase padding on filter chips for mobile.",
+    "layout": "Convert layered bento grids into stacked cards with 1px border-b separating them instead of full boxes to save horizontal space. Retain gold hairline rules.",
+    "navigation": "Hamburger menu must open a full-screen ivory overlay with large Serif display links, staggered entrance animation (duration-400)."
   },
-  "media": {
-    "logo": {
-      "url": "/brand/lizam-logo-raw.png",
-      "description": "LIZAM brand logo (Navy)",
-      "category": "logo"
-    },
-    "images": [
-      {
-        "url": "https://images.unsplash.com/photo-1716003797342-55f8fe2e395f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwxfHxjb250ZW1wb3JhcnklMjBpc2xhbWljJTIwZ2VvbWV0cmljJTIwYXJjaGl0ZWN0dXJlJTIwbmV1dHJhbHxlbnwwfHx8fDE3Nzc2OTc1MDN8MA&ixlib=rb-4.1.0&q=85",
-        "description": "Close up of contemporary geometric pattern/window",
-        "category": "hero_background_abstract"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1613282201990-d766b5e4f32f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwzfHxzdWJ0bGUlMjBwYXBlciUyMHRleHR1cmUlMjBpdm9yeXxlbnwwfHx8fDE3Nzc2OTc0OTh8MA&ixlib=rb-4.1.0&q=85",
-        "description": "Subtle paper texture ivory",
-        "category": "texture_overlay"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1768226911839-6358bf44eee5?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NjZ8MHwxfHNlYXJjaHwyfHxjb250ZW1wb3JhcnklMjBpc2xhbWljJTIwZ2VvbWV0cmljJTIwYXJjaGl0ZWN0dXJlJTIwbmV1dHJhbHxlbnwwfHx8fDE3Nzc2OTc1MDN8MA&ixlib=rb-4.1.0&q=85",
-        "description": "Ornate geometric screen on a building facade.",
-        "category": "hero_image"
-      },
-      {
-        "url": "https://images.unsplash.com/photo-1772081014501-cf52c3e0bf76?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxjYWxtJTIwbW9kZXJuJTIwbGlicmFyeSUyMGludGVyaW9yJTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc3NzY5NzUwNnww&ixlib=rb-4.1.0&q=85",
-        "description": "A dimly lit library with bookshelves and a large window.",
-        "category": "hero_image_alternate"
-      }
-    ]
-  },
-  "instructions_to_main_agent": [
-    "Follow Arabic-first/RTL layout using Tailwind 'rtl:' and 'ltr:' directives if applicable, or manage direction based on html dir attribute.",
-    "Ensure 'IBM Plex Sans Arabic' is imported and applied properly via Tailwind config.",
-    "Ensure 'Source Serif 4' and 'Inter' are imported.",
-    "Do NOT use typical SaaS centered hero layout. Create an asymmetric editorial layout.",
-    "Maintain high contrast. Use the provided deep navy and ivory colors.",
-    "Apply rigorous 'data-testid' attributes to all interactive and structural components.",
-    "Ensure the hero layout conveys a serious institutional vibe without generic stock photos of scales or gavels.",
-    "Footer should be deeply styled with Deep Navy (#121A2A), providing a solid grounding for the page.",
-    "Do not invent new colors, adhere strictly to the color_palette.",
-    "Make use of the geometric or library images for the hero section."
-  ]
+  "what_not_to_do": [
+    "NO SaaS aesthetics (e.g., glowing blobs, floating abstract 3D shapes, heavily rounded cards).",
+    "NO loud gradients (e.g., purple to teal, or even navy to gold gradients). Use solid colors only.",
+    "NO excessive animations or scroll hijacking. Only use subtle hover states, staggered entrances, and micro-interactions.",
+    "NO cliché legal imagery (gavels, scales of justice, columns, generic stock photos of handshakes).",
+    "NO centered, equal-spaced layouts. Use asymmetrical, layered editorial grids.",
+    "NO Inter, Roboto, or generic geometric sans-serifs for headings. Thmanyah is the only typeface.",
+    "NO solid block shadows or neo-brutalism. Keep shadows diffuse and elegant.",
+    "NO emoji icons. Use purely monoline icons (lucide-react), colored in graphite or gold.",
+    "NO purple/violet anywhere. Stick strictly to the Navy/Paper/Gold palette."
+  ],
+  "implementation_instructions": "Load this JSON in the main agent context. Implement Theme B tokens using CSS variables injected via a data-theme='theme-b' attribute on the <html> tag. Map Tailwind config colors and fonts to these CSS variables so both Theme A and Theme B can coexist in the same bundle."
 }
