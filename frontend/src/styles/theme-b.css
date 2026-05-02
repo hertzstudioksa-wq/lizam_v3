@@ -1,26 +1,50 @@
 /* =========================================================================
-   LIZAM — Theme B · Premium Editorial
-   Activates when <html data-theme="b">. Theme A remains the default.
-   Color: deeper navy, warmer paper, antique gold, graphite hairlines.
-   Type: Thmanyah Serif Display dominates headings; Serif Text for reading.
-   Motion: 400ms cubic-bezier(0.22, 1, 0.36, 1).
+   LIZAM — Theme B · Premium Editorial (refined)
+   Activates when <html data-theme="b">. Theme A remains untouched.
+
+   Refinements (Feb 2026):
+   - Refined radius system (8 / 12 / 18 px) replacing rigid sharp edges
+   - Atmospheric imagery support with proper overlay tokens
+   - Section variety helpers (paper, paper-deep, navy band, image-backed)
+   - Removed book/journal mimicry (no Volume/Issue framing)
+   - Modern editorial composition with global feel
    ========================================================================= */
 
 html[data-theme="b"] {
-  /* Theme B palette — additive tokens (do not remove Theme A vars) */
-  --tb-paper-base: #F9F7F3;
+  /* Palette — preserved from original Theme B + supporting tones */
+  --tb-paper-base: #F7F4EE;       /* slightly warmer off-white for richness */
   --tb-paper-surface: #FFFFFF;
-  --tb-paper-deep: #F2EEE6;
+  --tb-paper-deep: #EFEAE0;       /* deeper paper tone for section variety */
+  --tb-paper-warm: #F2EBDB;       /* highlight panel tone */
   --tb-navy-900: #0A111C;
   --tb-navy-800: #121A2A;
   --tb-navy-700: #1C283F;
+  --tb-navy-600: #2A3852;
   --tb-gold: #B4914A;
   --tb-gold-soft: #D4B982;
-  --tb-gold-faint: rgba(180, 145, 74, 0.18);
-  --tb-hairline: #D4D0C8;
+  --tb-gold-faint: rgba(180, 145, 74, 0.16);
+  --tb-gold-deep: #8E6F36;
+  --tb-hairline: #DBD5C9;
+  --tb-hairline-soft: rgba(219, 213, 201, 0.55);
   --tb-text: #0A111C;
   --tb-text-muted: #5C6066;
+  --tb-text-subtle: #7A7E85;
+
+  /* Refined radius system — replaces rigid rounded-none */
+  --tb-radius-xs: 4px;
+  --tb-radius-sm: 8px;
+  --tb-radius-md: 12px;
+  --tb-radius-lg: 18px;
+  --tb-radius-pill: 999px;
+
+  /* Motion */
   --tb-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tb-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shadow tokens — diffuse, premium */
+  --tb-shadow-rest: 0 1px 2px rgba(10, 17, 28, 0.04), 0 4px 12px rgba(10, 17, 28, 0.025);
+  --tb-shadow-hover: 0 8px 24px rgba(10, 17, 28, 0.08), 0 2px 6px rgba(10, 17, 28, 0.04);
+  --tb-shadow-deep: 0 24px 48px rgba(10, 17, 28, 0.14), 0 4px 8px rgba(10, 17, 28, 0.06);
 }
 
 html[data-theme="b"] body {
@@ -29,19 +53,18 @@ html[data-theme="b"] body {
   color: var(--tb-text);
 }
 
-/* Selection */
 html[data-theme="b"] ::selection {
   background: var(--tb-navy-900);
   color: var(--tb-paper-base);
 }
 
-/* Focus ring — antique gold */
 html[data-theme="b"] :focus-visible {
   outline: 2px solid var(--tb-gold);
   outline-offset: 3px;
+  border-radius: var(--tb-radius-sm);
 }
 
-/* ----- Typography helpers (Theme B) ----- */
+/* ---------- Typography helpers ---------- */
 .tb-display {
   font-family: "Thmanyah Serif Display", "Source Serif 4", Georgia, serif;
   font-weight: 500;
@@ -71,22 +94,14 @@ html[dir="rtl"] .tb-overline {
   font-family: "Thmanyah Sans", sans-serif;
   font-size: 13px;
   color: var(--tb-text-muted);
-  letter-spacing: 0.01em;
 }
 
-.tb-rule {
-  height: 1px;
-  background: var(--tb-gold);
-  width: 56px;
-  display: inline-block;
-  vertical-align: middle;
+.tb-section-eyebrow { display: inline-flex; align-items: center; gap: 0.85rem; }
+.tb-section-eyebrow .rule {
+  height: 1px; width: 36px; background: var(--tb-gold); display: inline-block;
 }
 
-.tb-hairline {
-  border-color: var(--tb-hairline);
-}
-
-/* ----- Buttons ----- */
+/* ---------- Buttons (refined radius + hover) ---------- */
 .tb-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -99,16 +114,18 @@ html[dir="rtl"] .tb-overline {
   font-weight: 500;
   letter-spacing: 0.02em;
   border: 1px solid var(--tb-navy-900);
+  border-radius: var(--tb-radius-sm);
   position: relative;
   overflow: hidden;
-  transition: transform 400ms var(--tb-ease),
-              background-color 400ms var(--tb-ease),
-              box-shadow 400ms var(--tb-ease),
-              border-color 400ms var(--tb-ease);
+  transition:
+    transform 400ms var(--tb-ease),
+    background-color 400ms var(--tb-ease),
+    box-shadow 400ms var(--tb-ease),
+    border-color 400ms var(--tb-ease);
 }
 .tb-btn-primary::after {
   content: "";
-  position: absolute; left: 0; right: 0; bottom: 0;
+  position: absolute; left: 8%; right: 8%; bottom: 6px;
   height: 1px; background: var(--tb-gold);
   transform: scaleX(0); transform-origin: left;
   transition: transform 500ms var(--tb-ease);
@@ -116,7 +133,7 @@ html[dir="rtl"] .tb-overline {
 .tb-btn-primary:hover {
   background: var(--tb-navy-800);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(10, 17, 28, 0.18);
+  box-shadow: var(--tb-shadow-hover);
   border-color: var(--tb-gold);
 }
 .tb-btn-primary:hover::after { transform: scaleX(1); }
@@ -135,10 +152,12 @@ html[dir="rtl"] .tb-btn-primary:hover svg { transform: translateX(-3px); }
   font-size: 14px;
   font-weight: 500;
   border: 1px solid var(--tb-navy-900);
-  transition: background-color 400ms var(--tb-ease),
-              color 400ms var(--tb-ease),
-              border-color 400ms var(--tb-ease),
-              transform 400ms var(--tb-ease);
+  border-radius: var(--tb-radius-sm);
+  transition:
+    background-color 400ms var(--tb-ease),
+    color 400ms var(--tb-ease),
+    border-color 400ms var(--tb-ease),
+    transform 400ms var(--tb-ease);
 }
 .tb-btn-secondary:hover {
   background: rgba(10, 17, 28, 0.04);
@@ -152,6 +171,7 @@ html[dir="rtl"] .tb-btn-primary:hover svg { transform: translateX(-3px); }
   font-family: "Thmanyah Sans", sans-serif;
   font-size: 13.5px; color: var(--tb-text-muted);
   background: transparent;
+  border-radius: var(--tb-radius-sm);
   transition: color 400ms var(--tb-ease), background-color 400ms var(--tb-ease);
 }
 .tb-btn-ghost:hover {
@@ -159,7 +179,22 @@ html[dir="rtl"] .tb-btn-primary:hover svg { transform: translateX(-3px); }
   background: var(--tb-gold-faint);
 }
 
-/* ----- Editorial nav link with gold underline reveal ----- */
+/* Inverted button for dark backgrounds */
+.tb-btn-on-dark {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.85rem 1.6rem;
+  background: var(--tb-paper-base); color: var(--tb-navy-900);
+  font-family: "Thmanyah Sans", sans-serif; font-size: 14px; font-weight: 500;
+  border: 1px solid var(--tb-paper-base);
+  border-radius: var(--tb-radius-sm);
+  transition: background-color 400ms var(--tb-ease), transform 400ms var(--tb-ease), box-shadow 400ms var(--tb-ease);
+}
+.tb-btn-on-dark:hover {
+  background: var(--tb-gold-soft); border-color: var(--tb-gold-soft);
+  transform: translateY(-2px); box-shadow: var(--tb-shadow-hover);
+}
+
+/* ---------- Nav link with gold underline reveal ---------- */
 .tb-nav-link {
   position: relative;
   font-family: "Thmanyah Sans", sans-serif;
@@ -175,22 +210,22 @@ html[dir="rtl"] .tb-btn-primary:hover svg { transform: translateX(-3px); }
   transform: scaleX(0); transform-origin: center;
   transition: transform 400ms var(--tb-ease);
 }
-.tb-nav-link:hover, .tb-nav-link.active {
-  color: var(--tb-navy-900);
-}
-.tb-nav-link:hover::after, .tb-nav-link.active::after {
-  transform: scaleX(1);
-}
+.tb-nav-link:hover, .tb-nav-link.active { color: var(--tb-navy-900); }
+.tb-nav-link:hover::after, .tb-nav-link.active::after { transform: scaleX(1); }
 
-/* ----- Editorial publication card ----- */
+/* ---------- Editorial publication card (refined radius) ---------- */
 .tb-card {
   position: relative;
   background: var(--tb-paper-surface);
-  border: 1px solid rgba(212, 208, 200, 0.6);
+  border: 1px solid var(--tb-hairline-soft);
+  border-radius: var(--tb-radius-md);
   padding: 1.75rem 1.75rem 1.5rem;
-  transition: border-color 400ms var(--tb-ease),
-              transform 400ms var(--tb-ease),
-              box-shadow 400ms var(--tb-ease);
+  box-shadow: var(--tb-shadow-rest);
+  overflow: hidden;
+  transition:
+    border-color 400ms var(--tb-ease),
+    transform 400ms var(--tb-ease),
+    box-shadow 400ms var(--tb-ease);
 }
 .tb-card::before {
   content: "";
@@ -203,45 +238,68 @@ html[dir="rtl"] .tb-card::before { transform-origin: right; }
 .tb-card:hover {
   border-color: var(--tb-gold);
   transform: translateY(-3px);
-  box-shadow: 0 14px 32px rgba(10, 17, 28, 0.08);
+  box-shadow: var(--tb-shadow-hover);
 }
 .tb-card:hover::before { transform: scaleX(1); }
 .tb-card .tb-card-arrow { transition: transform 400ms var(--tb-ease); }
 .tb-card:hover .tb-card-arrow { transform: translateX(4px); }
 html[dir="rtl"] .tb-card:hover .tb-card-arrow { transform: translateX(-4px); }
 
-/* ----- Filter chip ----- */
+/* ---------- Filter chip (pill, refined) ---------- */
 .tb-chip {
   display: inline-flex; align-items: center; gap: 0.4rem;
-  padding: 0.45rem 0.95rem;
+  padding: 0.45rem 1rem;
   font-family: "Thmanyah Sans", sans-serif; font-size: 13px;
   border: 1px solid var(--tb-hairline);
   color: var(--tb-text-muted);
   background: transparent;
-  border-radius: 999px;
-  transition: border-color 350ms var(--tb-ease),
-              background-color 350ms var(--tb-ease),
-              color 350ms var(--tb-ease);
+  border-radius: var(--tb-radius-pill);
+  transition:
+    border-color 350ms var(--tb-ease),
+    background-color 350ms var(--tb-ease),
+    color 350ms var(--tb-ease);
 }
-.tb-chip:hover {
-  border-color: var(--tb-gold);
-  color: var(--tb-navy-900);
+.tb-chip:hover { border-color: var(--tb-gold); color: var(--tb-navy-900); }
+.tb-chip.active { border-color: var(--tb-gold); background: var(--tb-gold-faint); color: var(--tb-navy-900); }
+
+/* ---------- Section utilities ---------- */
+.tb-bg-paper      { background: var(--tb-paper-base); }
+.tb-bg-paper-deep { background: var(--tb-paper-deep); }
+.tb-bg-paper-warm { background: var(--tb-paper-warm); }
+.tb-bg-navy       { background: var(--tb-navy-900); color: var(--tb-paper-base); }
+.tb-bg-navy-soft  { background: linear-gradient(180deg, var(--tb-navy-900) 0%, var(--tb-navy-700) 100%); color: var(--tb-paper-base); }
+
+/* Image-backed section with overlay (use on a wrapper with background-image inline) */
+.tb-image-section { position: relative; overflow: hidden; }
+.tb-image-section > .tb-overlay {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(247, 244, 238, 0.85) 0%, rgba(247, 244, 238, 0.6) 60%, rgba(247, 244, 238, 0.92) 100%);
+  pointer-events: none;
 }
-.tb-chip.active {
-  border-color: var(--tb-gold);
-  background: var(--tb-gold-faint);
-  color: var(--tb-navy-900);
+.tb-image-section.tb-image-section-dark > .tb-overlay {
+  background:
+    linear-gradient(180deg, rgba(10, 17, 28, 0.78) 0%, rgba(10, 17, 28, 0.6) 50%, rgba(10, 17, 28, 0.85) 100%);
+}
+.tb-image-section > .tb-content { position: relative; z-index: 2; }
+
+/* Soft highlight panel — used for editorial callouts */
+.tb-panel {
+  background: var(--tb-paper-warm);
+  border: 1px solid var(--tb-hairline-soft);
+  border-radius: var(--tb-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--tb-shadow-rest);
+}
+.tb-panel-dark {
+  background: var(--tb-navy-900);
+  color: var(--tb-paper-base);
+  border-radius: var(--tb-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--tb-shadow-deep);
 }
 
-/* ----- Section label (eyebrow + gold rule) ----- */
-.tb-section-eyebrow {
-  display: inline-flex; align-items: center; gap: 0.85rem;
-}
-.tb-section-eyebrow .rule {
-  height: 1px; width: 40px; background: var(--tb-gold); display: inline-block;
-}
-
-/* ----- Article reader (long-form) ----- */
+/* ---------- Article reader ---------- */
 html[data-theme="b"] .lz-prose,
 .tb-prose {
   font-family: "Thmanyah Serif Text", "Source Serif 4", serif;
@@ -270,33 +328,20 @@ html[dir="rtl"] .tb-prose {
 .tb-prose blockquote {
   border-inline-start: 2px solid var(--tb-gold);
   padding-inline-start: 1.25rem;
-  font-style: italic;
-  color: rgba(10,17,28,0.78);
+  font-style: italic; color: rgba(10,17,28,0.78);
   margin: 1.8em 0;
 }
 html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
 .tb-prose hr { border: 0; height: 1px; background: var(--tb-hairline); margin: 2.4em 0; }
 
-/* ----- Drop cap (first paragraph) ----- */
-.tb-prose-dropcap > p:first-of-type::first-letter {
-  font-family: "Thmanyah Serif Display", serif;
-  font-size: 3.6em;
-  line-height: 0.9;
-  float: inline-start;
-  padding-inline-end: 0.12em;
-  padding-top: 0.05em;
-  color: var(--tb-gold);
-  font-weight: 500;
-}
-
-/* ----- Premium meta separator ----- */
+/* ---------- Premium meta separator ---------- */
 .tb-meta-sep {
   display: inline-block; width: 16px; height: 1px;
   background: var(--tb-gold); vertical-align: middle;
   margin: 0 0.65rem;
 }
 
-/* ----- Subtle entrance (no scroll-jacking) ----- */
+/* ---------- Subtle entrance ---------- */
 @keyframes tb-rise {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -305,11 +350,10 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
 .tb-rise-d1 { animation-delay: 100ms; }
 .tb-rise-d2 { animation-delay: 200ms; }
 .tb-rise-d3 { animation-delay: 300ms; }
+.tb-rise-d4 { animation-delay: 400ms; }
 
-/* ----- Mobile menu ----- */
-.tb-mobile-overlay {
-  background: var(--tb-paper-base);
-}
+/* ---------- Mobile menu ---------- */
+.tb-mobile-overlay { background: var(--tb-paper-base); }
 .tb-mobile-link {
   font-family: "Thmanyah Serif Display", serif;
   font-size: 28px;
@@ -319,7 +363,12 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
   border-bottom: 1px solid var(--tb-hairline);
   transition: color 400ms var(--tb-ease), padding 400ms var(--tb-ease);
 }
-.tb-mobile-link:hover {
+.tb-mobile-link:hover { color: var(--tb-gold); padding-inline-start: 0.5rem; }
+
+/* ---------- Number/figure marker (replaces book numerals) ---------- */
+.tb-figure {
+  font-family: "Thmanyah Serif Display", serif;
   color: var(--tb-gold);
-  padding-inline-start: 0.5rem;
+  font-weight: 500;
+  line-height: 1;
 }

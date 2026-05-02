@@ -29,6 +29,16 @@ async def get_home_content():
     return doc
 
 
+@router.get("/image-assets")
+async def public_get_image_assets():
+    """Returns active image slots used by the public site."""
+    items = await db.image_assets.find(
+        {"active": True}, {"_id": 0}
+    ).sort("sort_order", 1).to_list(length=200)
+    # Map to slot_key → minimal payload for fast lookup
+    return {"items": items, "by_slot": {it["slot_key"]: it for it in items}}
+
+
 @router.get("/publications")
 async def list_publications(
     limit: int = 12, offset: int = 0, featured: Optional[bool] = None,

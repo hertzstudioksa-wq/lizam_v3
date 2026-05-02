@@ -53,10 +53,15 @@ export default function PublicationCardB({ pub, compact = false, testid = "pub-c
           </div>
           {access && (
             <span
-              className="inline-flex items-center gap-1.5"
-              style={{ color: gated ? "var(--tb-navy-900)" : "var(--tb-gold)" }}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5"
+              style={{
+                color: gated ? "var(--tb-navy-900)" : "var(--tb-gold-deep)",
+                background: "var(--tb-gold-faint)",
+                borderRadius: "var(--tb-radius-pill)",
+                fontSize: 10,
+              }}
             >
-              {gated && <Lock size={11} strokeWidth={2} />}
+              {gated && <Lock size={10} strokeWidth={2} />}
               <span style={{ letterSpacing: "0.1em" }}>{access}</span>
             </span>
           )}

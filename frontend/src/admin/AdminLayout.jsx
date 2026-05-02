@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag, Image as ImageIcon } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
@@ -19,6 +19,7 @@ const nav = (lang) => [
   { to: "/admin/messages", icon: Mail, label: lang === "ar" ? "الرسائل" : "Messages", testid: "admin-nav-messages" },
   { to: "/admin/home", icon: BookOpen, label: lang === "ar" ? "محتوى الرئيسية" : "Home Content", testid: "admin-nav-home" },
   { to: "/admin/branding", icon: Palette, label: lang === "ar" ? "الهوية والتصميم" : "Branding & Design", testid: "admin-nav-branding" },
+  { to: "/admin/images", icon: ImageIcon, label: lang === "ar" ? "إدارة الصور" : "Image Management", testid: "admin-nav-images" },
   { to: "/admin/settings", icon: Settings, label: lang === "ar" ? "إعدادات الموقع" : "Site Settings", testid: "admin-nav-settings" },
   { to: "/admin/toggles", icon: ToggleLeft, label: lang === "ar" ? "مفاتيح الميزات" : "Feature Toggles", testid: "admin-nav-toggles" },
 ];

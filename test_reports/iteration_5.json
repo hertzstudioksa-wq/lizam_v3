@@ -1,0 +1,50 @@
+{
+  "summary": "Theme B refinement pass validated end-to-end. Backend: 8/8 new image-assets tests pass (public returns active-only with objectives_background hidden; admin list requires auth [401 unauth, 403 registered-user, 200 super_admin] and surfaces all 5 slots including inactive with recommended_width/height/aspect_ratio/usage_notes; PATCH unknown slot→404; PATCH url/alt/active persists, stamps _seed_origin='admin', public reflects change; active toggle flips public visibility; admin-edited slot survives backend restart — seed idempotency confirmed). Regression: 61/61 prior tests green (test_lizam_phase2 + test_lizam_phase3 + test_theme_b) — one transient failure (test_taglines_and_font) caused by residual 'theme-b-none-test' tagline_en left by test_theme_b.py::test_admin_patch_none_theme_is_ignored from a previous run; restored manually; test now passes. Frontend: Homepage (/) renders under html[data-theme='b'] with focus-areas panel replacing the Volume/2026 inset, 3 tb-panel blocks, 5 .tb-figure gold numerals (01-05), paired library image on About, single 'المنطلقات' eyebrow on Mission/Vision with two paired panels (navy tb-panel-dark + warm tb-panel, single elegant AR labels الرسالة/الرؤية — no double-labeling), Objectives on navy with gold numerals, 8 .tb-card total (3 featured + 5 fields). /publications shows 3 .tb-card. /admin/images renders full Image Management page with all 5 slots (hero_background, about_image, featured_band_background, objectives_background, publications_hero), correct aspect-ratio chips (12:7, 4:5, 2:1, 12:7, 8:3), recommended dimension text (2400×1400, 1600×2000, 2400×1200, 2400×1400, 2400×900), AR+EN titles, AR+EN usage notes, URL fields, AR+EN alt fields, Active/Inactive checkboxes, 'No changes' (disabled Save) → becomes enabled Save on edit (is_disabled=False confirmed). Sidebar 'إدارة الصور' (Image Management) nav link active. Theme A switch via admin API → html[data-theme='a'], zero runtime errors, zero tb-card (correctly falls back to Theme A components), switch back to B restores all Theme B classes. Mobile 414×896 hamburger + 7 stacked sections render.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "N/A (test hygiene)", "issue": "test_theme_b.py::test_admin_patch_none_theme_is_ignored intentionally writes tagline_en='theme-b-none-test' but never restores it, polluting downstream test_lizam_phase2.py::TestSiteSettingsRefined::test_taglines_and_font when both suites run in sequence. Fix in test_theme_b.py: capture tagline_en before PATCH, restore after."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "HeroB (homepage)", "issues": ["The hero_eyebrow_ar/hero_eyebrow_en seeded text 'المجلد الأول · إصدار 2026 / Volume I · Edition 2026' still renders as a small eyebrow above the hero headline even though the large 'Volume I / 2026' editorial inset block was correctly removed. Per the user's 'remove book/journal-like Volume I framing' intent, the small eyebrow may still read as journal-like. Either (a) drop hero_eyebrow rendering in HeroB.jsx entirely, or (b) update the seeded hero_eyebrow_ar/en in home_content to a non-volume phrasing (e.g., 'مركز بحثي مستقل / Independent Research'). Non-blocking — admin can overwrite via /admin/home."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_image_assets.py",
+    "/app/backend/tests/test_theme_b.py",
+    "/app/backend/tests/test_lizam_phase3.py",
+    "/app/backend/tests/test_lizam_phase2.py",
+    "/app/test_reports/pytest/image_assets_results.xml",
+    "/app/test_reports/pytest/regression_results.xml"
+  ],
+  "action_items": [
+    "Decide on hero_eyebrow rendering under refined Theme B — either hide the eyebrow line in HeroB.jsx or update seeded hero_eyebrow to a non-'Volume I' phrasing.",
+    "Harden test_theme_b.py::test_admin_patch_none_theme_is_ignored to restore tagline_en after the test (prevents cross-suite pollution).",
+    "Minor: add data-testid='admin-images-save-{slot_key}' and data-testid='admin-images-url-{slot_key}' to ImagesAdmin.jsx for deterministic per-slot Playwright automation (currently I located by position)."
+  ],
+  "critical_code_review_comments": [
+    "image_assets.py admin_update_image_asset correctly filters None via `exclude_unset` + `if v is not None`, but this means sending alt_ar='' (empty string to clear alt text) will persist ''. That's fine, but confirm ImagesAdmin.jsx distinguishes 'unset' vs 'cleared' for user intent.",
+    "image_assets.py uses require_permission('settings.read') for GET and 'settings.edit' for PATCH — matches the role matrix (super_admin + admin have settings.*; editor/reviewer/registered do not). Verified by 403 test on registered user.",
+    "seed.py image_slots uses `existing.get('_seed_origin') != 'admin'` guard — correct. The index `db.image_assets.create_index('slot_key', unique=True)` is created AFTER upserts, which could theoretically allow duplicate inserts on a fresh DB under a race; in practice seeding is serial and guarded by slot_key lookup. Consider moving the index creation above the upsert loop for defensive ordering.",
+    "public.py /image-assets: returns all fields including recommended_width/height/usage_note_*, which is fine but inflates payload on each page load. If the public site only needs url/alt/focal, consider projecting to {slot_key, url, alt_ar, alt_en, focal_x, focal_y}. Non-blocking.",
+    "useImageAssets module-level cache: a long-open browser tab won't pick up admin-triggered image changes until refresh. resetImageAssetsCache() is only wired inside ImagesAdmin save flow, which is correct for admin-preview. Public visitors see new image on next hard load. Acceptable.",
+    "ImagesAdmin Save button label toggles between 'No changes' (disabled) and 'Save' (enabled) via dirty-tracking — works as expected. Discard button was not found separately by locator; it may be folded into Save state text. Confirm with main agent."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_image_assets.py (new, 8 tests)"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 new image_assets + 61/61 regression after tagline restore = 69/69)",
+    "frontend": "100% on tested flows (Theme B refined homepage + admin images page + Theme A↔B switch + mobile)"
+  },
+  "test_credentials": "Super Admin admin@lizam.sa / Lizam@2026 — verified working. Registered-user 403 test creates TEST_imguser_<ts>@example.com with Passw0rd!",
+  "seed_data_creation": "test_image_assets.py::test_seed_preserves_admin_edits writes a TEST_admin_marker_<ts> alt_en on hero_background, restarts backend via supervisorctl, asserts marker survives, then restores the original alt_en. test_admin_patch_updates_and_persists and test_admin_toggle_active_changes_public_visibility both self-restore state.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run `pytest /app/backend/tests/test_lizam_phase2.py /app/backend/tests/test_lizam_phase3.py /app/backend/tests/test_theme_b.py /app/backend/tests/test_image_assets.py -v` (~25s, 69 tests). BEWARE: running test_theme_b.py before test_lizam_phase2.py leaves tagline_en='theme-b-none-test' polluting test_taglines_and_font. Either run phase2 first, or after test_theme_b.py PATCH tagline_en back to 'A research center specializing in legal studies and public policy'. The 5 seeded image slots: hero_background (active, 2400×1400, 12:7), about_image (active, 1600×2000, 4:5), featured_band_background (active, 2400×1200, 2:1), objectives_background (INACTIVE by default, 2400×1400, 12:7), publications_hero (active, 2400×900, 8:3). Public /image-assets only returns the 4 active by default. Admin /image-assets returns all 5. PATCH marks _seed_origin='admin' which prevents seed overwrite across backend restart.",
+  "rca of the issue": "N/A — all new functionality green. One minor test-hygiene issue in prior iteration's test_theme_b.py (tagline_en not restored) was surfaced by running suites in sequence; fixed by manual PATCH restore. No code regressions."
+}

@@ -20,6 +20,7 @@ import ContactPage from "@/pages/ContactPage";
 import SiteSettingsAdmin from "@/admin/pages/SiteSettingsAdmin";
 import BrandingAdmin from "@/admin/pages/BrandingAdmin";
 import HomeAdmin from "@/admin/pages/HomeAdmin";
+import ImagesAdmin from "@/admin/pages/ImagesAdmin";
 import { PublicationsListAdmin, PublicationEditAdmin } from "@/admin/pages/PublicationsAdmin";
 import { AuthorsAdmin, CategoriesAdmin, UsersAdmin, RolesAdmin, TogglesAdmin, MessagesAdmin } from "@/admin/pages/SimpleAdmins";
 import AdminLayout from "@/admin/AdminLayout";
@@ -93,6 +94,7 @@ function App() {
               <Route path="messages" element={<MessagesAdmin />} />
               <Route path="home" element={<HomeAdmin />} />
               <Route path="branding" element={<BrandingAdmin />} />
+              <Route path="images" element={<ImagesAdmin />} />
               <Route path="settings" element={<SiteSettingsAdmin />} />
               <Route path="categories" element={<CategoriesAdmin />} />
               <Route path="toggles" element={<TogglesAdmin />} />

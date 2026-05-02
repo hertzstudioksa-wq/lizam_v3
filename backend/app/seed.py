@@ -201,6 +201,93 @@ async def seed_all() -> None:
     }
     await _upsert_if_seed(db.home_content, {"id": "home"}, home_defaults)
 
+    # ---- Image asset slots (Theme B and beyond) ----
+    image_slots = [
+        {
+            "slot_key": "hero_background",
+            "title_ar": "خلفية القسم الرئيسي",
+            "title_en": "Hero background",
+            "usage_note_ar": "صورة معمارية هادئة خلف العنوان الرئيسي للصفحة الرئيسية. تُعرض بطبقة شفافة فوقها.",
+            "usage_note_en": "Subtle architectural image behind the homepage hero. Rendered with an overlay.",
+            "url": "https://images.unsplash.com/photo-1564769662717-2c1cd28d1664?auto=format&fit=crop&q=80&w=2400",
+            "alt_ar": "تفاصيل معمارية إسلامية",
+            "alt_en": "Islamic architectural detail",
+            "active": True,
+            "recommended_width": 2400, "recommended_height": 1400,
+            "aspect_ratio": "12:7 (wide editorial)",
+            "sort_order": 1,
+        },
+        {
+            "slot_key": "about_image",
+            "title_ar": "صورة قسم \"عن المركز\"",
+            "title_en": "About section image",
+            "usage_note_ar": "صورة جانبية ترافق قسم \"عن المركز\" — مكتبات أو فضاءات بحثية.",
+            "usage_note_en": "Side image paired with the About section — libraries or research spaces.",
+            "url": "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&q=80&w=1600",
+            "alt_ar": "مكتبة بحثية",
+            "alt_en": "Research library",
+            "active": True,
+            "recommended_width": 1600, "recommended_height": 2000,
+            "aspect_ratio": "4:5 (portrait editorial)",
+            "sort_order": 2,
+        },
+        {
+            "slot_key": "featured_band_background",
+            "title_ar": "خلفية شريط الإصدارات المميزة",
+            "title_en": "Featured publications band background",
+            "usage_note_ar": "صورة خلفية للشريط الإعلامي للإصدارات المميزة. تُستخدم بطبقة داكنة فوقها.",
+            "usage_note_en": "Background image for the featured publications band. Used with a dark overlay.",
+            "url": "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&q=80&w=2400",
+            "alt_ar": "تكوين معماري",
+            "alt_en": "Architectural composition",
+            "active": True,
+            "recommended_width": 2400, "recommended_height": 1200,
+            "aspect_ratio": "2:1 (panoramic band)",
+            "sort_order": 3,
+        },
+        {
+            "slot_key": "objectives_background",
+            "title_ar": "خلفية قسم الأهداف",
+            "title_en": "Objectives section background",
+            "usage_note_ar": "صورة خلفية للأهداف بلون داكن مع طبقة شفافة. اختياري.",
+            "usage_note_en": "Optional dark-mode background image behind objectives.",
+            "url": "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=2400",
+            "alt_ar": "نسيج معماري داكن",
+            "alt_en": "Dark architectural texture",
+            "active": False,
+            "recommended_width": 2400, "recommended_height": 1400,
+            "aspect_ratio": "12:7",
+            "sort_order": 4,
+        },
+        {
+            "slot_key": "publications_hero",
+            "title_ar": "صورة رأس صفحة الإصدارات",
+            "title_en": "Publications page hero",
+            "usage_note_ar": "صورة هادئة في رأس صفحة الإصدارات.",
+            "usage_note_en": "Calm header image for the Publications listing page.",
+            "url": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=2400",
+            "alt_ar": "كتب وأوراق",
+            "alt_en": "Books and papers",
+            "active": True,
+            "recommended_width": 2400, "recommended_height": 900,
+            "aspect_ratio": "8:3 (banner)",
+            "sort_order": 5,
+        },
+    ]
+    for slot in image_slots:
+        existing = await db.image_assets.find_one({"slot_key": slot["slot_key"]})
+        if existing is None:
+            slot["_seed_origin"] = SEED_ORIGIN
+            slot["created_at"] = utc_iso()
+            slot["updated_at"] = utc_iso()
+            await db.image_assets.insert_one(slot)
+        elif existing.get("_seed_origin") != "admin":
+            # Refresh seed-owned slot (preserve admin edits)
+            slot["_seed_origin"] = SEED_ORIGIN
+            slot["updated_at"] = utc_iso()
+            await db.image_assets.update_one({"slot_key": slot["slot_key"]}, {"$set": slot})
+    await db.image_assets.create_index("slot_key", unique=True)
+
     # Categories — from DEFAULT_FIELDS
     home_doc = await db.home_content.find_one({"id": "home"}, {"_id": 0})
     fields_list = home_doc.get("fields_of_work") if home_doc else DEFAULT_FIELDS

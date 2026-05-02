@@ -13,6 +13,7 @@ from app.routers import auth as auth_router
 from app.routers import public as public_router
 from app.routers import admin as admin_router
 from app.routers import uploads as uploads_router
+from app.routers import image_assets as image_assets_router
 from app.seed import seed_all
 
 logging.basicConfig(level=logging.INFO,
@@ -44,6 +45,7 @@ api.include_router(auth_router.router)
 api.include_router(public_router.router)
 api.include_router(admin_router.router)
 api.include_router(uploads_router.router)
+api.include_router(image_assets_router.router)
 app.include_router(api)
 
 # Static uploads
