@@ -101,6 +101,7 @@ async def seed_all() -> None:
         "tagline_ar": "مركز بحثي متخصص في الدراسات القانونية والسياسات العامة",
         "tagline_en": "A research center specializing in legal studies and public policy",
         "default_language": "ar",
+        "active_theme": "B",
         "logo_url": "/brand/lizam-logo.png",
         "logo_light_url": "/brand/lizam-logo-light.png",
         "favicon_url": "/favicon.ico",
@@ -123,6 +124,12 @@ async def seed_all() -> None:
         "updated_at": utc_iso(),
     }
     await _upsert_if_seed(db.site_settings, {"id": "site"}, site_defaults)
+
+    # One-time backfill: ensure active_theme exists on existing admin-edited site_settings docs
+    await db.site_settings.update_one(
+        {"id": "site", "active_theme": {"$exists": False}},
+        {"$set": {"active_theme": "B"}},
+    )
 
     # Home content — seeded once, refreshed on seed-only restarts
     home_defaults = {

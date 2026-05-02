@@ -45,6 +45,7 @@ class SiteSettingsIn(BaseModel):
     tagline_ar: Optional[str] = None
     tagline_en: Optional[str] = None
     default_language: Optional[Literal["ar", "en"]] = None
+    active_theme: Optional[Literal["A", "B"]] = None
     contact_email: Optional[str] = None
     phone: Optional[str] = None
     address_ar: Optional[str] = None

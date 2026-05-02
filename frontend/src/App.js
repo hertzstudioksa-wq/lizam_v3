@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import "@/App.css";
+import "@/styles/theme-b.css";
 import "@/admin/tiptap.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { AuthProvider } from "@/auth/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useTheme } from "@/hooks/useTheme";
 
 import HomePage from "@/pages/HomePage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
@@ -28,6 +30,7 @@ import AdminComingSoon from "@/admin/pages/AdminComingSoon";
  *  once site-settings are loaded (primary_color, accent_color, etc.). */
 function BrandThemeSync() {
   const { data } = useSiteSettings();
+  useTheme();
   useEffect(() => {
     if (!data) return;
     const r = document.documentElement.style;

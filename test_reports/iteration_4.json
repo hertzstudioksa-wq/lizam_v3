@@ -1,0 +1,44 @@
+{
+  "summary": "Theme B checkpoint validated end-to-end. Backend: 11/11 new Theme B tests pass (public site-settings exposes active_theme, admin PATCH A↔B round-trip persists, invalid values rejected 422, seed idempotency preserves admin-edited theme across backend restart, font_ar/font_en persist). Regression: Phase 2 21/21 pass, Phase 3 29/29 pass — zero regressions. Frontend: Homepage (/), /publications, /publications/lizam-pub-2 all render with html[data-theme='b'], body font-family 'Thmanyah Sans, IBM Plex Sans Arabic, system-ui', hero gold accent on second line, navy editorial inset block showing Volume I / 2026, vertical 'VOLUME I · 2026' marker, 3 .tb-card cards on /publications, Cite + PDF buttons on detail page, Theme B classes (tb-nav-link, tb-btn-secondary, tb-section-eyebrow, tb-card) present. Language toggle flips html dir rtl↔ltr and lang ar↔en. Admin /admin/branding renders exactly per spec: (1) 'Public site theme' section with two cards Theme B (active, brass border + brass filled checkbox) + Theme A (outline), color swatches, AR+EN descriptions; (2) 'Font management' with Active Arabic + Active English font dropdowns defaulting to 'Thmanyah Sans (UI / body — recommended default)', live Arabic preview + English preview, 'Revert to default Thmanyah' link, 'Custom font upload — pending' notice. Mobile 390x844 hamburger toggles the full-screen ivory overlay menu.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_theme_b.py",
+    "/app/backend/tests/test_lizam_phase3.py",
+    "/app/backend/tests/test_lizam_phase2.py",
+    "/app/test_reports/pytest/theme_b_results.xml"
+  ],
+  "action_items": [
+    "Add `data-testid=\"theme-card-A\"` and `data-testid=\"theme-card-B\"` to the two theme selector cards in /app/frontend/src/admin/pages/BrandingAdmin.jsx — currently the cards are identified only by text, which made it harder to drive click-through theme switching from Playwright. Functional UI swap works but automation needs testids. Non-blocking.",
+    "Add `data-testid=\"branding-save\"` to the Save changes button in BrandingAdmin for the same reason.",
+    "Consider adding `data-testid=\"mobile-menu-toggle\"` / `data-testid=\"lang-toggle\"` on HeaderB.jsx for deterministic mobile + i18n automation."
+  ],
+  "critical_code_review_comments": [
+    "seed.py site_defaults sets active_theme='B' but the `_upsert_if_seed` guard only refreshes the entire seed doc when _seed_origin is not 'admin'. Once an admin PATCH stamps _seed_origin='admin', no subsequent seed will set/correct active_theme on that doc — the one-time backfill at line 129 (update_one where active_theme $exists False) is the right safety net; keep it in place for at least one release cycle before removing.",
+    "models.py SiteSettingsIn active_theme is Optional[Literal['A','B']] — Pydantic rejects any string outside the literal (good, verified by test_admin_patch_invalid_theme_rejected[X/a/b/C/ab] all returning 422). BUT empty string '' also returns 422 which is intended; confirm the admin UI never accidentally sends '' (e.g., from an uninitialised select value).",
+    "useTheme.js reads public site-settings on every mount — if the admin changes the theme while a public visitor is mid-session, they won't see the switch until page reload. This is acceptable for a CMS-driven theme. Document this.",
+    "PublicationCard.jsx delegation to PublicationCardB when theme==='B': ensure the component consuming it passes the current theme prop (or the card internally reads useTheme) consistently; the /publications page renders 3 .tb-card instances correctly, so this is wired, but any new list view (e.g., category landing, author page) should also funnel through the same delegation.",
+    "admin.py /admin/site-settings PATCH does `{k:v for k,v in ... if v is not None}` — this means sending `active_theme=null` becomes a no-op (verified by test_admin_patch_none_theme_is_ignored). Matches the spirit of 'do not overwrite' but frontend must be aware not to rely on null as a reset signal.",
+    "No rate-limit on /admin/site-settings PATCH — a compromised admin JWT could theme-flip the site hundreds of times. Low severity (admin-only, audit-logged), but consider a per-actor write-rate cap if production traffic grows."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_theme_b.py (new)"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 new Theme B + 29/29 Phase 3 + 21/21 Phase 2 = 61/61)",
+    "frontend": "100% on tested flows (Theme B homepage/list/detail render, html[data-theme] attribute, Thmanyah font, lang toggle, admin branding Theme+Font sections, mobile hamburger)"
+  },
+  "test_credentials": "Super Admin admin@lizam.sa / Lizam@2026 — verified working.",
+  "seed_data_creation": "test_theme_b.py's seed-idempotency test flips active_theme to 'A', restarts backend via supervisorctl, asserts 'A' persists (not overwritten by seed), then restores to 'B'. All other tests are read-only or self-restoring.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run `pytest /app/backend/tests/test_theme_b.py /app/backend/tests/test_lizam_phase3.py /app/backend/tests/test_lizam_phase2.py -v` for full regression (~17s, 61 tests). Default DB active_theme is 'B'. The useTheme() hook in /app/frontend/src/hooks/useTheme.js drives html[data-theme], so any new Theme B component should scope its CSS under html[data-theme='b']. The theme selector cards in BrandingAdmin currently lack data-testid attributes — add them before attempting fine-grained Playwright UI switching tests. Seed guard `_seed_origin='admin'` correctly protects admin-edited site_settings across backend restart (verified). lizam-pub-1 (preview_login), lizam-pub-2 (public), lizam-pub-3 (registered) are the seeded slugs.",
+  "rca of the issue": "N/A — Theme B checkpoint fully green. Phase 3 contract intact, tokenized PDF + access gating untouched, sanitization untouched, all CMS admin pages render. Backend additive change (one new Literal['A','B'] field + one-time backfill) is clean and validated."
+}
