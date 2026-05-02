@@ -104,6 +104,7 @@ export default function BrandingAdmin() {
                 onClick={() => selectTheme(t.key)}
                 className={`text-start p-6 border-2 transition-all duration-300 ${active ? "border-brass bg-ivory-cream/40" : "border-rule hover:border-navy/40 bg-white"}`}
                 data-testid={`theme-option-${t.key}`}
+                data-active={active ? "true" : "false"}
               >
                 <div className="flex items-center justify-between gap-4">
                   <div>

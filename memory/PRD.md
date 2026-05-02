@@ -95,7 +95,23 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 
 **Test results:** 50/50 backend tests passing (Phase 1 + 2 + 3). Frontend smoke + admin-flow verified by testing agent (iteration_3.json). Visual checkpoint screenshots captured for: Login, Admin Overview, Site Settings, Branding, Home CMS, Publications List, Authors, Categories, Users, Roles, Feature Toggles, TipTap editor.
 
-> **Visual design note:** Public site UX/UI is current **Theme A — Baseline** only. NOT yet final-approved. A separate **Theme B — Premium Editorial Redesign** checkpoint is planned (not part of this iteration).
+### Theme B Checkpoint (May 2026) — Premium Editorial Redesign ✅
+**Theme infrastructure:**
+- `active_theme: Literal["A","B"]` field added to `SiteSettingsIn` model + seed default `"B"` + one-time backfill for legacy admin-edited site_settings
+- `useTheme()` hook reads `active_theme` from public site-settings → applies `data-theme="a"|"b"` to `<html>` + applies `font_ar`/`font_en` as CSS variables
+- `theme-b.css` CSS tokens scoped under `html[data-theme="b"]` — antique gold #B4914A, deep navy #0A111C, warm paper #F9F7F3, graphite hairline #D4D0C8
+
+**Theme B components (`/components/theme-b/`):** HeaderB, FooterB, HeroB, AboutB, MissionVisionB, ObjectivesB, FieldsOfWorkB, FeaturedPublicationsB, ContactBlockB, PublicationCardB. PublicLayout, HomePage, PublicationCard delegate to Theme B variants when active.
+
+**Visual differentiators from Theme A:** single-layered ivory hero (NOT split-screen) with gold accent on second headline line + vertical issue marker; refined editorial cards with gold edge reveal on hover (400ms cubic-bezier); refined gold underline reveal on nav links; institutional navy footer with antique-gold separators; full-screen ivory mobile menu with display-serif links; sharp-edged buttons with gold underline reveal animations.
+
+**Admin theme + font management (`/admin/branding`):**
+- Public site theme selector — two clickable cards (Theme A Baseline, Theme B Premium Editorial) with mini palette previews + descriptions in AR + EN
+- Font management — Active Arabic font + Active English font dropdowns (default Thmanyah Sans), live AR + EN preview blocks, "Revert to default Thmanyah" action, "Custom font upload — pending" notice (DB structure ready; upload workflow scheduled for next checkpoint)
+
+**Test results:** 61/61 backend tests passing (Phase 1 + 2 + 3 + Theme B). iteration_4.json: frontend renders Theme B globally (data-theme="b" + Thmanyah Sans computed font-family), Theme A switchable via admin and persists in DB, all Phase 3 CMS pages still functional, mobile hamburger + full-screen menu work, Cite + tokenized PDF + access gating untouched.
+
+> **Visual design note:** Theme A remains the baseline (selectable). Theme B is the new premium option, seeded as default, awaiting user review for final approval.
 
 ## Admin credentials (seeded)
 - Super Admin: `admin@lizam.sa` / `Lizam@2026` → /login → /admin
