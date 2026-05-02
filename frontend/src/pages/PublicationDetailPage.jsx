@@ -34,6 +34,8 @@ export default function PublicationDetailPage() {
   const [tab, setTab] = useState("article");
   const [copied, setCopied] = useState(false);
   const [pdfState, setPdfState] = useState(null);
+  const [showCite, setShowCite] = useState(false);
+  const [citedStyle, setCitedStyle] = useState(null);
 
   if (loading) {
     return (
@@ -109,8 +111,6 @@ export default function PublicationDetailPage() {
     return `${authorsText}. "${title}." ${publisher}, ${year}. ${url}`;
   }
 
-  const [showCite, setShowCite] = useState(false);
-  const [citedStyle, setCitedStyle] = useState(null);
   async function copyCitation(style) {
     try {
       await navigator.clipboard.writeText(buildCitation(style));

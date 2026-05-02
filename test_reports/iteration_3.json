@@ -1,0 +1,47 @@
+{
+  "summary": "Phase 3 CMS authoring + hardening validated. Backend: 29/29 new Phase-3 tests pass (auth, rate-limit lockout, public endpoints, tokenized PDF + pdf-stream gating, admin CRUD round-trips for site-settings/branding/home/publications/authors/categories/users/roles/toggles, HTML sanitization stripping <script>/<iframe>/on*=, seed idempotency survives backend restart). Frontend: homepage loads with Thmanyah Sans font + RTL dir=rtl, language toggle flips to ltr, /publications renders cards, publication detail /publications/lizam-pub-2 renders WITHOUT React Hooks errors (the recently-fixed regression holds), Cite/PDF/Copy buttons present (Arabic labels), admin login admin@lizam.sa / Lizam@2026 redirects to /admin and dashboard renders all CMS modules in sidebar (Overview, Publications, Researchers, Categories, Responses, Users, Roles & Permissions, Messages, Home Content, Branding & Design, Site Settings, Feature Toggles).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "Phase-2 legacy tests (test_lizam_phase2.py)", "issue": "5 legacy assertions now fail against Phase-3 behaviour: (a) test_public_pdf_no_auth_returns_url + test_login_required_pdf_with_admin_auth still expect response key 'url' but Phase-3 hardened PDF now returns {ok, token, title, stream_url} — correct Phase-3 behaviour, legacy tests need to be updated; (b) test_site_settings_seeded / test_hero_and_mission_vision_and_objectives_fields / test_public_pub2_full_content_and_hydration intermittently fail because the seed-idempotency test restarts the backend mid-run (expected) — not a functional bug, re-running legacy suite after fresh seed passes."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_lizam_phase3.py",
+    "/app/backend/tests/test_lizam_phase2.py",
+    "/app/backend/tests/test_lizam_backend.py",
+    "/app/test_reports/pytest/phase3_results.xml",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Update /app/backend/tests/test_lizam_phase2.py PDF assertions to expect {ok, token, stream_url} instead of legacy {url} — this aligns phase-2 regression tests with Phase-3 hardened PDF contract.",
+    "Review request mentioned slug 'lizam-legal' which does not exist in the seed — actual seeded slugs are lizam-pub-1, lizam-pub-2, lizam-pub-3. The 'Publication not found' page rendered correctly for the non-existent slug (no React Hooks errors), so this is purely a spec/slug mismatch, not a bug."
+  ],
+  "critical_code_review_comments": [
+    "auth.py uses a **process-local in-memory rate-limit dict** (_fail_log / _locked). With multiple Uvicorn workers or horizontal scaling this does NOT share state, so a real attacker can bypass the 5-fail lockout by hitting different workers. The review_request calls out 'slowapi rate limiting active' but the code actually uses a hand-rolled defaultdict, not slowapi. For production, either (a) wire slowapi with a Redis store, or (b) move lockout state to MongoDB with a TTL index.",
+    "public.py /pdf-stream streams upstream external URLs via httpx but never forwards Content-Length/ETag/Last-Modified, and _stream() raises HTTPException inside the async generator — FastAPI cannot catch exceptions raised after streaming headers are sent, so a failing upstream mid-stream will drop the connection without a clean error. Consider fetching headers first, then streaming.",
+    "public.py view_count increment uses UA-based bot detection ('python-requests') which silently suppresses the increment for any requests-based integration (including internal scripts). Fine for now, but document this if analytics ever need to count headless traffic.",
+    "admin.py 'update' handlers (site-settings, branding, home, toggles) all stamp `_seed_origin='admin'` — good. But the seed.py guard must actually check `_seed_origin != 'admin'` before overwriting; verify this is enforced (seed idempotency test passed, so behaviour is correct; just flag for maintenance).",
+    "sanitize.py ALLOWED_PROTOCOLS includes 'data:' for <a> — data: URIs in href are an XSS vector (data:text/html;base64,...). Consider dropping 'data' from link protocols and keeping it only for <img src>.",
+    "admin.py admin_update_publication silently recomputes reading_time_minutes only when content_html_* changes AND reading_time_minutes isn't in payload — edge case: if editor sends reading_time_minutes=0 explicitly, it sticks. Acceptable but worth a minimum-value guard.",
+    "No brute-force lockout is per-account AND per-ip combined — a distributed attack across many IPs will not hit the per-email lockout once, because _record_fail appends to both keys independently. The current behaviour is correct (lockout on either hitting 5), just note this."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_lizam_phase3.py"
+  ],
+  "success_rate": {
+    "backend": "100% (29/29 Phase-3 tests)",
+    "frontend": "100% (all smoke flows: RTL+font, lang toggle, publications list, detail page no-hooks-error, admin login redirect, admin dashboard)"
+  },
+  "test_credentials": "Super Admin admin@lizam.sa / Lizam@2026 — verified working.",
+  "seed_data_creation": "test_lizam_phase3.py creates and then cleans up test-prefixed publications/authors/categories (TEST_*); site_settings tagline_en is edited and restored; home_content hero_title_en is edited and restored; feature toggle is flipped and restored. Seed-idempotency test edits tagline_en to SEED_IDEMP_<uuid>, restarts backend, asserts edit persists, then restores the original tagline.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Run `pytest /app/backend/tests/test_lizam_phase3.py -v` for focused Phase-3 regression (29 tests, ~15s). test_lizam_phase2.py has 5 outdated PDF/seed assertions that should be migrated to the Phase-3 contract (stream_url+token). The seed-idempotency test DOES perform `sudo supervisorctl restart backend` — subsequent tests in the same run may hit transient 502s while the worker warms up (build in a retry if sequencing matters). Frontend admin slugs to use: lizam-pub-1 (preview_login), lizam-pub-2 (public), lizam-pub-3 (registered). The 'lizam-legal' slug referenced in the original review_request does NOT exist.",
+  "rca of the issue": "N/A — Phase-3 fully green. React Hooks fix on PublicationDetailPage.jsx confirmed by routing to both a valid (lizam-pub-2) and invalid (lizam-legal) slug: both render without any hook-order console errors, validating that all useState calls are now declared before early returns."
+}
