@@ -2,114 +2,267 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================================
+   LIZAM — Design system tokens
+   Institutional · Editorial · Arabic-first
+   ========================================================================= */
+@layer base {
+  :root {
+    /* Brand colors (raw) */
+    --lz-navy: 223 37% 22%;          /* #23324D */
+    --lz-navy-hover: 221 37% 16%;    /* #1A253A */
+    --lz-navy-deep: 222 39% 12%;     /* #121A2A */
+    --lz-brass: 38 36% 54%;          /* #B89B5E */
+    --lz-brass-hover: 37 34% 47%;    /* #A18751 */
+    --lz-paper: 216 21% 97%;         /* #F7F8FA */
+    --lz-ivory: 45 33% 97%;          /* #FAF9F6 */
+    --lz-ivory-cream: 40 31% 93%;    /* #F3EFE6 */
+    --lz-rule: 216 16% 91%;          /* #E4E7EC */
+    --lz-ink: 218 25% 17%;           /* #1D2939 */
+    --lz-mute: 218 11% 47%;          /* #667085 */
+
+    /* shadcn tokens mapped to brand */
+    --background: var(--lz-ivory);
+    --foreground: var(--lz-ink);
+    --card: 0 0% 100%;
+    --card-foreground: var(--lz-ink);
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--lz-ink);
+    --primary: var(--lz-navy);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--lz-paper);
+    --secondary-foreground: var(--lz-ink);
+    --muted: var(--lz-paper);
+    --muted-foreground: var(--lz-mute);
+    --accent: var(--lz-brass);
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--lz-rule);
+    --input: var(--lz-rule);
+    --ring: var(--lz-navy);
+    --radius: 2px;
+  }
+}
+
+/* -----------------------------------------------------------------------
+   Base reset & typography
+   ----------------------------------------------------------------------- */
+html {
+  scroll-behavior: smooth;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html[dir="rtl"] body {
+  font-family: "IBM Plex Sans Arabic", "Readex Pro", system-ui, sans-serif;
+  font-feature-settings: "kern" 1, "ss01" 1, "ss02" 1;
+}
+
+html[dir="ltr"] body {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
 body {
-    margin: 0;
-    font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  @apply bg-ivory text-ink;
+  margin: 0;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(1200px 600px at 100% -10%, rgba(35, 50, 77, 0.04), transparent 60%),
+    radial-gradient(800px 400px at 0% 110%, rgba(184, 155, 94, 0.05), transparent 60%);
+  background-attachment: fixed;
 }
 
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+/* Institutional selection */
+::selection {
+  background: #23324D;
+  color: #FAF9F6;
 }
+
+/* Eyebrow label */
+.lz-eyebrow {
+  @apply uppercase text-[11px] md:text-xs font-semibold text-mute;
+  letter-spacing: 0.22em;
+}
+html[dir="rtl"] .lz-eyebrow {
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* Display headings — color is NOT set here; set at usage site so we can place on
+   light or dark backgrounds without utility-override conflicts. */
+.lz-display {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-weight: 600;
+  color: inherit;
+  font-size: clamp(2.4rem, 4.8vw, 4.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.022em;
+}
+html[dir="rtl"] .lz-display {
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.lz-h2 {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-weight: 600;
+  color: #121A2A;
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+html[dir="rtl"] .lz-h2 {
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+/* Body copy */
+.lz-lede {
+  font-size: clamp(1rem, 1.15vw, 1.125rem);
+  color: rgba(29, 41, 57, 0.82);
+  line-height: 1.7;
+  max-width: 60ch;
+}
+html[dir="rtl"] .lz-lede {
+  line-height: 1.9;
+  max-width: 58ch;
+}
+
+/* Fine rule with centered mark */
+.lz-rule {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: rgba(29, 41, 57, 0.35);
+}
+.lz-rule::before,
+.lz-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+/* Button primitives (aligned to design guidelines) */
+.lz-btn {
+  @apply inline-flex items-center justify-center gap-2 px-5 md:px-6 h-11 md:h-12
+         text-[14px] md:text-[15px] font-medium transition-all duration-500;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.01em;
+  border-radius: 1px;
+}
+html[dir="rtl"] .lz-btn {
+  font-family: "IBM Plex Sans Arabic", sans-serif;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.lz-btn-primary {
+  @apply lz-btn bg-navy text-ivory border border-navy hover:bg-navy-hover hover:border-navy-hover;
+}
+.lz-btn-primary:hover {
+  box-shadow: inset 0 0 0 1px rgba(184, 155, 94, 0.35);
+}
+
+.lz-btn-ghost {
+  @apply lz-btn bg-transparent text-navy border border-navy/25 hover:border-navy hover:bg-white;
+}
+
+.lz-btn-link {
+  @apply inline-flex items-center gap-2 text-navy hover:text-navy-hover transition-colors;
+}
+
+/* Thin institutional divider */
+.lz-hairline {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(29, 41, 57, 0.18), transparent);
+}
+
+/* Measured grid — subtle */
+.lz-grid-lines {
+  background-image:
+    linear-gradient(rgba(29, 41, 57, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(29, 41, 57, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Paper texture */
+.lz-paper-texture {
+  background-color: #FAF9F6;
+  background-image:
+    radial-gradient(rgba(35, 50, 77, 0.045) 1px, transparent 1px),
+    radial-gradient(rgba(184, 155, 94, 0.04) 1px, transparent 1px);
+  background-size: 36px 36px, 52px 52px;
+  background-position: 0 0, 18px 18px;
+}
+
+/* Monogram/logo sizing helper */
+.lz-logo {
+  display: block;
+  height: auto;
+}
+
+/* Link underline (editorial) */
+.lz-linkline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  padding-bottom: 2px;
+  transition: background-size 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lz-linkline:hover {
+  background-size: 100% 2px;
+}
+
+/* Vertical measured rule */
+.lz-vertical-rule {
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(29, 41, 57, 0.25), transparent);
+}
+
+/* Decorative brass tick */
+.lz-tick {
+  display: inline-block;
+  width: 20px;
+  height: 1px;
+  background: #B89B5E;
+  margin-inline-end: 12px;
+  vertical-align: middle;
+}
+
+/* Focus ring — accessible but quiet */
+:focus-visible {
+  outline: 2px solid #23324D;
+  outline-offset: 3px;
+}
+
+/* Hide scrollbars subtly */
+.lz-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+.lz-scrollbar::-webkit-scrollbar-thumb { background: rgba(29,41,57,0.2); border-radius: 3px; }
 
 @layer base {
-    :root {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 3.9%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 3.9%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 3.9%;
-        --primary: 0 0% 9%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96.1%;
-        --secondary-foreground: 0 0% 9%;
-        --muted: 0 0% 96.1%;
-        --muted-foreground: 0 0% 45.1%;
-        --accent: 0 0% 96.1%;
-        --accent-foreground: 0 0% 9%;
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 89.8%;
-        --input: 0 0% 89.8%;
-        --ring: 0 0% 3.9%;
-        --chart-1: 12 76% 61%;
-        --chart-2: 173 58% 39%;
-        --chart-3: 197 37% 24%;
-        --chart-4: 43 74% 66%;
-        --chart-5: 27 87% 67%;
-        --radius: 0.5rem;
-    }
-    .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
-        --chart-1: 220 70% 50%;
-        --chart-2: 160 60% 45%;
-        --chart-3: 30 80% 55%;
-        --chart-4: 280 65% 60%;
-        --chart-5: 340 75% 55%;
-    }
-}
-
-@layer base {
-    * {
-        @apply border-border;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
-}
-
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
-
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+  [data-debug-wrapper="true"] { display: contents !important; }
+  [data-debug-wrapper="true"] > * {
+    margin-left: inherit; margin-right: inherit; margin-top: inherit; margin-bottom: inherit;
+    padding-left: inherit; padding-right: inherit; padding-top: inherit; padding-bottom: inherit;
+    column-gap: inherit; row-gap: inherit; gap: inherit;
+    border-left-width: inherit; border-right-width: inherit;
+    border-top-width: inherit; border-bottom-width: inherit;
+    border-left-style: inherit; border-right-style: inherit;
+    border-top-style: inherit; border-bottom-style: inherit;
+    border-left-color: inherit; border-right-color: inherit;
+    border-top-color: inherit; border-bottom-color: inherit;
+  }
 }
