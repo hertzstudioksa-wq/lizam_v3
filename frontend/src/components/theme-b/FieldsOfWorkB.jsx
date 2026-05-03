@@ -39,8 +39,8 @@ export default function FieldsOfWorkB() {
             </h2>
           </div>
           <p
-            className="md:col-span-7 max-w-[60ch] md:pe-16"
-            style={{ fontFamily: '"Thmanyah Serif Text", serif', fontSize: 16.5, lineHeight: 1.95, color: "var(--tb-text)" }}
+            className="md:col-span-7 max-w-[60ch] md:pe-16 tb-body-lg"
+            style={{ color: "var(--tb-text)" }}
           >
             {lang === "ar"
               ? "تتوزع أعمال المركز على حقول قانونية متكاملة، تمتد من الدراسات التشريعية والممارسات القضائية إلى السياسات العامة والشريعة الإسلامية والمجالات الناشئة."
@@ -98,7 +98,7 @@ export default function FieldsOfWorkB() {
                   className="mt-4"
                   style={{
                     fontFamily: '"Thmanyah Sans", sans-serif',
-                    fontSize: 14,
+                    fontSize: 15,
                     lineHeight: 1.9,
                     color: "var(--tb-text-muted)",
                   }}

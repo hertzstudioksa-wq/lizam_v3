@@ -127,6 +127,19 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 
 **Test results:** 69/69 backend tests passing (Phase 1 + 2 + 3 + Theme B + Image Assets). iteration_5.json. Zero regressions.
 
+### Theme B Refinement Round 2 (Feb 2026) ✅
+**Visual lift (per user feedback):**
+- **Hero rebuilt** — split asymmetric composition (5/12 text · 7/12 image panel). Strong visual anchor with rounded large-radius image (22px) + tonal navy overlay + gold-bordered editorial caption pill ("Legal research · Institutional analysis").
+- **All book/journal mimicry removed** — eyebrow now reads "Independent Research Center · Kingdom of Saudi Arabia / مركز بحثي مستقل · المملكة العربية السعودية". No "Volume", "Edition", "مجلد", or "إصدار" in body text (verified via DOM scan).
+- **Background brightened** — `--tb-paper-base` shifted from beige `#F7F4EE` to cleaner near-white `#FBFAF7`. `--tb-paper-deep` and `--tb-hairline` rebalanced. The site now reads as fresh off-white, not dull beige.
+- **Typography upgraded** — new `.tb-body-lg` reading class (19px / 20.5px AR, 1.95 / 2.05 line-height). Mission/Vision, About, Fields-of-Work descriptions all bumped. Section headlines bumped (clamp 2.1rem → 3rem desktop). Block padding increased.
+- **Mission/Vision polished** — single section eyebrow + heading. Two paired panels with single labels. Bigger heading scale, bigger body, more padding (2.75rem 2.5rem).
+- **Objectives richer** — gold figure numerals up to 44px, gold hairline above each item, larger headline + serif body description, more breathing space (md:py-36).
+- **NEW Pull Band section** — institutional editorial pull-quote between Mission/Vision and Objectives. Centered Quote icon, `tb-display` blockquote up to 2.05rem, gold rules flanking attribution. Adds rhythm and breaks vertical-stack monotony.
+- **Hero focus chips** — five research focus areas as gold-numbered pill chips below hero, full-width band with hairline divider.
+
+**Test results:** 69/69 backend tests still passing. Zero regressions on any Phase 1/2/3/Theme B/Image Assets endpoint.
+
 > **Visual design note:** Theme A remains the baseline (selectable). Theme B is the new premium option, seeded as default, awaiting user review for final approval.
 
 ## Admin credentials (seeded)

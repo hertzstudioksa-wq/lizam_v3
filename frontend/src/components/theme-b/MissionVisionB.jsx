@@ -21,24 +21,17 @@ export default function MissionVisionB() {
     <article
       className={dark ? "tb-panel-dark" : "tb-panel"}
       data-testid={testid}
-      style={{ padding: "2.25rem 2rem 2rem" }}
+      style={{ padding: "2.75rem 2.5rem 2.5rem" }}
     >
       <div className="flex items-center gap-3">
-        <span
-          style={{ height: 1, width: 28, background: "var(--tb-gold)" }}
-        />
-        <span
-          className="tb-overline"
-          style={{ color: "var(--tb-gold)" }}
-        >
-          {kicker}
-        </span>
+        <span style={{ height: 1, width: 32, background: "var(--tb-gold)" }} />
+        <span className="tb-overline" style={{ color: "var(--tb-gold)" }}>{kicker}</span>
       </div>
       <h3
-        className="tb-display mt-6 max-w-[26ch]"
+        className="tb-display mt-7 max-w-[26ch]"
         style={{
-          fontSize: "clamp(1.7rem, 2.6vw, 2.15rem)",
-          lineHeight: 1.3,
+          fontSize: "clamp(1.85rem, 2.8vw, 2.35rem)",
+          lineHeight: 1.28,
           fontWeight: 500,
           color: dark ? "var(--tb-paper-base)" : "var(--tb-navy-900)",
         }}
@@ -46,35 +39,30 @@ export default function MissionVisionB() {
         {title}
       </h3>
       <p
-        className="mt-6 max-w-[58ch]"
+        className="mt-7 max-w-[58ch] tb-body-lg"
         style={{
-          fontFamily: '"Thmanyah Serif Text", serif',
-          fontSize: 16.5,
-          lineHeight: 1.95,
-          color: dark ? "rgba(247, 244, 238, 0.86)" : "var(--tb-text)",
+          color: dark ? "rgba(251, 250, 247, 0.88)" : "var(--tb-text)",
         }}
       >
         {body}
       </p>
       {points.length > 0 && (
-        <ul className="mt-7 space-y-3.5">
+        <ul className="mt-9 space-y-5">
           {points.map((p, i) => (
             <li key={i} className="flex items-start gap-4 max-w-[60ch]">
               <span
                 style={{
-                  marginTop: 12,
+                  marginTop: 14,
                   height: 1,
-                  width: 22,
+                  width: 24,
                   background: "var(--tb-gold)",
                   flexShrink: 0,
                 }}
               />
               <span
+                className="tb-list-item"
                 style={{
-                  fontFamily: '"Thmanyah Sans", sans-serif',
-                  fontSize: 14.5,
-                  lineHeight: 1.85,
-                  color: dark ? "rgba(247, 244, 238, 0.78)" : "var(--tb-text)",
+                  color: dark ? "rgba(251, 250, 247, 0.82)" : "var(--tb-text)",
                 }}
               >
                 {p}
@@ -93,18 +81,18 @@ export default function MissionVisionB() {
       data-theme-component="theme-b-mission"
       style={{ background: "var(--tb-paper-deep)" }}
     >
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
-        {/* Section intro — single eyebrow + heading, NO repeated labels */}
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-28 md:py-36">
+        {/* Section intro */}
         <div className="max-w-[820px]">
           <div className="tb-section-eyebrow">
             <span className="rule" />
             <span className="tb-overline">{lang === "ar" ? "المنطلقات" : "Foundations"}</span>
           </div>
           <h2
-            className="tb-display mt-7 max-w-[26ch]"
+            className="tb-display mt-7 max-w-[28ch]"
             style={{
-              fontSize: "clamp(2rem, 3.4vw, 2.85rem)",
-              lineHeight: 1.28,
+              fontSize: "clamp(2.1rem, 3.6vw, 3rem)",
+              lineHeight: 1.24,
               fontWeight: 500,
             }}
           >
@@ -114,8 +102,7 @@ export default function MissionVisionB() {
           </h2>
         </div>
 
-        {/* Two blocks side by side with contrast: mission warm panel, vision dark panel */}
-        <div className="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
           <Block
             kicker={lang === "ar" ? "الرسالة" : "Mission"}
             title={lang === "ar" ? "بحث قانوني رصين يخدم الحوكمة." : "Rigorous legal research that serves governance."}

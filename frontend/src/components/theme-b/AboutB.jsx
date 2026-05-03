@@ -47,24 +47,16 @@ export default function AboutB() {
               <span className="tb-overline">{lang === "ar" ? "عن المركز" : "About"}</span>
             </div>
             <h2
-              className="tb-display mt-7 max-w-[28ch]"
-              style={{ fontSize: "clamp(2rem, 3.6vw, 3rem)", lineHeight: 1.25, fontWeight: 500 }}
+              className="tb-display mt-8 max-w-[28ch]"
+              style={{ fontSize: "clamp(2.1rem, 3.6vw, 3.1rem)", lineHeight: 1.22, fontWeight: 500 }}
             >
               {lang === "ar"
                 ? "مركز بحثي سعودي للدراسات القانونية والسياسات العامة."
                 : "A Saudi research center for legal studies and public policy."}
             </h2>
-            <div
-              className="mt-9 space-y-6 max-w-[64ch]"
-              style={{
-                fontFamily: '"Thmanyah Serif Text", serif',
-                fontSize: 17,
-                lineHeight: 1.95,
-                color: "var(--tb-text)",
-              }}
-            >
-              <p>{body}</p>
-              {extended && <p>{extended}</p>}
+            <div className="mt-10 space-y-7 max-w-[64ch]">
+              <p className="tb-body-lg">{body}</p>
+              {extended && <p className="tb-body-lg">{extended}</p>}
             </div>
           </div>
         </div>

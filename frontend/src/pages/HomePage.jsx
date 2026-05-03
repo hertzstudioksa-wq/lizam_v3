@@ -12,6 +12,7 @@ import ContactBlock from "@/components/home/ContactBlock";
 import HeroB from "@/components/theme-b/HeroB";
 import AboutB from "@/components/theme-b/AboutB";
 import MissionVisionB from "@/components/theme-b/MissionVisionB";
+import PullBandB from "@/components/theme-b/PullBandB";
 import ObjectivesB from "@/components/theme-b/ObjectivesB";
 import FieldsOfWorkB from "@/components/theme-b/FieldsOfWorkB";
 import FeaturedPublicationsB from "@/components/theme-b/FeaturedPublicationsB";
@@ -25,6 +26,7 @@ export default function HomePage() {
       {isB ? <HeroB /> : <Hero />}
       {isB ? <AboutB /> : <About />}
       {isB ? <MissionVisionB /> : <MissionVision />}
+      {isB && <PullBandB />}
       {isB ? <ObjectivesB /> : <Objectives />}
       {isB ? <FieldsOfWorkB /> : <FieldsOfWork />}
       {isB ? <FeaturedPublicationsB /> : <FeaturedPublications />}

@@ -5,10 +5,10 @@ import { useHomeContent, useSiteSettings } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 
 /**
- * Theme B — Premium Editorial Hero (refined Feb 2026).
- * Modern global research-institute aesthetic. NO book/journal/issue framing.
- * Atmospheric image with paper-tone overlay; large display headline anchors;
- * editorial summary block on the right (or below on mobile); refined CTAs.
+ * Theme B — Premium Editorial Hero (Round 2 refinement).
+ * Split asymmetric composition with strong visual anchor (image panel).
+ * No book/journal mimicry — institutional language only.
+ * Layered: text column (5/12) + image panel (7/12) on desktop; stacked on mobile.
  */
 export default function HeroB() {
   const { lang, t, pick } = useLang();
@@ -19,79 +19,75 @@ export default function HeroB() {
 
   const title = pick(home, "hero_title", "");
   const subtitle = pick(home, "hero_subtitle", "");
-  // Eyebrow: prefer institutional phrasing over journal-issue mimicry.
-  // If seeded content uses "Volume I / مجلد" framing, override with institutional copy.
-  const seededEyebrow = pick(home, "hero_eyebrow", "");
-  const isJournalEyebrow = /(volume|مجلد|edition|إصدار)/i.test(seededEyebrow || "");
-  const eyebrow = isJournalEyebrow
-    ? (lang === "ar" ? "مركز بحثي مستقل" : "Independent Research Center")
-    : (seededEyebrow || (lang === "ar" ? "مركز بحثي مستقل" : "Independent Research Center"));
   const ctaPrimary = pick(home, "hero_cta_primary", "") || t("hero.explore");
   const ctaSecondary = pick(home, "hero_cta_secondary", "") || t("hero.contact");
 
+  // Institutional eyebrow — never journal/issue
+  const eyebrow = lang === "ar"
+    ? "مركز بحثي مستقل · المملكة العربية السعودية"
+    : "Independent Research Center · Kingdom of Saudi Arabia";
+
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const [line1, line2] = (title || "").split("\n");
-
   const imageUrl = heroImg?.active && heroImg?.url ? heroImg.url : null;
+  const altText = heroImg?.[`alt_${lang}`] || heroImg?.alt_en || "";
+
+  const focusAreas = [
+    lang === "ar" ? "الدراسات التشريعية" : "Legislative studies",
+    lang === "ar" ? "السياسات العامة" : "Public policy",
+    lang === "ar" ? "الممارسات القضائية" : "Judicial practice",
+    lang === "ar" ? "الشريعة الإسلامية" : "Islamic jurisprudence",
+    lang === "ar" ? "المجالات الناشئة" : "Emerging fields",
+  ];
 
   return (
     <section
       id="hero"
-      className="tb-image-section relative pt-[110px] md:pt-[150px] pb-20 md:pb-32"
-      style={{
-        background: "var(--tb-paper-base)",
-        backgroundImage: imageUrl ? `url(${imageUrl})` : undefined,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      className="relative pt-[100px] md:pt-[120px] pb-0"
+      style={{ background: "var(--tb-paper-base)" }}
       data-testid="hero-section"
       data-theme-component="theme-b-hero"
     >
-      {imageUrl && <div className="tb-overlay" />}
+      <div className="mx-auto max-w-[1440px] px-6 md:px-10 lg:px-14">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-stretch min-h-[640px] lg:min-h-[720px]">
 
-      <div className="tb-content relative mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16">
-        {/* Eyebrow — kept short and editorial; no Volume/Year mimicry */}
-        <div className="tb-section-eyebrow tb-rise" data-testid="hero-eyebrow">
-          <span className="rule" />
-          <span className="tb-overline">{eyebrow}</span>
-        </div>
+          {/* TEXT COLUMN */}
+          <div className="lg:col-span-5 flex flex-col justify-center pt-10 pb-16 lg:py-24">
+            <div className="tb-section-eyebrow tb-rise" data-testid="hero-eyebrow">
+              <span className="rule" />
+              <span className="tb-overline">{eyebrow}</span>
+            </div>
 
-        {/* Headline */}
-        <h1
-          className="tb-display tb-rise tb-rise-d1 mt-8 max-w-[18ch]"
-          style={{
-            fontSize: "clamp(2.6rem, 6.5vw, 5.5rem)",
-            lineHeight: lang === "ar" ? 1.22 : 1.04,
-            fontWeight: 500,
-          }}
-          data-testid="hero-title"
-        >
-          <span style={{ display: "block", color: "var(--tb-navy-900)" }}>{line1}</span>
-          {line2 && (
-            <span style={{ display: "block", color: "var(--tb-gold)" }}>{line2}</span>
-          )}
-        </h1>
+            <h1
+              className="tb-display tb-rise tb-rise-d1 mt-8"
+              style={{
+                fontSize: "clamp(2.5rem, 5.2vw, 4.6rem)",
+                lineHeight: lang === "ar" ? 1.18 : 1.04,
+                fontWeight: 500,
+                letterSpacing: lang === "ar" ? "0" : "-0.012em",
+              }}
+              data-testid="hero-title"
+            >
+              <span style={{ display: "block", color: "var(--tb-navy-900)" }}>{line1}</span>
+              {line2 && (
+                <span style={{ display: "block", color: "var(--tb-gold)" }}>{line2}</span>
+              )}
+            </h1>
 
-        {/* Hairline */}
-        <div className="mt-12 mb-12 max-w-[460px]" style={{ height: 1, background: "var(--tb-hairline)" }} />
+            <div className="mt-10 mb-9 max-w-[420px]" style={{ height: 1, background: "var(--tb-hairline)" }} />
 
-        {/* Lede + CTAs */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-start tb-rise tb-rise-d2">
-          <div className="lg:col-span-7">
             <p
               data-testid="hero-subtitle"
+              className="tb-rise tb-rise-d2 max-w-[58ch] tb-body-lg"
               style={{
-                fontFamily: '"Thmanyah Serif Text", "Source Serif 4", serif',
-                fontSize: "clamp(1.05rem, 1.2vw, 1.22rem)",
-                lineHeight: 1.95,
                 color: "var(--tb-text)",
-                maxWidth: "62ch",
+                fontSize: "clamp(1.1rem, 1.25vw, 1.28rem)",
               }}
             >
               {subtitle}
             </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-4">
+            <div className="mt-11 flex flex-wrap items-center gap-4 tb-rise tb-rise-d3">
               <Link to="/publications" className="tb-btn-primary" data-testid="hero-cta-primary">
                 <span>{ctaPrimary}</span>
                 <Arrow size={16} strokeWidth={1.6} />
@@ -102,44 +98,86 @@ export default function HeroB() {
             </div>
           </div>
 
-          {/* Editorial focus panel — research focus areas at-a-glance (no Volume/Issue) */}
-          <aside className="lg:col-span-5 tb-rise tb-rise-d3">
-            <div className="tb-panel">
-              <div className="tb-section-eyebrow mb-5">
-                <span className="rule" />
-                <span className="tb-overline" style={{ color: "var(--tb-gold-deep)" }}>
-                  {lang === "ar" ? "محاور العمل" : "Research focus"}
-                </span>
+          {/* IMAGE PANEL — strong visual anchor */}
+          <div className="lg:col-span-7 relative tb-rise tb-rise-d2">
+            <div
+              className="relative w-full h-full overflow-hidden"
+              style={{
+                minHeight: 420,
+                borderRadius: "var(--tb-radius-lg)",
+                background: imageUrl
+                  ? `url(${imageUrl}) center/cover no-repeat`
+                  : "linear-gradient(135deg, var(--tb-navy-900) 0%, var(--tb-navy-700) 100%)",
+                boxShadow: "var(--tb-shadow-deep)",
+              }}
+              role="img"
+              aria-label={altText}
+            >
+              {/* Tonal overlay for contrast and richness */}
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute", inset: 0,
+                  background: imageUrl
+                    ? "linear-gradient(135deg, rgba(10, 17, 28, 0.55) 0%, rgba(10, 17, 28, 0.18) 45%, rgba(10, 17, 28, 0.55) 100%)"
+                    : "none",
+                }}
+              />
+
+              {/* Bottom-corner editorial caption */}
+              <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 lg:p-10">
+                <div
+                  className="inline-flex items-center gap-3 px-4 py-2"
+                  style={{
+                    background: "rgba(251, 250, 247, 0.92)",
+                    backdropFilter: "blur(6px)",
+                    borderRadius: "var(--tb-radius-pill)",
+                    border: "1px solid rgba(180, 145, 74, 0.4)",
+                  }}
+                >
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--tb-gold)" }} />
+                  <span
+                    className="text-[12px]"
+                    style={{
+                      fontFamily: '"Thmanyah Sans", sans-serif',
+                      color: "var(--tb-navy-900)",
+                      letterSpacing: lang === "ar" ? "0" : "0.08em",
+                      textTransform: lang === "ar" ? "none" : "uppercase",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {lang === "ar" ? "بحث قانوني وتحليل مؤسسي" : "Legal research · Institutional analysis"}
+                  </span>
+                </div>
               </div>
-              <ul className="space-y-3.5">
-                {[
-                  lang === "ar" ? "الدراسات التشريعية" : "Legislative studies",
-                  lang === "ar" ? "السياسات العامة والحوكمة" : "Public policy & governance",
-                  lang === "ar" ? "الممارسات القضائية" : "Judicial practice",
-                  lang === "ar" ? "الشريعة الإسلامية والنظم القانونية" : "Islamic jurisprudence & legal systems",
-                  lang === "ar" ? "المجالات الناشئة" : "Emerging fields",
-                ].map((label, i) => (
-                  <li key={i} className="flex items-baseline gap-3">
-                    <span
-                      style={{
-                        fontFamily: '"Thmanyah Sans", sans-serif',
-                        fontSize: 11,
-                        color: "var(--tb-gold)",
-                        letterSpacing: "0.18em",
-                        minWidth: 24,
-                      }}
-                      className="tabular-nums"
-                    >
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span style={{ fontFamily: '"Thmanyah Sans", sans-serif', fontSize: 15, color: "var(--tb-navy-900)" }}>
-                      {label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
             </div>
-          </aside>
+          </div>
+        </div>
+
+        {/* FOCUS AREAS — refined topic chips below the hero, full width */}
+        <div className="border-t mt-2 pt-10 pb-16" style={{ borderColor: "var(--tb-hairline)" }}>
+          <div className="flex items-center gap-3 mb-6">
+            <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
+            <span className="tb-overline">{lang === "ar" ? "محاور العمل" : "Research focus"}</span>
+          </div>
+          <div className="flex flex-wrap gap-2.5">
+            {focusAreas.map((label, i) => (
+              <span
+                key={i}
+                className="tb-chip"
+                data-testid={`focus-chip-${i + 1}`}
+                style={{ fontSize: 13.5, padding: "0.6rem 1.1rem" }}
+              >
+                <span
+                  className="tabular-nums"
+                  style={{ color: "var(--tb-gold)", fontSize: 11, marginInlineEnd: 8 }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                {label}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>

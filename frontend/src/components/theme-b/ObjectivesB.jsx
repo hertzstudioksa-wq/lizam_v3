@@ -50,39 +50,40 @@ export default function ObjectivesB() {
           </h2>
         </div>
 
-        <div className="mt-14 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-x-14 gap-y-12">
           {items.map((o, i) => (
             <article
               key={o.id}
-              className="group"
+              className="group relative pt-8"
+              style={{ borderTop: "1px solid rgba(212, 185, 130, 0.28)" }}
               data-testid={`objective-${i + 1}`}
             >
-              <div className="flex items-baseline gap-5">
+              <div className="flex items-baseline gap-6">
                 <span
                   className="tabular-nums shrink-0 tb-figure"
-                  style={{ fontSize: 36 }}
+                  style={{ fontSize: 44 }}
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="flex-1 min-w-0">
                   <h3
-                    className="text-[20px] md:text-[22px]"
+                    className="text-[22px] md:text-[24px]"
                     style={{
                       fontFamily: '"Thmanyah Serif Display", serif',
                       color: "var(--tb-paper-base)",
                       fontWeight: 500,
-                      lineHeight: 1.4,
+                      lineHeight: 1.32,
                     }}
                   >
                     {o[`title_${lang}`]}
                   </h3>
                   <p
-                    className="mt-3 max-w-[48ch]"
+                    className="mt-4 max-w-[50ch]"
                     style={{
-                      fontFamily: '"Thmanyah Sans", sans-serif',
-                      fontSize: 14.5,
-                      lineHeight: 1.9,
-                      color: "rgba(247, 244, 238, 0.74)",
+                      fontFamily: '"Thmanyah Serif Text", serif',
+                      fontSize: 16,
+                      lineHeight: 1.95,
+                      color: "rgba(251, 250, 247, 0.78)",
                     }}
                   >
                     {o[`description_${lang}`]}
