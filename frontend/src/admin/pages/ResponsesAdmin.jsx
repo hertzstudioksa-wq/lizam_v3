@@ -83,7 +83,7 @@ export default function ResponsesAdmin() {
                           {r.author_name} · {r.author_email}
                         </div>
                         <div className="text-[11.5px] text-mute mt-0.5 truncate">
-                          {r._publication_title_en || r._publication_title_ar || r.publication_id}
+                          {r.publication_title_en || r.publication_title_ar || r.publication_id}
                         </div>
                       </div>
                       <span className="text-[10px] uppercase tracking-[0.18em] px-2 py-1 shrink-0"
@@ -109,7 +109,7 @@ export default function ResponsesAdmin() {
                 {selected.author_name} · <a href={`mailto:${selected.author_email}`} className="underline">{selected.author_email}</a>
               </div>
               <div className="text-[12.5px] text-mute mt-1">
-                Publication: {selected._publication_title_en || selected._publication_title_ar || selected.publication_id}
+                Publication: {selected.publication_title_en || selected.publication_title_ar || selected.publication_id}
               </div>
 
               <div className="mt-4 border-t border-rule pt-4">

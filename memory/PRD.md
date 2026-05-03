@@ -140,6 +140,25 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 
 **Test results:** 69/69 backend tests still passing. Zero regressions on any Phase 1/2/3/Theme B/Image Assets endpoint.
 
+### Phase 4 + Phase 5 (Feb 2026) — Functional completion ✅
+
+**User directive:** Pause visual redesign; complete functional backbone so the platform is operational.
+
+**Phase 4 — Auth & Production Hardening:**
+- **Mongo-backed rate limiter** (`/app/backend/app/rate_limit.py`) with TTL index — multi-worker safe, replaces in-memory lockout. Applied to login (5/5min/15min lock), contact (5/10min/30min), response submit (6/10min/30min), Google callback (20/5min/15min). Keys per-IP + per-subject.
+- **Emergent-managed Google Login** (`google_auth.py`, toggle-gated). Frontend login page conditionally renders "Continue with Google" button based on `GET /auth/google/status`; Emergent redirect flow → `POST /auth/google/callback` → profile fetch → user upsert → same JWT cookies as email/password. Documented migration to self-owned Google OAuth Client in `/app/memory/PHASE_4_5_SETUP.md`.
+- **Audit log** — already had helper, added `/admin/audit` endpoint + admin UI page (`AuditLogAdmin.jsx`) with filters by target_type + action. Writes entries on: branding, site_settings, home, toggles, publications (publish/archive/update/delete), users, roles, responses moderation, message status, google login.
+- **Security hardening** — cookies HttpOnly+Secure+SameSite=None, server-side role enforcement via `require_permission()`, CORS restricted, sanitize.py strips `data:` protocol + `on*=` handlers, hidden publications filtered from public endpoints, gated PDFs only via tokenized streams.
+- **SEO basics** — `<title>`, `<html lang>`, `<html dir>` correct via `BrandThemeSync`. Per-page meta deferred.
+
+**Phase 5 — Research Responses + Contact:**
+- **Research Responses** workflow (`/app/backend/app/routers/responses.py`) — full lifecycle `submitted → under_review → approved | rejected | archived`. Public endpoint `POST /api/public/publications/{slug}/responses` (respects global + per-pub toggles + consent, HTML-sanitized body, rate-limited). Admin endpoints `GET/PATCH/DELETE /api/admin/responses` with enrichment (publication titles), filtering, internal notes, public_visible flag. Frontend `ResponsesAdmin.jsx` moderation UI with list + detail + action buttons. Public `ResponsesTab` on publication detail shows approved responses + submission form with validation.
+- **Contact form** — new `POST /api/public/contact` endpoint with rate limit, consent requirement, sanitize_text. Contact page updated to send to backend. Admin `MessagesAdmin` now supports status filters (All/New/Read/Archived) + per-row "Mark read" / "Archive" actions. New `PATCH /api/admin/messages/{id}` endpoint with audit entry.
+- **Email delivery (Resend)** — `email_adapter.py` structurally complete, DISABLED by default. When `RESEND_API_KEY` is unset, `send_email()` returns `{ok:True, skipped:True}` and flows succeed unchanged. Enable by adding `RESEND_API_KEY` + `RESEND_FROM` to `.env` per `/app/memory/PHASE_4_5_SETUP.md`.
+- **Attachments** — intentionally out of scope (user: text-only to reduce surface area).
+
+**Test results:** 100/100 backend tests passing (Phase 1+2+3+Theme B+Image Assets+Phase 4/5). iteration_6.json: 100% backend (pytest 100/100 + 7/7 curl spot-checks) + 100% frontend on all tested flows. Zero regressions. Resend genuinely no-op when unconfigured. XSS payload sanitized. Rate limiter verified (429 on 6th login failure). Seed idempotency holds.
+
 > **Visual design note:** Theme A remains the baseline (selectable). Theme B is the new premium option, seeded as default, awaiting user review for final approval.
 
 ## Admin credentials (seeded)

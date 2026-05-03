@@ -59,8 +59,8 @@ async def admin_list_responses(
     for it in items:
         p = pubs.get(it.get("publication_id"))
         if p:
-            it["_publication_title_ar"] = p.get("title_ar")
-            it["_publication_title_en"] = p.get("title_en")
+            it["publication_title_ar"] = p.get("title_ar")
+            it["publication_title_en"] = p.get("title_en")
     return {"items": items}
 
 
