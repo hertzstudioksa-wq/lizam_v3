@@ -101,7 +101,7 @@ async def seed_all() -> None:
         "tagline_ar": "مركز بحثي متخصص في الدراسات القانونية والسياسات العامة",
         "tagline_en": "A research center specializing in legal studies and public policy",
         "default_language": "ar",
-        "active_theme": "B",
+        "active_theme": "A",
         "logo_url": "/brand/lizam-logo.png",
         "logo_light_url": "/brand/lizam-logo-light.png",
         "favicon_url": "/favicon.ico",
