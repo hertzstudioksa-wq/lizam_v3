@@ -409,3 +409,16 @@ async def admin_update_toggles(body: FeatureToggles,
 async def admin_list_messages(user: dict = Depends(require_permission("messages.read"))):
     items = await db.contact_messages.find({}, {"_id": 0}).sort("created_at", -1).to_list(length=500)
     return {"items": items}
+
+
+@router.patch("/messages/{mid}")
+async def admin_patch_message(mid: str, body: dict,
+                              user: dict = Depends(require_permission("messages.read"))):
+    status = (body or {}).get("status")
+    if status not in ("new", "read", "archived"):
+        raise HTTPException(status_code=400, detail="Invalid status")
+    r = await db.contact_messages.update_one({"id": mid}, {"$set": {"status": status}})
+    if r.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    await audit_log(user, "update", "message", mid, {"status": status})
+    return {"ok": True, "status": status}

@@ -45,9 +45,8 @@ class TestPublicSiteSettings:
         _assert_no_mongo_id(data)
         assert data["site_name_ar"] == "مركز لزام للدراسات القانونية"
         assert data["site_name_en"] == "LIZAM Center for Legal Research"
-        assert data["logo_url"] == "/brand/lizam-logo.png"
-        assert data["primary_color"] == "#23324D"
-        assert data["accent_color"] == "#B89B5E"
+        # Note: branding colors/logo moved to a separate endpoint in Phase 3 (see BrandingAdmin).
+        # Feature toggles remain on site-settings.
         assert isinstance(data.get("feature_toggles"), dict)
         # Spot-check toggles
         assert "registration" in data["feature_toggles"]

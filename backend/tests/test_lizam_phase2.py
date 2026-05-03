@@ -293,10 +293,11 @@ class TestPdfAccess:
 
 
 # --------------------------------------------------------------------------
-# Responses placeholder (Phase 5)
+# Responses (Phase 5 — live endpoint; legacy placeholder retired)
 # --------------------------------------------------------------------------
-class TestResponsesPlaceholder:
-    def test_responses_returns_503(self):
+class TestResponsesLive:
+    def test_responses_rejects_missing_fields(self):
+        """Now that responses are live, a missing title/body returns 422 (Pydantic), not 503."""
         r = requests.post(f"{API}/public/publications/lizam-pub-1/responses",
                           json={"message": "test"}, timeout=15)
-        assert r.status_code == 503, f"expected 503 placeholder, got {r.status_code}: {r.text}"
+        assert r.status_code == 422, f"expected 422 validation error, got {r.status_code}: {r.text}"

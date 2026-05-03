@@ -3,18 +3,33 @@ import { Mail, Send } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { api, formatApiError } from "@/lib/api";
 
 export default function ContactPage() {
   const { lang, t } = useLang();
   const { data: site } = useSiteSettings();
   const email = site?.contact_email || "info@lizam.sa";
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", consent: false });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [sending, setSending] = useState(false);
 
   async function onSubmit(e) {
     e.preventDefault();
-    // Phase 5 will wire to backend. For now, simulate local success.
-    setSubmitted(true);
+    setError("");
+    if (!form.consent) {
+      setError(lang === "ar" ? "يرجى الموافقة على معالجة البيانات." : "Please agree to the data-processing notice.");
+      return;
+    }
+    setSending(true);
+    try {
+      await api.post("/public/contact", form);
+      setSubmitted(true);
+    } catch (err) {
+      setError(formatApiError(err.response?.data?.detail) || err.message || "Submission failed.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -86,12 +101,25 @@ export default function ContactPage() {
                   <Field label={lang === "ar" ? "الرسالة" : "Message"}>
                     <textarea required minLength={10} rows={6} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full px-3 py-2.5 border border-rule focus:border-navy outline-none text-[15px] leading-[1.8] resize-y" data-testid="contact-message" />
                   </Field>
-                  <button type="submit" className="lz-btn-primary inline-flex" data-testid="contact-submit">
+                  <label className="flex items-start gap-2 text-[13px] text-ink/80 cursor-pointer">
+                    <input type="checkbox" checked={form.consent}
+                           onChange={(e) => setForm({ ...form, consent: e.target.checked })}
+                           className="mt-1" data-testid="contact-consent" />
+                    <span>
+                      {lang === "ar"
+                        ? "أوافق على معالجة بياناتي للتواصل معي بخصوص رسالتي."
+                        : "I consent to my data being processed so the center can respond to my enquiry."}
+                    </span>
+                  </label>
+                  {error && (
+                    <div className="text-[13px] text-[#9E3B3B] border-l-2 border-[#9E3B3B] ps-3" data-testid="contact-error">{error}</div>
+                  )}
+                  <button type="submit" disabled={sending} className="lz-btn-primary inline-flex" data-testid="contact-submit">
                     <Send size={15} strokeWidth={1.8} />
-                    <span>{lang === "ar" ? "إرسال" : "Send"}</span>
+                    <span>{sending ? (lang === "ar" ? "جارٍ الإرسال…" : "Sending…") : (lang === "ar" ? "إرسال" : "Send")}</span>
                   </button>
                   <p className="text-[12.5px] text-mute">
-                    {lang === "ar" ? "سيتم تخزين الرسائل في لوحة التحكم. التسليم بالبريد الإلكتروني سيُفعّل في مرحلة لاحقة." : "Messages are stored in the admin dashboard. Email delivery will be enabled in a later phase."}
+                    {lang === "ar" ? "سيتم تخزين الرسائل في لوحة التحكم. إذا تم تكوين مفتاح Resend يتم إرسال إشعار بالبريد فوراً." : "Messages are stored in the admin dashboard. If a Resend API key is configured, a notification email is sent immediately."}
                   </p>
                 </form>
               )}

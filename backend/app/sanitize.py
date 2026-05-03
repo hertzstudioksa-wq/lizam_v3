@@ -48,6 +48,13 @@ def sanitize_html(html: str | None) -> str:
     return cleaner.clean(html)
 
 
+def sanitize_text(s: str | None) -> str:
+    """Strip all HTML tags and return safe plain text."""
+    if not s:
+        return ""
+    return bleach.clean(s, tags=[], strip=True)
+
+
 def slugify(s: str) -> str:
     """Lightweight slug — preserves Arabic chars, replaces spaces with dashes."""
     if not s:

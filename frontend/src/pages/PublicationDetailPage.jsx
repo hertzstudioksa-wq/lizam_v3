@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Eye, Clock, Lock, FileDown, Share2, Copy, Twitter, Linkedin,
@@ -301,7 +301,14 @@ export default function PublicationDetailPage() {
                 onLogin={() => nav("/login", { state: { from: { pathname: window.location.pathname } } })}
               />
             ) : (
-              <ResponsesPlaceholder lang={lang} />
+              <ResponsesTab
+                lang={lang}
+                slug={pub.slug_ar || pub.slug_en}
+                isAuthed={isAuthed}
+                responsesEnabled={pub.responses_enabled !== false}
+                userName={user?.name}
+                userEmail={user?.email}
+              />
             )}
           </div>
         </div>
@@ -375,6 +382,184 @@ function ArticleBody({ gated, gatedReason, html, lang, isAuthed, onLogin }) {
         </aside>
       )}
     </article>
+  );
+}
+
+function ResponsesTab({ lang, slug, isAuthed, responsesEnabled, userName, userEmail }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ title: "", body: "", author_name: userName || "", author_email: userEmail || "", consent: false });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    api.get(`/public/publications/${slug}/responses`)
+      .then(({ data }) => setItems(data.items || []))
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
+    if (!form.consent) {
+      setError(lang === "ar" ? "يرجى الموافقة على شروط النشر." : "Please agree to the publication terms.");
+      return;
+    }
+    if (form.title.length < 3 || form.body.length < 10) {
+      setError(lang === "ar" ? "العنوان والنص مطلوبان (بطول كافٍ)." : "Title and body are required (sufficient length).");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post(`/public/publications/${slug}/responses`, form);
+      setSuccess(true);
+    } catch (err) {
+      setError(formatApiError(err.response?.data?.detail) || err.message || "Submission failed.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-10" data-testid="responses-tab">
+      {/* Approved responses */}
+      <div>
+        <div className="lz-eyebrow text-navy/70">
+          {lang === "ar" ? "الردود المنشورة" : "Published responses"}
+        </div>
+        <div className="mt-3 h-px w-10 bg-brass" />
+        {loading ? <div className="mt-6 text-mute text-[14px]">Loading…</div>
+          : items.length === 0 ? (
+            <p className="mt-5 text-[14.5px] text-mute max-w-[58ch]">
+              {lang === "ar"
+                ? "لا توجد ردود منشورة بعد. كن أول من يساهم بوجهة نظر علمية."
+                : "No published responses yet. Be the first to contribute a scholarly viewpoint."}
+            </p>
+          ) : (
+            <ul className="mt-6 space-y-6" data-testid="responses-list">
+              {items.map((r) => (
+                <li key={r.id} className="bg-white border border-rule p-6" data-testid={`response-${r.id}`}>
+                  <div className="text-[11.5px] uppercase tracking-[0.18em] text-brass font-semibold">
+                    {r.author_name}
+                  </div>
+                  <h4 className="text-[18px] font-medium text-navy-deep mt-2">{r.title}</h4>
+                  <div className="mt-3 text-[14.5px] leading-[1.9] text-ink/85 prose prose-sm max-w-none"
+                       dangerouslySetInnerHTML={{ __html: r.body_html }} />
+                  <div className="mt-4 text-[11.5px] text-mute tabular-nums">
+                    {(r.approved_at || r.submitted_at || "").slice(0, 10)}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+      </div>
+
+      {/* Submission form */}
+      {!responsesEnabled ? (
+        <div className="bg-paper border border-rule p-6 text-[13.5px] text-mute">
+          {lang === "ar"
+            ? "استقبال الردود معطّل لهذه الدراسة."
+            : "Response submissions are disabled for this publication."}
+        </div>
+      ) : success ? (
+        <div className="bg-white border border-rule p-8 text-center" data-testid="response-success">
+          <div className="lz-eyebrow text-brass">
+            {lang === "ar" ? "تم الاستلام" : "Submitted"}
+          </div>
+          <div className="mt-3 h-px w-10 bg-brass mx-auto" />
+          <h3 className="text-[20px] font-medium text-navy-deep mt-6">
+            {lang === "ar" ? "شكراً لمساهمتك العلمية." : "Thank you for your scholarly contribution."}
+          </h3>
+          <p className="mt-3 text-[14px] text-mute max-w-[55ch] mx-auto">
+            {lang === "ar"
+              ? "سيقوم فريق المركز بمراجعة ردك، وسيُنشر على هذه الصفحة عند اعتماده."
+              : "Our editorial team will review your response. It will appear on this page after approval."}
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="bg-white border border-rule p-7 md:p-8 space-y-4" data-testid="response-form">
+          <div className="lz-eyebrow text-navy/70">
+            {lang === "ar" ? "إرسال رد علمي" : "Submit a scholarly response"}
+          </div>
+          <div className="h-px w-10 bg-brass" />
+
+          <label className="block">
+            <span className="block text-[12.5px] uppercase tracking-[0.14em] text-mute mb-1.5">
+              {lang === "ar" ? "عنوان الرد" : "Response title"}
+            </span>
+            <input required minLength={3} maxLength={240} value={form.title}
+                   onChange={(e) => setForm({ ...form, title: e.target.value })}
+                   className="w-full h-11 px-3 border border-rule focus:border-navy outline-none text-[15px]"
+                   data-testid="response-title" />
+          </label>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <label className="block">
+              <span className="block text-[12.5px] uppercase tracking-[0.14em] text-mute mb-1.5">
+                {lang === "ar" ? "الاسم" : "Name"}
+              </span>
+              <input required value={form.author_name}
+                     onChange={(e) => setForm({ ...form, author_name: e.target.value })}
+                     className="w-full h-11 px-3 border border-rule focus:border-navy outline-none text-[15px]"
+                     data-testid="response-author-name" />
+            </label>
+            <label className="block">
+              <span className="block text-[12.5px] uppercase tracking-[0.14em] text-mute mb-1.5">
+                {lang === "ar" ? "البريد الإلكتروني" : "Email"}
+              </span>
+              <input type="email" required value={form.author_email}
+                     onChange={(e) => setForm({ ...form, author_email: e.target.value })}
+                     className="w-full h-11 px-3 border border-rule focus:border-navy outline-none text-[15px]"
+                     data-testid="response-author-email" />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="block text-[12.5px] uppercase tracking-[0.14em] text-mute mb-1.5">
+              {lang === "ar" ? "نص الرد" : "Response body"}
+            </span>
+            <textarea required minLength={10} maxLength={15000} rows={8} value={form.body}
+                      onChange={(e) => setForm({ ...form, body: e.target.value })}
+                      className="w-full px-3 py-2.5 border border-rule focus:border-navy outline-none text-[15px] leading-[1.8] resize-y"
+                      data-testid="response-body" />
+          </label>
+
+          <label className="flex items-start gap-2 text-[13px] text-ink/80 cursor-pointer">
+            <input type="checkbox" checked={form.consent}
+                   onChange={(e) => setForm({ ...form, consent: e.target.checked })}
+                   className="mt-1" data-testid="response-consent" />
+            <span>
+              {lang === "ar"
+                ? "أوافق على مراجعة فريق المركز لردي ونشره علنياً عند اعتماده."
+                : "I agree to editorial review and public publication of my response upon approval."}
+            </span>
+          </label>
+
+          {error && (
+            <div className="text-[13px] text-[#9E3B3B] border-l-2 border-[#9E3B3B] ps-3" data-testid="response-error">{error}</div>
+          )}
+
+          <button type="submit" disabled={submitting}
+                  className="lz-btn-primary inline-flex disabled:opacity-60"
+                  data-testid="response-submit">
+            {submitting
+              ? (lang === "ar" ? "جارٍ الإرسال…" : "Sending…")
+              : (lang === "ar" ? "إرسال الرد" : "Submit response")}
+          </button>
+
+          {!isAuthed && (
+            <p className="text-[12px] text-mute">
+              {lang === "ar"
+                ? "الأعضاء المسجلون يمكنهم إرسال الردود بعد تسجيل الدخول أيضاً."
+                : "Registered members can also submit responses after signing in."}
+            </p>
+          )}
+        </form>
+      )}
+    </div>
   );
 }
 

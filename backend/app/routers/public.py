@@ -217,6 +217,52 @@ async def list_categories():
     return {"items": items}
 
 
-@router.post("/publications/{slug}/responses")
-async def submit_response_placeholder(slug: str):
-    raise HTTPException(status_code=503, detail="Responses workflow will be enabled in Phase 5")
+@router.post("/contact")
+async def public_submit_contact(body: dict, request: Request):
+    """Public contact form submission. Rate-limited per email + per IP."""
+    from app.rate_limit import check_and_record_attempt, reset_fail
+    from app.email_adapter import send_email
+    from app.security import uid
+    from app.sanitize import sanitize_text
+
+    site = await db.site_settings.find_one({"id": "site"}, {"_id": 0, "feature_toggles": 1, "contact_email": 1})
+    toggles = (site or {}).get("feature_toggles", {}) or {}
+    if not toggles.get("contact_form", True):
+        raise HTTPException(status_code=503, detail="Contact form is disabled")
+
+    name = (body.get("name") or "").strip()[:120]
+    email = (body.get("email") or "").strip().lower()[:160]
+    subject = (body.get("subject") or "").strip()[:240]
+    message = (body.get("message") or "").strip()[:4000]
+    if not name or not email or not message or "@" not in email:
+        raise HTTPException(status_code=400, detail="Name, valid email, and message are required")
+    if not body.get("consent"):
+        raise HTTPException(status_code=400, detail="Consent is required")
+
+    await check_and_record_attempt(request, "contact", subject=email,
+                                   max_fails=5, window_s=600, lock_s=1800)
+
+    doc = {
+        "id": uid(),
+        "name": sanitize_text(name),
+        "email": email,
+        "subject": sanitize_text(subject),
+        "message": sanitize_text(message),
+        "status": "new",
+        "created_at": utc_iso(),
+        "ip": request.client.host if request.client else "",
+    }
+    await db.contact_messages.insert_one(doc)
+    await reset_fail([f"contact:subj:{email}"])
+
+    # best-effort admin notification
+    try:
+        await send_email(
+            to=(site or {}).get("contact_email") or "admin@lizam.sa",
+            subject=f"[LIZAM contact] {subject or 'No subject'}",
+            html=f"<p><b>From:</b> {name} &lt;{email}&gt;</p><p>{message.replace(chr(10), '<br>')}</p>",
+            tags={"kind": "contact"},
+        )
+    except Exception:  # noqa: BLE001
+        pass
+    return {"ok": True, "id": doc["id"]}

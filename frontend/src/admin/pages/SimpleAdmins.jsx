@@ -290,27 +290,72 @@ export function TogglesAdmin() {
 // -------- Messages --------
 export function MessagesAdmin() {
   const [items, setItems] = useState(null);
-  useEffect(() => { apiCall("get", "/admin/messages").then((r) => r.ok && setItems(r.data.items || [])); }, []);
+  const [filter, setFilter] = useState("");
+  const [msg, setMsg] = useState("");
+
+  async function load() {
+    const r = await apiCall("get", "/admin/messages");
+    if (r.ok) setItems(r.data.items || []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function setStatus(id, status) {
+    // Admin currently has /admin/messages GET; PATCH would be ideal.
+    // Attempt PATCH; if not supported, show notice.
+    const r = await apiCall("patch", `/admin/messages/${id}`, { status });
+    if (r.ok) { setMsg(`Marked ${status} ✓`); setTimeout(() => setMsg(""), 2000); load(); }
+    else setMsg(`Note: ${r.error}`);
+  }
+
+  const filtered = items?.filter((m) => !filter || (m.status || "new") === filter) || [];
+
   return (
-    <AdminPage title="Contact Messages" subtitle="Inbox">
+    <AdminPage title="Contact Messages" subtitle="Inbox · Store only (email delivery deferred until Resend key is configured)">
+      {msg && <div className="mb-4 px-4 py-2 bg-paper border-l-2 border-brass text-[13px]">{msg}</div>}
+      <div className="flex items-center gap-2 mb-5 flex-wrap">
+        {[["", "All"], ["new", "New"], ["read", "Read"], ["archived", "Archived"]].map(([k, label]) => (
+          <button key={k || "all"} type="button"
+            onClick={() => setFilter(k)}
+            className={`px-3 py-1.5 text-[13px] border ${filter === k ? "bg-navy-deep text-white border-navy-deep" : "bg-white text-ink border-rule"}`}
+            data-testid={`messages-filter-${k || "all"}`}>
+            {label}
+          </button>
+        ))}
+      </div>
       <div className="bg-white border border-rule">
         {items === null ? <div className="p-10 text-mute">Loading…</div>
-          : items.length === 0 ? <div className="p-10 text-mute text-center">No messages yet. Email delivery remains deferred; messages submitted from the contact form will land here.</div>
+          : filtered.length === 0 ? <div className="p-10 text-mute text-center">No messages yet. Public contact form submissions will land here.</div>
           : (
-            <table className="w-full text-[14px]">
+            <table className="w-full text-[14px]" data-testid="messages-table">
               <thead>
                 <tr className="text-[11.5px] uppercase tracking-[0.18em] text-mute border-b border-rule">
+                  <th className="text-start p-4">Status</th>
                   <th className="text-start p-4">From</th>
-                  <th className="text-start p-4">Subject</th>
+                  <th className="text-start p-4">Subject / Message</th>
                   <th className="text-start p-4">Received</th>
+                  <th className="text-start p-4">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((m) => (
-                  <tr key={m.id} className="border-b border-rule last:border-0">
-                    <td className="p-4">{m.name}<div className="text-[12px] text-mute">{m.email}</div></td>
-                    <td className="p-4">{m.subject}<div className="text-[12.5px] text-mute mt-1 max-w-[55ch] truncate">{m.message}</div></td>
-                    <td className="p-4 text-mute text-[12.5px]">{(m.created_at || "").slice(0,10)}</td>
+                {filtered.map((m) => (
+                  <tr key={m.id} className="border-b border-rule last:border-0 align-top" data-testid={`message-row-${m.id}`}>
+                    <td className="p-4">
+                      <span className="text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 border border-rule">{m.status || "new"}</span>
+                    </td>
+                    <td className="p-4">{m.name}<div className="text-[12px] text-mute mt-0.5">{m.email}</div></td>
+                    <td className="p-4">
+                      <div className="text-[14px] text-navy-deep font-medium">{m.subject || <em className="text-mute">(no subject)</em>}</div>
+                      <div className="text-[12.5px] text-mute mt-1 max-w-[55ch]">{m.message}</div>
+                    </td>
+                    <td className="p-4 text-mute text-[12.5px] whitespace-nowrap tabular-nums">{(m.created_at || "").slice(0, 10)}</td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-1.5">
+                        <button className="text-[11px] px-2 py-1 border border-rule hover:border-navy"
+                                onClick={() => setStatus(m.id, "read")} data-testid={`message-action-read-${m.id}`}>Mark read</button>
+                        <button className="text-[11px] px-2 py-1 border border-rule hover:border-navy text-mute"
+                                onClick={() => setStatus(m.id, "archived")} data-testid={`message-action-archive-${m.id}`}>Archive</button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

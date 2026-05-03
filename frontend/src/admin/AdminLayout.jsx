@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag, Image as ImageIcon } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag, Image as ImageIcon, Activity } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
@@ -22,6 +22,7 @@ const nav = (lang) => [
   { to: "/admin/images", icon: ImageIcon, label: lang === "ar" ? "إدارة الصور" : "Image Management", testid: "admin-nav-images" },
   { to: "/admin/settings", icon: Settings, label: lang === "ar" ? "إعدادات الموقع" : "Site Settings", testid: "admin-nav-settings" },
   { to: "/admin/toggles", icon: ToggleLeft, label: lang === "ar" ? "مفاتيح الميزات" : "Feature Toggles", testid: "admin-nav-toggles" },
+  { to: "/admin/audit", icon: Activity, label: lang === "ar" ? "سجل النشاط" : "Audit Log", testid: "admin-nav-audit" },
 ];
 
 export default function AdminLayout() {

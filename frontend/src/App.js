@@ -21,6 +21,8 @@ import SiteSettingsAdmin from "@/admin/pages/SiteSettingsAdmin";
 import BrandingAdmin from "@/admin/pages/BrandingAdmin";
 import HomeAdmin from "@/admin/pages/HomeAdmin";
 import ImagesAdmin from "@/admin/pages/ImagesAdmin";
+import ResponsesAdmin from "@/admin/pages/ResponsesAdmin";
+import AuditLogAdmin from "@/admin/pages/AuditLogAdmin";
 import { PublicationsListAdmin, PublicationEditAdmin } from "@/admin/pages/PublicationsAdmin";
 import { AuthorsAdmin, CategoriesAdmin, UsersAdmin, RolesAdmin, TogglesAdmin, MessagesAdmin } from "@/admin/pages/SimpleAdmins";
 import AdminLayout from "@/admin/AdminLayout";
@@ -88,7 +90,8 @@ function App() {
               <Route path="publications" element={<PublicationsListAdmin />} />
               <Route path="publications/:id" element={<PublicationEditAdmin />} />
               <Route path="authors" element={<AuthorsAdmin />} />
-              <Route path="responses" element={<AdminComingSoon titleAr="مراجعة الردود البحثية" titleEn="Research Responses" />} />
+              <Route path="responses" element={<ResponsesAdmin />} />
+              <Route path="audit" element={<AuditLogAdmin />} />
               <Route path="users" element={<UsersAdmin />} />
               <Route path="roles" element={<RolesAdmin />} />
               <Route path="messages" element={<MessagesAdmin />} />

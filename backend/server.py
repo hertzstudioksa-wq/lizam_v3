@@ -14,6 +14,8 @@ from app.routers import public as public_router
 from app.routers import admin as admin_router
 from app.routers import uploads as uploads_router
 from app.routers import image_assets as image_assets_router
+from app.routers import responses as responses_router
+from app.routers import google_auth as google_auth_router
 from app.seed import seed_all
 
 logging.basicConfig(level=logging.INFO,
@@ -42,8 +44,11 @@ async def healthz():
 
 
 api.include_router(auth_router.router)
+api.include_router(google_auth_router.router)
 api.include_router(public_router.router)
+api.include_router(responses_router.public_router)
 api.include_router(admin_router.router)
+api.include_router(responses_router.admin_router)
 api.include_router(uploads_router.router)
 api.include_router(image_assets_router.router)
 app.include_router(api)

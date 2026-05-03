@@ -80,17 +80,17 @@ async def register(body: RegisterIn, response: Response):
 
 @router.post("/login")
 async def login(body: LoginIn, request: Request, response: Response):
+    from app.rate_limit import check_and_record_attempt, record_fail, reset_fail
     email = body.email.lower()
-    ip = _client_ip(request)
-    keys = [f"email:{email}", f"ip:{ip}"]
-    _check_lockout(keys)
+    keys = await check_and_record_attempt(request, "login", subject=email,
+                                          max_fails=5, window_s=300, lock_s=900)
     user = await db.users.find_one({"email": email})
     if not user or not verify_password(body.password, user.get("password_hash", "")):
-        _record_fail(keys)
+        await record_fail(keys, max_fails=5, window_s=300, lock_s=900)
         raise HTTPException(status_code=401, detail="Invalid email or password")
     if user.get("status") and user["status"] != "active":
         raise HTTPException(status_code=403, detail="Account deactivated")
-    _reset_fail(keys)
+    await reset_fail(keys)
     access = create_access_token(user["id"], user["email"], user["role"])
     refresh = create_refresh_token(user["id"])
     set_auth_cookies(response, access, refresh)

@@ -23,6 +23,7 @@ class FeatureToggles(BaseModel):
     policy_pages: bool = False
     pdf_download: bool = True
     social_icons: bool = True
+    email_notifications: bool = False
 
 
 # ----- Auth IO -----
