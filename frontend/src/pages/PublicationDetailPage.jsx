@@ -9,6 +9,7 @@ import PublicationCard from "@/components/publications/PublicationCard";
 import { useLang } from "@/i18n/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
 import { usePublication } from "@/hooks/usePublications";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { api, formatApiError } from "@/lib/api";
 
 function fmtDate(iso, lang) {
@@ -31,6 +32,14 @@ export default function PublicationDetailPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const { data: pub, loading, error } = usePublication(slug);
+  const { data: site } = useSiteSettings();
+  const toggles = (site && site.feature_toggles) || {};
+  // Prefer the publication payload (always reflects backend) and fall back to
+  // site-settings toggle so the UI stays consistent if the SPA cache is stale.
+  const pdfDownloadEnabled =
+    pub?._pdf_download_enabled ?? (toggles.pdf_download !== false);
+  const registrationEnabled =
+    pub?._registration_enabled ?? (toggles.registration !== false);
   const [tab, setTab] = useState("article");
   const [copied, setCopied] = useState(false);
   const [pdfState, setPdfState] = useState(null);
@@ -197,7 +206,7 @@ export default function PublicationDetailPage() {
 
           {/* Action bar */}
           <div className="mt-8 flex flex-wrap items-center gap-3" data-testid="pub-actions">
-            {hasPdfConfigured && pdfAccess !== "disabled" && (
+            {pdfDownloadEnabled && hasPdfConfigured && pdfAccess !== "disabled" && (
               <button
                 type="button"
                 onClick={handlePdf}
@@ -298,6 +307,7 @@ export default function PublicationDetailPage() {
                 html={html}
                 lang={lang}
                 isAuthed={isAuthed}
+                registrationEnabled={registrationEnabled}
                 onLogin={() => nav("/login", { state: { from: { pathname: window.location.pathname } } })}
               />
             ) : (
@@ -334,7 +344,7 @@ export default function PublicationDetailPage() {
   );
 }
 
-function ArticleBody({ gated, gatedReason, html, lang, isAuthed, onLogin }) {
+function ArticleBody({ gated, gatedReason, html, lang, isAuthed, registrationEnabled, onLogin }) {
   return (
     <article className="lz-prose" data-testid="article-body">
       {html ? (

@@ -16,6 +16,16 @@ async function loadOnce(key, fetcher) {
   return data;
 }
 
+/**
+ * Invalidate cached site/home data so the next consumer re-fetches.
+ * Admin pages call this after a successful PATCH so the public-facing
+ * pages don't show stale toggles/branding within the same SPA session.
+ */
+export function invalidateSiteCache(key) {
+  if (key === "site" || !key) cache.site = null;
+  if (key === "home" || !key) cache.home = null;
+}
+
 export function useSiteSettings() {
   const [data, setData] = useState(cache.site);
   const [loading, setLoading] = useState(!cache.site);

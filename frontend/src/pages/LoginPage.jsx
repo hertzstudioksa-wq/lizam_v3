@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import PublicLayout from "@/components/layout/PublicLayout";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { api } from "@/lib/api";
 
 export default function LoginPage() {
@@ -10,6 +11,9 @@ export default function LoginPage() {
   const { login, refresh } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
+  const { data: site } = useSiteSettings();
+  const registrationEnabled =
+    !site || (site.feature_toggles?.registration !== false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
@@ -160,10 +164,18 @@ export default function LoginPage() {
             )}
 
             <div className="pt-3 text-[13px] text-mute text-center">
-              {lang === "ar" ? "ليس لديك حساب؟" : "Don't have an account?"}{" "}
-              <Link to="/register" className="text-navy hover:text-navy-hover lz-linkline" data-testid="to-register">
-                {t("nav.register")}
-              </Link>
+              {registrationEnabled ? (
+                <>
+                  {lang === "ar" ? "ليس لديك حساب؟" : "Don't have an account?"}{" "}
+                  <Link to="/register" className="text-navy hover:text-navy-hover lz-linkline" data-testid="to-register">
+                    {t("nav.register")}
+                  </Link>
+                </>
+              ) : (
+                <span data-testid="register-closed-note">
+                  {lang === "ar" ? "التسجيل بحسابات جديدة معطّل حالياً." : "New account registration is currently disabled."}
+                </span>
+              )}
             </div>
           </form>
         </div>

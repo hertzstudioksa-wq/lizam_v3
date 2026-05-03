@@ -13,6 +13,33 @@ from app.security import get_optional_user, create_pdf_token, decode_pdf_token, 
 router = APIRouter(prefix="/public", tags=["public"])
 
 
+# --- Feature-toggle helper ---------------------------------------------------
+# Centralised reader so every public endpoint enforces the same view of
+# `site_settings.feature_toggles`. Defaults match `models.FeatureToggles`.
+_TOGGLE_DEFAULTS = {
+    "registration": True,
+    "gated_content": True,
+    "google_login": False,
+    "research_responses": True,
+    "public_responses": True,
+    "authors_public_page": False,
+    "contact_form": True,
+    "featured_publications": True,
+    "policy_pages": False,
+    "pdf_download": True,
+    "social_icons": True,
+    "email_notifications": False,
+}
+
+
+async def _load_toggles() -> dict:
+    doc = await db.site_settings.find_one({"id": "site"}, {"_id": 0, "feature_toggles": 1})
+    raw = (doc or {}).get("feature_toggles") or {}
+    out = dict(_TOGGLE_DEFAULTS)
+    out.update({k: v for k, v in raw.items() if k in _TOGGLE_DEFAULTS})
+    return out
+
+
 @router.get("/site-settings")
 async def get_site_settings():
     doc = await db.site_settings.find_one({}, {"_id": 0})
@@ -84,22 +111,31 @@ async def get_publication(slug: str, request: Request):
         raise HTTPException(status_code=404, detail="Publication not found")
 
     current = await get_optional_user(request)
+    toggles = await _load_toggles()
     access = pub.get("access_level", "public")
     gated = False
     gated_reason = None
-    if access == "registered" and not current:
-        gated = True
-        gated_reason = "login_required"
-        pub["content_html_ar"] = ""
-        pub["content_html_en"] = ""
-    elif access == "preview_login" and not current:
-        gated = True
-        gated_reason = "preview_only"
-        pub["content_html_ar"] = pub.get("preview_html_ar", "")
-        pub["content_html_en"] = pub.get("preview_html_en", "")
+    # Global gated_content toggle short-circuits per-publication gating.
+    # 'hidden' is still enforced (see 404 above) — it's a publishing decision,
+    # not an end-user gating decision.
+    if toggles.get("gated_content", True):
+        if access == "registered" and not current:
+            gated = True
+            gated_reason = "login_required"
+            pub["content_html_ar"] = ""
+            pub["content_html_en"] = ""
+        elif access == "preview_login" and not current:
+            gated = True
+            gated_reason = "preview_only"
+            pub["content_html_ar"] = pub.get("preview_html_ar", "")
+            pub["content_html_en"] = pub.get("preview_html_en", "")
 
     pub["_gated"] = gated
     pub["_gated_reason"] = gated_reason
+    # Surface effective toggles the SPA needs for this page.
+    pub["_pdf_download_enabled"] = bool(toggles.get("pdf_download", True))
+    pub["_registration_enabled"] = bool(toggles.get("registration", True))
+    pub["_gated_content_enabled"] = bool(toggles.get("gated_content", True))
 
     author_ids = pub.get("author_ids", []) or []
     pub["authors"] = (
@@ -147,6 +183,9 @@ async def request_pdf_token(slug: str, request: Request):
     )
     if not pub or pub.get("access_level") == "hidden":
         raise HTTPException(status_code=404, detail="Publication not found")
+    toggles = await _load_toggles()
+    if not toggles.get("pdf_download", True):
+        raise HTTPException(status_code=403, detail="PDF downloads are disabled")
     current = await get_optional_user(request)
     level = pub.get("pdf_access_level", "public")
     if level == "disabled":
@@ -179,6 +218,10 @@ async def pdf_stream(token: str, request: Request):
     )
     if not pub or pub.get("access_level") == "hidden" or pub.get("pdf_access_level") == "disabled":
         raise HTTPException(status_code=404, detail="PDF not available")
+
+    toggles = await _load_toggles()
+    if not toggles.get("pdf_download", True):
+        raise HTTPException(status_code=403, detail="PDF downloads are disabled")
 
     # Prefer uploaded file if present
     if pub.get("pdf_file_url"):

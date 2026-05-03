@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { AdminPage, Field, TextInput, TextArea, Toggle, apiCall } from "@/admin/components/AdminUI";
 import { api } from "@/lib/api";
+import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 
 /** Simple CRUD page used for Authors + Categories. */
 function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testidBase }) {
@@ -255,7 +256,11 @@ export function TogglesAdmin() {
     setSaving(true);
     const r = await apiCall("patch", "/admin/toggles", next);
     setSaving(false);
-    if (r.ok) { setMsg("Saved ✓"); setTimeout(() => setMsg(""), 1500); }
+    if (r.ok) {
+      invalidateSiteCache("site");
+      setMsg("Saved ✓");
+      setTimeout(() => setMsg(""), 1500);
+    }
   }
 
   const rows = [

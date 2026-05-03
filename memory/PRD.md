@@ -182,6 +182,30 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 - Google OAuth (toggleable, deferred behind feature toggle)
 - Promote in-memory rate-limit lockout to Redis or Mongo TTL store (multi-worker safe)
 
+### P0 regression fix (May 2026) — Toggles propagation
+**Symptom (reported by user):** Admin disables `pdf_download` / `gated_content` / `registration`
+toggles from the dashboard, but public pages still show PDF buttons, force login on gated
+content, or accept new registrations.
+
+**Root cause:** Three feature toggles were stored correctly in
+`site_settings.feature_toggles` but **never read or enforced** by the public-facing
+endpoints or pages. No field-name mismatch — pure missing-enforcement gap.
+
+**Fix:**
+- Backend `routers/public.py` — added `_load_toggles()` helper. `/publications/{slug}`
+  short-circuits gating when `gated_content=False`. `/publications/{slug}/pdf` and
+  `/pdf-stream/{token}` return 403 when `pdf_download=False`. Detail response now surfaces
+  `_pdf_download_enabled`, `_registration_enabled`, `_gated_content_enabled` for SPA use.
+- Backend `routers/auth.py` — `/register` returns 403 when `registration=False`.
+- Frontend `pages/PublicationDetailPage.jsx` — consumes `useSiteSettings()`; PDF button
+  hidden when global toggle off; "Create account" CTA hidden when registration disabled.
+- Frontend `pages/RegisterPage.jsx` — shows disabled-notice instead of form when off.
+- Frontend `pages/LoginPage.jsx` — hides "Don't have an account? Register" link when off.
+- Frontend `hooks/useSiteSettings.js` — exposed `invalidateSiteCache()` so admin saves
+  refresh public cached toggles within the same SPA session.
+- Test coverage: new `tests/test_admin_to_public_toggles.py` (8 tests). Full suite now
+  108/108 passing.
+
 ### P1 (Theme B — Premium Editorial Redesign)
 - Separate visual redesign checkpoint, to be initiated by user with explicit prompt
 - Phase 3 baseline (Theme A) remains live until Theme B is approved

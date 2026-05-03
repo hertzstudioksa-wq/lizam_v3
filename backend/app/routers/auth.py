@@ -59,6 +59,13 @@ def _reset_fail(keys: list[str]) -> None:
 
 @router.post("/register")
 async def register(body: RegisterIn, response: Response):
+    # Honour global registration toggle.
+    site = await db.site_settings.find_one(
+        {"id": "site"}, {"_id": 0, "feature_toggles": 1}
+    )
+    toggles = (site or {}).get("feature_toggles") or {}
+    if toggles.get("registration", True) is False:
+        raise HTTPException(status_code=403, detail="Registration is currently disabled")
     email = body.email.lower()
     existing = await db.users.find_one({"email": email})
     if existing:

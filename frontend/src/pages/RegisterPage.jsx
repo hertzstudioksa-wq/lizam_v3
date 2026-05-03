@@ -3,11 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import PublicLayout from "@/components/layout/PublicLayout";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function RegisterPage() {
   const { lang, t } = useLang();
   const { register } = useAuth();
   const nav = useNavigate();
+  const { data: site } = useSiteSettings();
+  const registrationEnabled =
+    !site || (site.feature_toggles?.registration !== false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,6 +46,21 @@ export default function RegisterPage() {
               : "Create an account to access gated content and submit research responses."}
           </p>
 
+          {!registrationEnabled ? (
+            <div
+              className="mt-10 bg-white border border-rule p-7 md:p-9 text-[14px] text-mute"
+              data-testid="register-disabled"
+            >
+              {lang === "ar"
+                ? "التسجيل في حسابات جديدة معطّل حالياً. يرجى التواصل مع إدارة المركز."
+                : "New account registration is currently disabled. Please contact the center administration."}
+              <div className="mt-5">
+                <Link to="/login" className="lz-linkline text-navy" data-testid="register-disabled-login">
+                  {lang === "ar" ? "تسجيل الدخول إلى حساب موجود" : "Sign in to an existing account"}
+                </Link>
+              </div>
+            </div>
+          ) : (
           <form
             onSubmit={onSubmit}
             className="mt-10 space-y-5 bg-white border border-rule p-7 md:p-9"
@@ -107,6 +126,7 @@ export default function RegisterPage() {
               </Link>
             </div>
           </form>
+          )}
         </div>
       </section>
     </PublicLayout>
