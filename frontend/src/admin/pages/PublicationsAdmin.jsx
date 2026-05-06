@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Plus, FileText, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { AdminPage, Field, TextInput, TextArea, Select, Toggle, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
 import TiptapField from "@/admin/components/TiptapField";
+import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
+
+const useTr = () => {
+  const { lang } = useLang();
+  return (ar, en) => (lang === "ar" ? ar : en);
+};
 
 // ---------------- LIST ----------------
 export function PublicationsListAdmin() {
+  const tr = useTr();
   const [items, setItems] = useState(null);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
@@ -21,33 +28,33 @@ export function PublicationsListAdmin() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, status]);
 
   return (
-    <AdminPage title="Publications" subtitle="CMS · Research library"
-      actions={<Link to="/admin/publications/new" className="lz-btn-primary" data-testid="new-pub-btn"><Plus size={15} /><span>New publication</span></Link>}>
+    <AdminPage title={tr("الإصدارات", "Publications")} subtitle={tr("إدارة المحتوى · المكتبة البحثية", "CMS · Research library")}
+      actions={<Link to="/admin/publications/new" className="lz-btn-primary" data-testid="new-pub-btn"><Plus size={15} /><span>{tr("إصدار جديد", "New publication")}</span></Link>}>
       <div className="flex flex-wrap gap-3 mb-6">
-        <TextInput value={q} onChange={setQ} placeholder="Search title / tag…" testid="pub-list-search" />
+        <TextInput value={q} onChange={setQ} placeholder={tr("بحث في العنوان أو الوسوم…", "Search title / tag…")} testid="pub-list-search" />
         <Select value={status} onChange={setStatus} options={[
-          { value: "", label: "All statuses" },
-          { value: "draft", label: "Draft" },
-          { value: "under_review", label: "Under review" },
-          { value: "published", label: "Published" },
-          { value: "archived", label: "Archived" },
+          { value: "", label: tr("كل الحالات", "All statuses") },
+          { value: "draft", label: tr("مسودة", "Draft") },
+          { value: "under_review", label: tr("قيد المراجعة", "Under review") },
+          { value: "published", label: tr("منشور", "Published") },
+          { value: "archived", label: tr("مؤرشف", "Archived") },
         ]} testid="pub-list-status" />
       </div>
       <div className="bg-white border border-rule">
         {items === null ? (
-          <div className="p-10 text-mute">Loading…</div>
+          <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>
         ) : items.length === 0 ? (
-          <div className="p-10 text-mute text-center">No publications.</div>
+          <div className="p-10 text-mute text-center">{tr("لا توجد إصدارات.", "No publications.")}</div>
         ) : (
           <table className="w-full text-[14px]" data-testid="pub-list-table">
             <thead>
               <tr className="text-[11.5px] uppercase tracking-[0.18em] text-mute border-b border-rule">
-                <th className="text-start p-4">Title</th>
-                <th className="text-start p-4">Type</th>
-                <th className="text-start p-4">Access</th>
-                <th className="text-start p-4">Status</th>
-                <th className="text-start p-4 tabular-nums">Views</th>
-                <th className="text-start p-4">Updated</th>
+                <th className="text-start p-4">{tr("العنوان", "Title")}</th>
+                <th className="text-start p-4">{tr("النوع", "Type")}</th>
+                <th className="text-start p-4">{tr("الوصول", "Access")}</th>
+                <th className="text-start p-4">{tr("الحالة", "Status")}</th>
+                <th className="text-start p-4 tabular-nums">{tr("المشاهدات", "Views")}</th>
+                <th className="text-start p-4">{tr("آخر تحديث", "Updated")}</th>
               </tr>
             </thead>
             <tbody>
@@ -59,7 +66,7 @@ export function PublicationsListAdmin() {
                   </td>
                   <td className="p-4 text-mute">{p.publication_type}</td>
                   <td className="p-4"><span className="text-[11.5px] uppercase tracking-[0.14em] text-navy/80">{p.access_level}</span></td>
-                  <td className="p-4"><StatusPill s={p.status} /></td>
+                  <td className="p-4"><StatusPill s={p.status} tr={tr} /></td>
                   <td className="p-4 tabular-nums text-mute">{p.view_count || 0}</td>
                   <td className="p-4 text-mute text-[12.5px]">{(p.updated_at || "").slice(0, 10)}</td>
                 </tr>
@@ -72,14 +79,21 @@ export function PublicationsListAdmin() {
   );
 }
 
-function StatusPill({ s }) {
+function StatusPill({ s, tr }) {
   const map = { draft: "bg-rule text-ink", under_review: "bg-amber-100 text-amber-900",
                 published: "bg-green-100 text-green-900", archived: "bg-red-50 text-red-900" };
-  return <span className={`px-2 py-1 text-[11px] uppercase tracking-wide ${map[s] || "bg-rule"}`}>{s}</span>;
+  const labels = {
+    draft: tr("مسودة", "Draft"),
+    under_review: tr("قيد المراجعة", "Under review"),
+    published: tr("منشور", "Published"),
+    archived: tr("مؤرشف", "Archived"),
+  };
+  return <span className={`px-2 py-1 text-[11px] uppercase tracking-wide ${map[s] || "bg-rule"}`}>{labels[s] || s}</span>;
 }
 
 // ---------------- EDIT ----------------
 export function PublicationEditAdmin() {
+  const tr = useTr();
   const { id } = useParams();
   const nav = useNavigate();
   const isNew = id === "new";
@@ -116,10 +130,10 @@ export function PublicationEditAdmin() {
     setSaving(false);
     if (r.ok) {
       form.commit(r.data);
-      setMsg("Saved ✓");
+      setMsg(tr("تم الحفظ ✓", "Saved ✓"));
       if (isNew) nav(`/admin/publications/${r.data.id}`, { replace: true });
       setTimeout(() => setMsg(""), 2500);
-    } else setMsg(`Error: ${r.error}`);
+    } else setMsg(`${tr("خطأ", "Error")}: ${r.error}`);
   }
 
   async function uploadPdf(file) {
@@ -128,7 +142,7 @@ export function PublicationEditAdmin() {
     try {
       const { data } = await api.post("/uploads/pdf", fd, { headers: { "Content-Type": "multipart/form-data" } });
       form.patch("pdf_file_url", data.url);
-    } catch (e) { setMsg(`Upload: ${formatApiError(e.response?.data?.detail) || e.message}`); }
+    } catch (e) { setMsg(`${tr("رفع", "Upload")}: ${formatApiError(e.response?.data?.detail) || e.message}`); }
   }
   async function uploadCover(file) {
     if (!file) return;
@@ -136,10 +150,10 @@ export function PublicationEditAdmin() {
     try {
       const { data } = await api.post("/uploads/image", fd, { headers: { "Content-Type": "multipart/form-data" } });
       form.patch("cover_image_url", data.url);
-    } catch (e) { setMsg(`Upload: ${formatApiError(e.response?.data?.detail) || e.message}`); }
+    } catch (e) { setMsg(`${tr("رفع", "Upload")}: ${formatApiError(e.response?.data?.detail) || e.message}`); }
   }
 
-  if (!loaded) return <div className="p-10 text-mute">Loading…</div>;
+  if (!loaded) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
 
   const toggleAuthor = (aid) => {
     const list = form.value.author_ids || [];
@@ -148,86 +162,86 @@ export function PublicationEditAdmin() {
 
   return (
     <AdminPage
-      title={isNew ? "New publication" : (form.value.title_ar || form.value.title_en || "Edit publication")}
-      subtitle="CMS · Editor"
-      actions={<Link to="/admin/publications" className="lz-btn-ghost"><ArrowLeft size={15} /> Back</Link>}
+      title={isNew ? tr("إصدار جديد", "New publication") : (form.value.title_ar || form.value.title_en || tr("تعديل الإصدار", "Edit publication"))}
+      subtitle={tr("إدارة المحتوى · المحرر", "CMS · Editor")}
+      actions={<Link to="/admin/publications" className="lz-btn-ghost"><ArrowLeft size={15} /> {tr("رجوع", "Back")}</Link>}
     >
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Main column */}
         <div className="xl:col-span-2 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="Title AR"><TextInput value={form.value.title_ar} onChange={(v) => form.patch("title_ar", v)} dir="rtl" testid="pub-title-ar" /></Field>
-            <Field label="Title EN"><TextInput value={form.value.title_en} onChange={(v) => form.patch("title_en", v)} testid="pub-title-en" /></Field>
-            <Field label="Slug AR" hint="Auto-generated from title if empty"><TextInput value={form.value.slug_ar} onChange={(v) => form.patch("slug_ar", v)} dir="rtl" testid="pub-slug-ar" /></Field>
-            <Field label="Slug EN"><TextInput value={form.value.slug_en} onChange={(v) => form.patch("slug_en", v)} testid="pub-slug-en" /></Field>
-            <Field label="Summary AR"><TextArea value={form.value.summary_ar} onChange={(v) => form.patch("summary_ar", v)} dir="rtl" rows={3} testid="pub-summary-ar" /></Field>
-            <Field label="Summary EN"><TextArea value={form.value.summary_en} onChange={(v) => form.patch("summary_en", v)} rows={3} testid="pub-summary-en" /></Field>
+            <Field label={tr("العنوان بالعربية", "Title AR")}><TextInput value={form.value.title_ar} onChange={(v) => form.patch("title_ar", v)} dir="rtl" testid="pub-title-ar" /></Field>
+            <Field label={tr("العنوان بالإنجليزية", "Title EN")}><TextInput value={form.value.title_en} onChange={(v) => form.patch("title_en", v)} testid="pub-title-en" /></Field>
+            <Field label={tr("المعرّف بالعربية", "Slug AR")} hint={tr("يُنشأ تلقائياً من العنوان لو فضي", "Auto-generated from title if empty")}><TextInput value={form.value.slug_ar} onChange={(v) => form.patch("slug_ar", v)} dir="rtl" testid="pub-slug-ar" /></Field>
+            <Field label={tr("المعرّف بالإنجليزية", "Slug EN")}><TextInput value={form.value.slug_en} onChange={(v) => form.patch("slug_en", v)} testid="pub-slug-en" /></Field>
+            <Field label={tr("الملخص بالعربية", "Summary AR")}><TextArea value={form.value.summary_ar} onChange={(v) => form.patch("summary_ar", v)} dir="rtl" rows={3} testid="pub-summary-ar" /></Field>
+            <Field label={tr("الملخص بالإنجليزية", "Summary EN")}><TextArea value={form.value.summary_en} onChange={(v) => form.patch("summary_en", v)} rows={3} testid="pub-summary-en" /></Field>
           </div>
 
           <div>
-            <h3 className="lz-h3 mb-3">Article — Arabic (RTL)</h3>
+            <h3 className="lz-h3 mb-3">{tr("نص المقال — العربية (RTL)", "Article — Arabic (RTL)")}</h3>
             <TiptapField value={form.value.content_html_ar} onChange={(v) => form.patch("content_html_ar", v)} dir="rtl" testid="tiptap-ar" />
           </div>
           <div>
-            <h3 className="lz-h3 mb-3">Article — English (LTR)</h3>
+            <h3 className="lz-h3 mb-3">{tr("نص المقال — الإنجليزية (LTR)", "Article — English (LTR)")}</h3>
             <TiptapField value={form.value.content_html_en} onChange={(v) => form.patch("content_html_en", v)} dir="ltr" testid="tiptap-en" />
           </div>
           <div>
-            <h3 className="lz-h3 mb-3">Preview (shown to gated readers) AR</h3>
+            <h3 className="lz-h3 mb-3">{tr("معاينة (تظهر للقراء غير المسجلين) — عربية", "Preview (shown to gated readers) AR")}</h3>
             <TiptapField value={form.value.preview_html_ar} onChange={(v) => form.patch("preview_html_ar", v)} dir="rtl" testid="tiptap-preview-ar" />
           </div>
           <div>
-            <h3 className="lz-h3 mb-3">Preview EN</h3>
+            <h3 className="lz-h3 mb-3">{tr("معاينة — إنجليزية", "Preview EN")}</h3>
             <TiptapField value={form.value.preview_html_en} onChange={(v) => form.patch("preview_html_en", v)} dir="ltr" testid="tiptap-preview-en" />
           </div>
         </div>
 
         {/* Side metadata panel */}
         <aside className="space-y-5 xl:sticky xl:top-6 self-start">
-          <Field label="Status">
+          <Field label={tr("الحالة", "Status")}>
             <Select value={form.value.status} onChange={(v) => form.patch("status", v)} options={[
-              { value: "draft", label: "Draft" },
-              { value: "under_review", label: "Under review" },
-              { value: "published", label: "Published" },
-              { value: "archived", label: "Archived" },
+              { value: "draft", label: tr("مسودة", "Draft") },
+              { value: "under_review", label: tr("قيد المراجعة", "Under review") },
+              { value: "published", label: tr("منشور", "Published") },
+              { value: "archived", label: tr("مؤرشف", "Archived") },
             ]} testid="pub-status" />
           </Field>
-          <Field label="Type">
+          <Field label={tr("النوع", "Type")}>
             <Select value={form.value.publication_type} onChange={(v) => form.patch("publication_type", v)} options={[
-              { value: "study", label: "Study" },
-              { value: "research", label: "Research" },
-              { value: "policy_paper", label: "Policy paper" },
-              { value: "report", label: "Report" },
-              { value: "essay", label: "Essay" },
-              { value: "opinion", label: "Opinion" },
+              { value: "study", label: tr("دراسة", "Study") },
+              { value: "research", label: tr("بحث", "Research") },
+              { value: "policy_paper", label: tr("ورقة سياسات", "Policy paper") },
+              { value: "report", label: tr("تقرير", "Report") },
+              { value: "essay", label: tr("مقالة", "Essay") },
+              { value: "opinion", label: tr("رأي", "Opinion") },
             ]} testid="pub-type" />
           </Field>
-          <Field label="Category / Field">
+          <Field label={tr("المجال / التصنيف", "Category / Field")}>
             <Select value={form.value.category_id || ""} onChange={(v) => form.patch("category_id", v)} options={[
-              { value: "", label: "— none —" },
+              { value: "", label: tr("— لا شيء —", "— none —") },
               ...categories.map((c) => ({ value: c.id, label: c.title_en || c.title_ar })),
             ]} testid="pub-category" />
           </Field>
-          <Field label="Access level">
+          <Field label={tr("مستوى الوصول", "Access level")} hint={tr("عام: متاح للجميع · معاينة + تسجيل: ملخص فقط للزائر · للمسجلين: لازم تسجيل دخول · مخفي: لا يظهر", "Public: open · Preview+login: summary only · Registered: requires login · Hidden: not shown")}>
             <Select value={form.value.access_level} onChange={(v) => form.patch("access_level", v)} options={[
-              { value: "public", label: "Public" },
-              { value: "preview_login", label: "Preview + login" },
-              { value: "registered", label: "Registered only" },
-              { value: "hidden", label: "Hidden / draft" },
+              { value: "public", label: tr("عام", "Public") },
+              { value: "preview_login", label: tr("معاينة + تسجيل دخول", "Preview + login") },
+              { value: "registered", label: tr("للمسجلين فقط", "Registered only") },
+              { value: "hidden", label: tr("مخفي / مسودة", "Hidden / draft") },
             ]} testid="pub-access" />
           </Field>
-          <Field label="PDF access">
+          <Field label={tr("الوصول إلى ملف PDF", "PDF access")}>
             <Select value={form.value.pdf_access_level} onChange={(v) => form.patch("pdf_access_level", v)} options={[
-              { value: "public", label: "Public" },
-              { value: "login_required", label: "Login required" },
-              { value: "admin_only", label: "Admin only" },
-              { value: "disabled", label: "Disabled" },
+              { value: "public", label: tr("عام", "Public") },
+              { value: "login_required", label: tr("يتطلب تسجيل الدخول", "Login required") },
+              { value: "admin_only", label: tr("للإدارة فقط", "Admin only") },
+              { value: "disabled", label: tr("معطّل", "Disabled") },
             ]} testid="pub-pdf-access" />
           </Field>
-          <Toggle checked={!!form.value.featured} onChange={(v) => form.patch("featured", v)} label="Featured" testid="pub-featured" />
-          <Toggle checked={!!form.value.responses_enabled} onChange={(v) => form.patch("responses_enabled", v)} label="Responses enabled" testid="pub-responses" />
+          <Toggle checked={!!form.value.featured} onChange={(v) => form.patch("featured", v)} label={tr("إصدار مميّز", "Featured")} testid="pub-featured" />
+          <Toggle checked={!!form.value.responses_enabled} onChange={(v) => form.patch("responses_enabled", v)} label={tr("استقبال الردود البحثية", "Responses enabled")} testid="pub-responses" />
 
-          <Field label="Authors">
+          <Field label={tr("الباحثون", "Authors")}>
             <div className="space-y-1 max-h-52 overflow-auto bg-white border border-rule p-2">
               {authors.map((a) => (
                 <label key={a.id} className="flex items-center gap-2 text-[13px] p-1 hover:bg-ivory-cream cursor-pointer">
@@ -238,11 +252,11 @@ export function PublicationEditAdmin() {
             </div>
           </Field>
 
-          <Field label="Tags (comma-separated)">
+          <Field label={tr("الوسوم (افصل بفاصلة)", "Tags (comma-separated)")}>
             <TextInput value={(form.value.tags || []).join(", ")} onChange={(v) => form.patch("tags", v.split(",").map((s) => s.trim()).filter(Boolean))} testid="pub-tags" />
           </Field>
 
-          <Field label="Cover image">
+          <Field label={tr("صورة الغلاف", "Cover image")}>
             <div className="space-y-2">
               {form.value.cover_image_url && <img src={form.value.cover_image_url} alt="" className="border border-rule max-h-32" />}
               <TextInput value={form.value.cover_image_url} onChange={(v) => form.patch("cover_image_url", v)} />
@@ -250,15 +264,15 @@ export function PublicationEditAdmin() {
             </div>
           </Field>
 
-          <Field label="PDF (upload or URL)">
+          <Field label={tr("ملف PDF (رفع أو رابط)", "PDF (upload or URL)")}>
             <div className="space-y-2">
-              {form.value.pdf_file_url && <div className="text-[12.5px] text-green-700">Uploaded: {form.value.pdf_file_url}</div>}
+              {form.value.pdf_file_url && <div className="text-[12.5px] text-green-700">{tr("تم الرفع:", "Uploaded:")} {form.value.pdf_file_url}</div>}
               <input type="file" accept="application/pdf" onChange={(e) => uploadPdf(e.target.files?.[0])} className="text-[12.5px]" />
-              <TextInput value={form.value.external_pdf_url} onChange={(v) => form.patch("external_pdf_url", v)} placeholder="External PDF URL (fallback)" />
+              <TextInput value={form.value.external_pdf_url} onChange={(v) => form.patch("external_pdf_url", v)} placeholder={tr("رابط PDF خارجي (احتياطي)", "External PDF URL (fallback)")} />
             </div>
           </Field>
 
-          <Field label="Reading time (min)">
+          <Field label={tr("وقت القراءة (دقيقة)", "Reading time (min)")}>
             <TextInput type="number" value={form.value.reading_time_minutes} onChange={(v) => form.patch("reading_time_minutes", Number(v) || 0)} />
           </Field>
 

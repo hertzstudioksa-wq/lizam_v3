@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { AdminPage, apiCall } from "@/admin/components/AdminUI";
+import { useLang } from "@/i18n/LanguageContext";
 
 export default function AuditLogAdmin() {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
   const [items, setItems] = useState(null);
   const [filter, setFilter] = useState({ target_type: "", action: "" });
 
@@ -15,56 +18,63 @@ export default function AuditLogAdmin() {
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [filter.target_type, filter.action]);
 
+  const TARGETS = [
+    ["", tr("الكل", "All")],
+    ["publication", tr("إصدار", "publication")],
+    ["user", tr("مستخدم", "user")],
+    ["response", tr("رد بحثي", "response")],
+    ["settings", tr("الإعدادات", "settings")],
+    ["branding", tr("الهوية", "branding")],
+    ["toggles", tr("المفاتيح", "toggles")],
+    ["home", tr("الرئيسية", "home")],
+    ["author", tr("باحث", "author")],
+    ["category", tr("مجال", "category")],
+  ];
+  const ACTIONS = [
+    ["", tr("الكل", "All")],
+    ["login", tr("تسجيل دخول", "login")],
+    ["create", tr("إنشاء", "create")],
+    ["update", tr("تحديث", "update")],
+    ["moderate", tr("مراجعة", "moderate")],
+    ["publish", tr("نشر", "publish")],
+    ["archive", tr("أرشفة", "archive")],
+    ["delete", tr("حذف", "delete")],
+  ];
+
   return (
-    <AdminPage title="Audit Log" subtitle="Admin activity · Last 200 events">
+    <AdminPage title={tr("سجل النشاط", "Audit Log")} subtitle={tr("نشاط الإدارة · آخر 200 حدث", "Admin activity · Last 200 events")}>
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <label className="text-[12.5px] text-mute">
-          Target type:
+          {tr("نوع الهدف:", "Target type:")}
           <select className="ms-2 border border-rule px-2 py-1 text-[13px]"
                   value={filter.target_type}
                   onChange={(e) => setFilter((f) => ({ ...f, target_type: e.target.value }))}
                   data-testid="audit-filter-target-type">
-            <option value="">All</option>
-            <option value="publication">publication</option>
-            <option value="user">user</option>
-            <option value="response">response</option>
-            <option value="settings">settings</option>
-            <option value="branding">branding</option>
-            <option value="toggles">toggles</option>
-            <option value="home">home</option>
-            <option value="author">author</option>
-            <option value="category">category</option>
+            {TARGETS.map(([v, l]) => <option key={v || "all"} value={v}>{l}</option>)}
           </select>
         </label>
         <label className="text-[12.5px] text-mute">
-          Action:
+          {tr("الإجراء:", "Action:")}
           <select className="ms-2 border border-rule px-2 py-1 text-[13px]"
                   value={filter.action}
                   onChange={(e) => setFilter((f) => ({ ...f, action: e.target.value }))}
                   data-testid="audit-filter-action">
-            <option value="">All</option>
-            <option value="login">login</option>
-            <option value="create">create</option>
-            <option value="update">update</option>
-            <option value="moderate">moderate</option>
-            <option value="publish">publish</option>
-            <option value="archive">archive</option>
-            <option value="delete">delete</option>
+            {ACTIONS.map(([v, l]) => <option key={v || "all"} value={v}>{l}</option>)}
           </select>
         </label>
       </div>
       <div className="bg-white border border-rule">
-        {items === null ? <div className="p-10 text-mute">Loading…</div>
-          : items.length === 0 ? <div className="p-10 text-mute text-center">No audit events match the current filter.</div>
+        {items === null ? <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>
+          : items.length === 0 ? <div className="p-10 text-mute text-center">{tr("لا توجد أحداث تطابق الفلتر الحالي.", "No audit events match the current filter.")}</div>
           : (
             <table className="w-full text-[13px]" data-testid="audit-table">
               <thead>
                 <tr className="text-[11px] uppercase tracking-[0.18em] text-mute border-b border-rule">
-                  <th className="text-start p-3">Time</th>
-                  <th className="text-start p-3">Actor</th>
-                  <th className="text-start p-3">Action</th>
-                  <th className="text-start p-3">Target</th>
-                  <th className="text-start p-3">Details</th>
+                  <th className="text-start p-3">{tr("الوقت", "Time")}</th>
+                  <th className="text-start p-3">{tr("المستخدم", "Actor")}</th>
+                  <th className="text-start p-3">{tr("الإجراء", "Action")}</th>
+                  <th className="text-start p-3">{tr("الهدف", "Target")}</th>
+                  <th className="text-start p-3">{tr("التفاصيل", "Details")}</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Save } from "lucide-react";
+import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
 
 export function AdminPage({ title, subtitle, children, actions }) {
@@ -86,6 +87,7 @@ export function Toggle({ checked, onChange, label, testid }) {
 }
 
 export function SaveBar({ dirty, saving, onSave, onReset, savedMessage }) {
+  const { lang } = useLang();
   return (
     <div className="mt-8 flex items-center gap-3">
       <button
@@ -96,11 +98,11 @@ export function SaveBar({ dirty, saving, onSave, onReset, savedMessage }) {
         data-testid="save-btn"
       >
         <Save size={15} />
-        <span>{saving ? "Saving…" : "Save changes"}</span>
+        <span>{saving ? (lang === "ar" ? "جارٍ الحفظ…" : "Saving…") : (lang === "ar" ? "حفظ التغييرات" : "Save changes")}</span>
       </button>
       {dirty && (
         <button type="button" onClick={onReset} className="lz-btn-ghost" data-testid="cancel-btn">
-          Cancel
+          {lang === "ar" ? "إلغاء" : "Cancel"}
         </button>
       )}
       {savedMessage && <span className="text-[13px] text-green-700 ms-2">{savedMessage}</span>}

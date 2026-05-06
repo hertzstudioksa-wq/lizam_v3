@@ -1,19 +1,17 @@
 import { useEffect, useState } from "react";
 import { AdminPage, Field, TextInput, apiCall } from "@/admin/components/AdminUI";
+import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
 import { resetImageAssetsCache } from "@/hooks/useImageAssets";
 
-/**
- * Image Management — admin curates the public site's image slots.
- * Each slot exposes: preview, recommended dimensions, aspect ratio, usage note,
- * AR/EN alt text, active toggle, URL replacement (paste URL or upload file).
- */
 export default function ImagesAdmin() {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
   const [msg, setMsg] = useState("");
-  const [drafts, setDrafts] = useState({}); // slot_key → partial overrides
+  const [drafts, setDrafts] = useState({});
 
   async function load() {
     setLoading(true);
@@ -37,10 +35,10 @@ export default function ImagesAdmin() {
       setSlots((arr) => arr.map((s) => (s.slot_key === key ? r.data : s)));
       setDrafts((d) => { const n = { ...d }; delete n[key]; return n; });
       resetImageAssetsCache();
-      setMsg(`Saved “${key}” ✓ — refresh the public site to see updates.`);
+      setMsg(tr(`تم حفظ "${key}" ✓ — حدّث الموقع العام لرؤية التغييرات.`, `Saved "${key}" ✓ — refresh the public site to see updates.`));
       setTimeout(() => setMsg(""), 3500);
     } else {
-      setMsg(`Error saving ${key}: ${r.error}`);
+      setMsg(`${tr("خطأ في حفظ", "Error saving")} ${key}: ${r.error}`);
     }
   }
 
@@ -52,19 +50,22 @@ export default function ImagesAdmin() {
       const { data } = await api.post("/uploads/image", fd, { headers: { "Content-Type": "multipart/form-data" } });
       patchDraft(key, { url: data.url });
     } catch (e) {
-      setMsg(`Upload error: ${formatApiError(e.response?.data?.detail) || e.message}`);
+      setMsg(`${tr("خطأ في الرفع", "Upload error")}: ${formatApiError(e.response?.data?.detail) || e.message}`);
     }
   }
 
-  if (loading) return <div className="p-10 text-mute">Loading…</div>;
+  if (loading) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
 
   return (
     <AdminPage
-      title="Image Management"
-      subtitle="Public site imagery · Theme B"
+      title={tr("إدارة الصور", "Image Management")}
+      subtitle={tr("صور الموقع العام · الثيمة B", "Public site imagery · Theme B")}
     >
       <p className="max-w-[760px] text-[14px] text-ink/75 leading-relaxed mb-10">
-        Manage the curated images used across the public site. Each slot has a recommended size and aspect ratio so designers can prepare assets correctly. Replace the URL or upload a new file. Toggle a slot off to hide its image (the section will fall back to its solid background).
+        {tr(
+          "تحكّم بالصور المستخدمة في أقسام الموقع العام. كل خانة لها مقاس ونسبة مُفضَّلة ليتمكن المصممون من تجهيز الأصول بدقة. يمكنك استبدال الرابط أو رفع ملف جديد. عطّل أي خانة لإخفاء صورتها (يرجع القسم إلى خلفيته الأساسية).",
+          "Manage the curated images used across the public site. Each slot has a recommended size and aspect ratio so designers can prepare assets correctly. Replace the URL or upload a new file. Toggle a slot off to hide its image."
+        )}
       </p>
 
       {msg && (
@@ -84,7 +85,6 @@ export default function ImagesAdmin() {
               data-testid={`image-slot-${slot.slot_key}`}
               style={{ borderRadius: 12 }}
             >
-              {/* Preview */}
               <div className="lg:col-span-4">
                 <div
                   className="w-full overflow-hidden bg-paper"
@@ -97,7 +97,7 @@ export default function ImagesAdmin() {
                     minHeight: 140,
                   }}
                   role="img"
-                  aria-label={merged[`alt_en`] || slot.title_en}
+                  aria-label={merged.alt_en || slot.title_en}
                   data-testid={`image-preview-${slot.slot_key}`}
                 />
                 <div className="mt-3 text-[11px] uppercase tracking-[0.18em] text-mute">
@@ -106,13 +106,12 @@ export default function ImagesAdmin() {
                 </div>
               </div>
 
-              {/* Editor */}
               <div className="lg:col-span-8 space-y-4">
                 <header className="flex items-start justify-between gap-4">
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.22em] text-brass font-semibold">{slot.slot_key}</div>
-                    <h3 className="text-[18px] font-medium text-navy-deep mt-1">{slot.title_en}</h3>
-                    <h4 className="text-[14.5px] text-ink/75" dir="rtl" style={{ fontFamily: '"Thmanyah Sans", sans-serif' }}>{slot.title_ar}</h4>
+                    <h3 className="text-[18px] font-medium text-navy-deep mt-1">{lang === "ar" ? slot.title_ar : slot.title_en}</h3>
+                    <h4 className="text-[14.5px] text-ink/75" dir={lang === "ar" ? "ltr" : "rtl"}>{lang === "ar" ? slot.title_en : slot.title_ar}</h4>
                   </div>
                   <label className="inline-flex items-center gap-2 cursor-pointer text-[13px]" data-testid={`image-active-${slot.slot_key}`}>
                     <input
@@ -120,17 +119,15 @@ export default function ImagesAdmin() {
                       checked={merged.active !== false}
                       onChange={(e) => patchDraft(slot.slot_key, { active: e.target.checked })}
                     />
-                    <span>{merged.active !== false ? "Active" : "Inactive"}</span>
+                    <span>{merged.active !== false ? tr("نشط", "Active") : tr("غير نشط", "Inactive")}</span>
                   </label>
                 </header>
 
                 <div className="text-[13px] text-mute leading-relaxed">
-                  <strong className="text-navy-deep">Usage:</strong> {slot.usage_note_en}
-                  <br />
-                  <span dir="rtl" style={{ fontFamily: '"Thmanyah Sans", sans-serif' }}>{slot.usage_note_ar}</span>
+                  <strong className="text-navy-deep">{tr("الاستخدام:", "Usage:")}</strong> {lang === "ar" ? slot.usage_note_ar : slot.usage_note_en}
                 </div>
 
-                <Field label="Image URL" hint="Paste a hosted URL or upload below">
+                <Field label={tr("رابط الصورة", "Image URL")} hint={tr("الصق رابطاً مستضافاً أو ارفع ملفاً أدناه", "Paste a hosted URL or upload below")}>
                   <div className="flex gap-2">
                     <TextInput value={merged.url || ""} onChange={(v) => patchDraft(slot.slot_key, { url: v })} testid={`image-url-${slot.slot_key}`} />
                     <input
@@ -144,10 +141,10 @@ export default function ImagesAdmin() {
                 </Field>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Alt text · Arabic" dir="rtl">
+                  <Field label={tr("النص البديل · العربية", "Alt text · Arabic")} dir="rtl">
                     <TextInput value={merged.alt_ar || ""} onChange={(v) => patchDraft(slot.slot_key, { alt_ar: v })} testid={`alt-ar-${slot.slot_key}`} />
                   </Field>
-                  <Field label="Alt text · English">
+                  <Field label={tr("النص البديل · الإنجليزية", "Alt text · English")}>
                     <TextInput value={merged.alt_en || ""} onChange={(v) => patchDraft(slot.slot_key, { alt_en: v })} testid={`alt-en-${slot.slot_key}`} />
                   </Field>
                 </div>
@@ -161,7 +158,7 @@ export default function ImagesAdmin() {
                     style={{ borderRadius: 6 }}
                     data-testid={`image-save-${slot.slot_key}`}
                   >
-                    {savingKey === slot.slot_key ? "Saving…" : (dirty ? "Save changes" : "No changes")}
+                    {savingKey === slot.slot_key ? tr("جارٍ الحفظ…", "Saving…") : (dirty ? tr("حفظ التغييرات", "Save changes") : tr("لا تغييرات", "No changes"))}
                   </button>
                   {dirty && (
                     <button
@@ -170,7 +167,7 @@ export default function ImagesAdmin() {
                       className="text-[13px] text-mute hover:text-navy underline underline-offset-4"
                       data-testid={`image-cancel-${slot.slot_key}`}
                     >
-                      Discard
+                      {tr("تجاهل", "Discard")}
                     </button>
                   )}
                 </div>

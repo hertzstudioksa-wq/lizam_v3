@@ -1,9 +1,11 @@
 import { NavLink, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useLang } from "@/i18n/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
+
+const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
 
 const navItems = (t) => [
   { to: "/", label: t("nav.home"), testid: "nav-home" },
@@ -27,6 +29,7 @@ export default function Header() {
 
   const items = navItems(t);
   const isAuthed = user && typeof user === "object";
+  const isAdmin = isAuthed && ADMIN_ROLES.has(user.role);
 
   return (
     <header
@@ -78,6 +81,17 @@ export default function Header() {
               </span>
             </button>
 
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="lz-btn-ghost h-9 px-3 text-[13px] inline-flex items-center gap-1.5"
+                data-testid="admin-entry-btn"
+                title={t("nav.admin")}
+              >
+                <LayoutDashboard size={14} strokeWidth={1.8} />
+                <span>{t("nav.admin")}</span>
+              </Link>
+            )}
             {isAuthed ? (
               <Link
                 to="/account"
@@ -141,6 +155,17 @@ export default function Header() {
               >
                 {t("lang.switch")}
               </button>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className="lz-btn-ghost h-9 px-3 text-[13px] inline-flex items-center gap-1.5"
+                  onClick={() => setOpen(false)}
+                  data-testid="admin-entry-btn-mobile"
+                >
+                  <LayoutDashboard size={14} strokeWidth={1.8} />
+                  <span>{t("nav.admin")}</span>
+                </Link>
+              )}
               {isAuthed ? (
                 <Link to="/account" className="lz-btn-ghost h-9 px-4 text-[13px]" onClick={() => setOpen(false)}>
                   {t("nav.account")}

@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import { AdminPage, Field, TextInput, TextArea, Select, Toggle, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
+import { AdminPage, Field, TextInput, TextArea, Select, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
+import { useLang } from "@/i18n/LanguageContext";
 
 export default function SiteSettingsAdmin() {
+  const { lang } = useLang();
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const form = useDirtyForm({});
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
 
   useEffect(() => {
     apiCall("get", "/admin/site-settings").then((r) => {
-      if (r.ok) {
-        form.commit(r.data || {});
-      }
+      if (r.ok) form.commit(r.data || {});
       setLoaded(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -30,31 +31,31 @@ export default function SiteSettingsAdmin() {
     };
     const r = await apiCall("patch", "/admin/site-settings", payload);
     setSaving(false);
-    if (r.ok) { form.commit(r.data); setMsg("Saved ✓"); setTimeout(() => setMsg(""), 2500); }
-    else setMsg(`Error: ${r.error}`);
+    if (r.ok) { form.commit(r.data); setMsg(tr("تم الحفظ ✓", "Saved ✓")); setTimeout(() => setMsg(""), 2500); }
+    else setMsg(`${tr("خطأ", "Error")}: ${r.error}`);
   }
 
-  if (!loaded) return <div className="p-10 text-mute">Loading…</div>;
+  if (!loaded) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
 
   return (
-    <AdminPage title="Site Settings" subtitle="General">
+    <AdminPage title={tr("إعدادات الموقع", "Site Settings")} subtitle={tr("الإعدادات العامة", "General")}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1100px]">
-        <Field label="Arabic site name"><TextInput value={form.value.site_name_ar} onChange={(v) => form.patch("site_name_ar", v)} dir="rtl" testid="site-name-ar" /></Field>
-        <Field label="English site name"><TextInput value={form.value.site_name_en} onChange={(v) => form.patch("site_name_en", v)} dir="ltr" testid="site-name-en" /></Field>
-        <Field label="Arabic tagline"><TextInput value={form.value.tagline_ar} onChange={(v) => form.patch("tagline_ar", v)} dir="rtl" testid="tagline-ar" /></Field>
-        <Field label="English tagline"><TextInput value={form.value.tagline_en} onChange={(v) => form.patch("tagline_en", v)} dir="ltr" testid="tagline-en" /></Field>
-        <Field label="Default language">
-          <Select value={form.value.default_language} onChange={(v) => form.patch("default_language", v)} options={[{value:"ar",label:"Arabic"},{value:"en",label:"English"}]} testid="default-lang" />
+        <Field label={tr("اسم الموقع بالعربية", "Arabic site name")}><TextInput value={form.value.site_name_ar} onChange={(v) => form.patch("site_name_ar", v)} dir="rtl" testid="site-name-ar" /></Field>
+        <Field label={tr("اسم الموقع بالإنجليزية", "English site name")}><TextInput value={form.value.site_name_en} onChange={(v) => form.patch("site_name_en", v)} dir="ltr" testid="site-name-en" /></Field>
+        <Field label={tr("الشعار التعريفي بالعربية", "Arabic tagline")}><TextInput value={form.value.tagline_ar} onChange={(v) => form.patch("tagline_ar", v)} dir="rtl" testid="tagline-ar" /></Field>
+        <Field label={tr("الشعار التعريفي بالإنجليزية", "English tagline")}><TextInput value={form.value.tagline_en} onChange={(v) => form.patch("tagline_en", v)} dir="ltr" testid="tagline-en" /></Field>
+        <Field label={tr("اللغة الافتراضية", "Default language")}>
+          <Select value={form.value.default_language} onChange={(v) => form.patch("default_language", v)} options={[{value:"ar",label:tr("العربية","Arabic")},{value:"en",label:tr("الإنجليزية","English")}]} testid="default-lang" />
         </Field>
-        <Field label="Contact email"><TextInput type="email" value={form.value.contact_email} onChange={(v) => form.patch("contact_email", v)} testid="contact-email" /></Field>
-        <Field label="Phone"><TextInput value={form.value.phone} onChange={(v) => form.patch("phone", v)} testid="phone" /></Field>
-        <Field label="Arabic address"><TextInput value={form.value.address_ar} onChange={(v) => form.patch("address_ar", v)} dir="rtl" testid="address-ar" /></Field>
-        <Field label="English address"><TextInput value={form.value.address_en} onChange={(v) => form.patch("address_en", v)} dir="ltr" testid="address-en" /></Field>
-        <Field label="Arabic footer text"><TextArea value={form.value.footer_text_ar} onChange={(v) => form.patch("footer_text_ar", v)} dir="rtl" rows={2} testid="footer-ar" /></Field>
-        <Field label="English footer text"><TextArea value={form.value.footer_text_en} onChange={(v) => form.patch("footer_text_en", v)} rows={2} testid="footer-en" /></Field>
+        <Field label={tr("البريد الإلكتروني للتواصل", "Contact email")}><TextInput type="email" value={form.value.contact_email} onChange={(v) => form.patch("contact_email", v)} testid="contact-email" /></Field>
+        <Field label={tr("رقم الهاتف", "Phone")}><TextInput value={form.value.phone} onChange={(v) => form.patch("phone", v)} testid="phone" /></Field>
+        <Field label={tr("العنوان بالعربية", "Arabic address")}><TextInput value={form.value.address_ar} onChange={(v) => form.patch("address_ar", v)} dir="rtl" testid="address-ar" /></Field>
+        <Field label={tr("العنوان بالإنجليزية", "English address")}><TextInput value={form.value.address_en} onChange={(v) => form.patch("address_en", v)} dir="ltr" testid="address-en" /></Field>
+        <Field label={tr("نص التذييل بالعربية", "Arabic footer text")}><TextArea value={form.value.footer_text_ar} onChange={(v) => form.patch("footer_text_ar", v)} dir="rtl" rows={2} testid="footer-ar" /></Field>
+        <Field label={tr("نص التذييل بالإنجليزية", "English footer text")}><TextArea value={form.value.footer_text_en} onChange={(v) => form.patch("footer_text_en", v)} rows={2} testid="footer-en" /></Field>
       </div>
 
-      <h3 className="lz-h3 mt-12">Social Links</h3>
+      <h3 className="lz-h3 mt-12">{tr("روابط التواصل الاجتماعي", "Social Links")}</h3>
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-[1100px]">
         {["twitter","linkedin","youtube","facebook","instagram"].map((k) => (
           <Field key={k} label={k.charAt(0).toUpperCase()+k.slice(1)}>

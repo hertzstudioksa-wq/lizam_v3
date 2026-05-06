@@ -178,6 +178,34 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 - ~~Brute-force lockout on `/auth/login`~~
 - ~~PDF streaming proxy with short-lived signed tokens~~
 
+### Admin bilingual UI + admin entry button (May 2026)
+**Ask:** "خلي الداش بورد كلها default بتاعها عربي" + add an admin shortcut
+button on the public site (visible only to admin roles).
+
+**Changes:**
+- Full bilingual localisation of the admin console. 9 files rewritten
+  (`AdminUI.jsx`, `SiteSettingsAdmin.jsx`, `AuditLogAdmin.jsx`,
+  `PublicationsAdmin.jsx`, `SimpleAdmins.jsx` [Authors/Categories/Users/Roles/
+  Toggles/Messages], `BrandingAdmin.jsx`, `ImagesAdmin.jsx`, `ResponsesAdmin.jsx`,
+  `HomeAdmin.jsx`). Reuses the existing `LanguageContext` — no new i18n system —
+  so the AR/EN button in the admin sidebar and the public header share state.
+  Default language remains Arabic, English available via toggle. All
+  `data-testid`s preserved.
+- `Header.jsx` (Theme A) and `HeaderB.jsx` (Theme B): admin-only shortcut
+  button `[data-testid="admin-entry-btn"]` rendered when
+  `user.role in {super_admin, admin, editor, reviewer}`. Uses
+  `<LayoutDashboard>` icon + `t("nav.admin")` label. Mobile variant at
+  `[data-testid="admin-entry-btn-mobile"]`. Hidden for anonymous and
+  non-admin logged-in users.
+
+**Test evidence (Playwright):**
+- Admin loads with `lang=ar dir=rtl`, sidebar + Toggles + Publications pages
+  all Arabic.
+- Clicking `admin-lang-switch` flips to English; Publications label becomes
+  "Publications".
+- Admin sees `لوحة التحكم` button on the public home; clicking it navigates
+  to `/admin`. Anonymous browser context does NOT see the button.
+
 ### P1 (Phase 4 — Auth & Access hardening)
 - Google OAuth (toggleable, deferred behind feature toggle)
 - Promote in-memory rate-limit lockout to Redis or Mongo TTL store (multi-worker safe)
