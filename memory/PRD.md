@@ -354,3 +354,35 @@ endpoints or pages. No field-name mismatch — pure missing-enforcement gap.
 - [ ] Add Resend API key to enable email delivery (currently no-op fallback)
 - [ ] Verify Thmanyah font licensing for commercial deployment
 - [ ] Post-deploy smoke test on production domain
+
+
+---
+
+## Update — Feb 9, 2026 (later) · Image upload P0 fix, Theme B default, full audit
+
+### P0 fix: Uploaded images were silently broken across the entire site
+**Root cause:** `server.py` mounted `app.mount("/uploads", StaticFiles(...))` and `uploads.py` returned `url="/uploads/{subdir}/{name}"`. But the Kubernetes ingress only proxies `/api/*` to the backend pod — every other path (including `/uploads/*`) was routed to the React dev server, which served its `index.html` fallback (`Content-Type: text/html`). Result: every uploaded image rendered as a broken icon, every uploaded PDF was an HTML page.
+
+**Fix:**
+- `server.py` line 56-59: mount static files at `/api/uploads` with explanatory comment.
+- `uploads.py` line 40: emit `url="/api/uploads/{subdir}/{name}"`.
+- `public.py` PDF download: accepts both legacy `/uploads/...` and new `/api/uploads/...` for the file-system lookup (defensive).
+
+**Verified:** `GET /api/uploads/images/<uuid>.png` → `HTTP 200, content-type: image/png`. End-to-end: upload via `/admin/images` → save → `resetImageAssetsCache()` → public site reflects within ~3s without hard reload.
+
+### Theme B promoted to default
+- `active_theme = 'B'` per user request.
+- `HeaderB.jsx` already fixed earlier this session to render solid on non-hero routes (`DARK_HERO_ROUTES = new Set(["/"])`).
+
+### Full dashboard audit (testing_agent_v3_fork iteration_9)
+- 171/171 backend pytest PASS (including 4 new upload-path regression tests). 2 pre-existing data-drift tests in `test_image_assets.py` (expects `hero_background` active but DB has `hero_b_main` for Theme B) deselected — not regressions.
+- All 14 admin routes render with 0 console/page errors: `/admin`, `/admin/{publications,authors,categories,responses,users,roles,messages,home,branding,images,settings,toggles,audit}`.
+- All public routes verified Theme B + header visible.
+- Show-password toggle, HelpTip rendering, AR/EN admin toggle, sidebar DnD, header nav DnD, image cache invalidation — all green.
+
+### Outstanding (non-blocking, future cleanup)
+- 12 of 14 image_assets slots in DB are **orphans** (`about_b_portrait`, `principle_1/2/3_image`, `theme_c_*`, `hero_b_main`, etc.) — admins see them in `/admin/images` but no public component consumes them. Only `about_image` and `objectives_background` are actually rendered by Theme B. Recommend pruning the seed list OR wiring up the unused slots to new homepage sections.
+- Pre-existing `test_image_assets.py` failures: update tests to match current Theme B slot keys, OR re-seed `hero_background` active=True.
+- 8 orphan test PNG files cleaned from `/app/backend/uploads/images/`.
+- Spec says PATCH but reorder endpoints accept POST only.
+- ESLint `no-undef` enforcement in CI.
