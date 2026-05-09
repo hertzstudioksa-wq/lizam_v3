@@ -2,22 +2,19 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { usePublications } from "@/hooks/usePublications";
-import { useImageAssets } from "@/hooks/useImageAssets";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
 
 /**
- * Theme B — Featured Publications (refined): two-band composition.
- * Top band: image-backed dark band with editorial intro.
- * Bottom band: paper-base cards.
+ * Theme B — Featured Publications (Nadeem-inspired refinement).
+ * Centered heading with thin gold underline.
+ * 3 horizontal cards in a row on desktop. Centered "View all" outline button below.
+ * Single warm-paper background, generous vertical rhythm.
  */
 export default function FeaturedPublicationsB() {
   const { lang } = useLang();
   const { data } = usePublications({ limit: 6 });
-  const { bySlot } = useImageAssets();
   const items = data?.items || [];
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
-  const bandImg = bySlot.featured_band_background;
-  const useBg = bandImg?.active && bandImg?.url;
 
   if (!items.length) return null;
 
@@ -26,68 +23,77 @@ export default function FeaturedPublicationsB() {
       id="publications"
       data-testid="section-featured"
       data-theme-component="theme-b-featured"
+      style={{ background: "var(--tb-paper-base)" }}
     >
-      {/* Image-backed intro band */}
-      <div
-        className="tb-image-section tb-image-section-dark relative"
-        style={{
-          background: useBg ? `url(${bandImg.url}) center/cover no-repeat` : "var(--tb-navy-900)",
-          color: "var(--tb-paper-base)",
-        }}
-      >
-        {useBg && <div className="tb-overlay" />}
-        <div className="tb-content mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-20 md:py-28">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
-            <div className="max-w-[640px]">
-              <div className="tb-section-eyebrow">
-                <span className="rule" />
-                <span className="tb-overline" style={{ color: "var(--tb-gold-soft)" }}>
-                  {lang === "ar" ? "الإصدارات" : "Publications"}
-                </span>
-              </div>
-              <h2
-                className="tb-display mt-7 max-w-[24ch]"
-                style={{
-                  fontSize: "clamp(2rem, 3.6vw, 2.85rem)",
-                  lineHeight: 1.25,
-                  fontWeight: 500,
-                  color: "var(--tb-paper-base)",
-                }}
-              >
-                {lang === "ar"
-                  ? "قراءات بحثية موثوقة من المركز."
-                  : "Trusted research, curated for impact."}
-              </h2>
-              <p
-                className="mt-5 max-w-[58ch]"
-                style={{
-                  fontFamily: '"Thmanyah Serif Text", serif',
-                  fontSize: 16,
-                  lineHeight: 1.9,
-                  color: "rgba(247, 244, 238, 0.78)",
-                }}
-              >
-                {lang === "ar"
-                  ? "مختارات من أحدث الدراسات والأوراق التحليلية التي يصدرها المركز للقطاعين العام والخاص."
-                  : "A selection of the most recent studies and analytical papers from the Center, serving public and private institutions."}
-              </p>
-            </div>
-            <Link to="/publications" className="tb-btn-on-dark group" data-testid="featured-view-all">
-              <span>{lang === "ar" ? "استعراض الإصدارات" : "View all"}</span>
-              <Arrow size={16} strokeWidth={1.7} />
-            </Link>
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-32 md:py-40">
+        {/* Centered heading block — Nadeem rhythm */}
+        <header className="text-center mx-auto max-w-[720px]">
+          <div className="tb-overline" style={{ color: "var(--tb-gold-deep)", letterSpacing: "0.22em" }}>
+            {lang === "ar" ? "المكتبة البحثية" : "Research Library"}
           </div>
-        </div>
-      </div>
+          <h2
+            className="tb-display mt-6 mx-auto"
+            style={{
+              fontSize: "clamp(2.2rem, 4vw, 3.2rem)",
+              lineHeight: 1.25,
+              fontWeight: 500,
+              color: "var(--tb-navy-900)",
+              maxWidth: "22ch",
+            }}
+          >
+            {lang === "ar" ? "أحدث الإصدارات" : "Latest Publications"}
+          </h2>
+          <div className="mt-7 mx-auto" style={{ height: 1, width: 56, background: "var(--tb-gold)" }} />
+          <p
+            className="mt-7 mx-auto"
+            style={{
+              fontFamily: '"Thmanyah Serif Text", serif',
+              fontSize: 16,
+              lineHeight: 1.95,
+              color: "var(--tb-text-muted)",
+              maxWidth: "58ch",
+            }}
+          >
+            {lang === "ar"
+              ? "مختارات من أحدث الدراسات والأوراق التحليلية التي يصدرها المركز للقطاعين العام والخاص."
+              : "A selection of the most recent studies and analytical papers from the Center, serving public and private institutions."}
+          </p>
+        </header>
 
-      {/* Cards band — paper-warm, with refined cards */}
-      <div style={{ background: "var(--tb-paper-warm)" }}>
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-16 md:py-20">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.slice(0, 3).map((pub) => (
-              <PublicationCardB key={pub.id} pub={pub} testid={`featured-pub-${pub.id}`} />
-            ))}
-          </div>
+        {/* 3 horizontal cards */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
+          {items.slice(0, 3).map((pub) => (
+            <PublicationCardB key={pub.id} pub={pub} testid={`featured-pub-${pub.id}`} />
+          ))}
+        </div>
+
+        {/* Centered "View all" — Nadeem-style outlined */}
+        <div className="mt-20 text-center">
+          <Link
+            to="/publications"
+            className="inline-flex items-center gap-3 px-10 py-4 transition-all duration-400"
+            style={{
+              border: "1px solid var(--tb-navy-900)",
+              color: "var(--tb-navy-900)",
+              fontFamily: '"Thmanyah Sans", sans-serif',
+              fontSize: 14,
+              letterSpacing: "0.16em",
+              textTransform: lang === "ar" ? "none" : "uppercase",
+              fontWeight: 500,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--tb-navy-900)";
+              e.currentTarget.style.color = "var(--tb-paper-base)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--tb-navy-900)";
+            }}
+            data-testid="featured-view-all"
+          >
+            <span>{lang === "ar" ? "استعراض كل الإصدارات" : "View all publications"}</span>
+            <Arrow size={15} strokeWidth={1.6} />
+          </Link>
         </div>
       </div>
     </section>

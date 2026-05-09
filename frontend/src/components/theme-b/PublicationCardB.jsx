@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Eye, Clock, Lock, ArrowLeft, ArrowRight } from "lucide-react";
+import { Eye, Clock, Lock } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 
 function fmtDate(iso, lang) {
@@ -25,10 +25,11 @@ const ACCESS_BADGE = {
 };
 
 /**
- * Theme B — Premium Editorial Publication Card.
- * Sharp edges, gold edge reveal on hover, refined metadata rail with gold separators.
+ * Theme B — Editorial Publication Card (Nadeem-inspired).
+ * Landscape image on top (16:10), then title + summary + meta row below.
+ * Generous interior padding, soft-warm background, clean hover lift.
  */
-export default function PublicationCardB({ pub, compact = false, testid = "pub-card" }) {
+export default function PublicationCardB({ pub, testid = "pub-card" }) {
   const { lang } = useLang();
   const title = pub[`title_${lang}`] || pub.title_en || pub.title_ar;
   const summary = pub[`summary_${lang}`] || pub.summary_en || pub.summary_ar;
@@ -39,72 +40,104 @@ export default function PublicationCardB({ pub, compact = false, testid = "pub-c
   const readTime = pub.reading_time_minutes || 0;
   const views = pub.view_count || 0;
   const gated = pub.access_level && pub.access_level !== "public";
-  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
+  const cover = pub.cover_image_url;
 
   return (
-    <article className="tb-card group" data-testid={testid} data-theme-component="theme-b-card">
-      <Link to={`/publications/${slug}`} className="block h-full">
-        {/* Eyebrow row */}
-        <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.22em]">
-          <div className="flex items-center" style={{ color: "var(--tb-text-muted)" }}>
-            <span className="font-semibold" style={{ color: "var(--tb-gold)" }}>{type}</span>
-            <span className="tb-meta-sep" />
-            <span className="tabular-nums">{date}</span>
-          </div>
-          {access && (
-            <span
-              className="inline-flex items-center gap-1.5 px-2 py-0.5"
+    <article
+      className="group flex flex-col h-full overflow-hidden transition-all duration-400"
+      data-testid={testid}
+      data-theme-component="theme-b-card"
+      style={{
+        background: "var(--tb-paper-base)",
+        border: "1px solid var(--tb-hairline)",
+        borderRadius: "var(--tb-radius-md, 4px)",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 18px 40px -22px rgba(10, 17, 28, 0.22)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+    >
+      <Link to={`/publications/${slug}`} className="block h-full flex flex-col">
+        {/* Landscape cover */}
+        <div
+          className="relative w-full overflow-hidden"
+          style={{
+            aspectRatio: "16/10",
+            background: cover
+              ? `url(${cover}) center/cover no-repeat`
+              : "linear-gradient(135deg, var(--tb-navy-900) 0%, var(--tb-navy-700, var(--tb-navy-900)) 100%)",
+          }}
+        >
+          {!cover && (
+            <div
+              aria-hidden
               style={{
-                color: gated ? "var(--tb-navy-900)" : "var(--tb-gold-deep)",
-                background: "var(--tb-gold-faint)",
-                borderRadius: "var(--tb-radius-pill)",
-                fontSize: 10,
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--tb-gold)", opacity: 0.4,
+                fontFamily: '"Thmanyah Serif Display", serif',
+                fontSize: 56, fontStyle: "italic",
               }}
             >
-              {gated && <Lock size={10} strokeWidth={2} />}
-              <span style={{ letterSpacing: "0.1em" }}>{access}</span>
-            </span>
+              ل
+            </div>
+          )}
+          {gated && (
+            <div
+              className="absolute top-4 inline-flex items-center gap-1.5 px-2.5 py-1"
+              style={{
+                insetInlineEnd: 16,
+                background: "rgba(251, 250, 247, 0.94)",
+                color: "var(--tb-navy-900)",
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                borderRadius: 999,
+                fontWeight: 600,
+              }}
+            >
+              <Lock size={10} strokeWidth={2} />
+              <span>{access}</span>
+            </div>
           )}
         </div>
 
-        {/* Title */}
-        <h3
-          className={`mt-5 tb-display ${compact ? "text-[20px] md:text-[22px]" : "text-[22px] md:text-[26px]"}`}
-          style={{ lineHeight: 1.35, fontWeight: 500 }}
-        >
-          {title}
-        </h3>
+        {/* Body */}
+        <div className="p-7 md:p-8 flex flex-col flex-1">
+          <div className="flex items-center text-[11px] uppercase tracking-[0.22em]" style={{ color: "var(--tb-text-muted)" }}>
+            <span style={{ color: "var(--tb-gold)", fontWeight: 600 }}>{type}</span>
+            <span className="tb-meta-sep" />
+            <span className="tabular-nums">{date}</span>
+          </div>
 
-        {/* Summary */}
-        {summary && (
-          <p
-            className="mt-4 max-w-[60ch]"
+          <h3
+            className="tb-display mt-5"
             style={{
-              fontFamily: '"Thmanyah Sans", sans-serif',
-              fontSize: 14.5,
-              lineHeight: 1.85,
-              color: "var(--tb-text-muted)",
+              fontSize: "clamp(1.25rem, 1.65vw, 1.5rem)",
+              lineHeight: 1.4,
+              fontWeight: 500,
+              color: "var(--tb-navy-900)",
             }}
           >
-            {summary.length > 180 ? summary.slice(0, 180) + "…" : summary}
-          </p>
-        )}
+            {title}
+          </h3>
 
-        {/* Tags */}
-        {pub.tags && pub.tags.length > 0 && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            {pub.tags.slice(0, 4).map((tag, i) => (
-              <span key={i} className="text-[11.5px]" style={{ color: "var(--tb-text-muted)" }}>
-                <span className="me-1" style={{ color: "var(--tb-gold)" }}>/</span>
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+          {summary && (
+            <p
+              className="mt-4"
+              style={{
+                fontFamily: '"Thmanyah Serif Text", serif',
+                fontSize: 14.5,
+                lineHeight: 1.95,
+                color: "var(--tb-text-muted)",
+              }}
+            >
+              {summary.length > 140 ? summary.slice(0, 140) + "…" : summary}
+            </p>
+          )}
 
-        {/* Meta row */}
-        <div className="mt-7 pt-5 flex items-center justify-between gap-4 text-[12.5px]" style={{ borderTop: "1px solid var(--tb-hairline)", color: "var(--tb-text-muted)" }}>
-          <div className="flex items-center">
+          <div
+            className="mt-auto pt-6 flex items-center text-[12px]"
+            style={{ borderTop: "1px solid var(--tb-hairline)", color: "var(--tb-text-muted)", marginTop: 28 }}
+          >
             <span className="inline-flex items-center gap-1.5">
               <Eye size={12} strokeWidth={1.6} />
               <span className="tabular-nums">{views.toLocaleString(lang === "ar" ? "ar-SA" : "en")}</span>
@@ -112,16 +145,9 @@ export default function PublicationCardB({ pub, compact = false, testid = "pub-c
             <span className="tb-meta-sep" />
             <span className="inline-flex items-center gap-1.5">
               <Clock size={12} strokeWidth={1.6} />
-              <span>{readTime} {lang === "ar" ? "دقيقة قراءة" : "min read"}</span>
+              <span>{readTime} {lang === "ar" ? "د" : "min"}</span>
             </span>
           </div>
-          <span
-            className="inline-flex items-center gap-2"
-            style={{ color: "var(--tb-navy-900)", fontWeight: 500 }}
-          >
-            <span>{lang === "ar" ? "اقرأ" : "Read"}</span>
-            <Arrow size={14} className="tb-card-arrow" />
-          </span>
         </div>
       </Link>
     </article>

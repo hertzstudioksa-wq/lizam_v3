@@ -178,7 +178,30 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 - ~~Brute-force lockout on `/auth/login`~~
 - ~~PDF streaming proxy with short-lived signed tokens~~
 
-### Admin bilingual UI + admin entry button (May 2026)
+### Theme B redesign — Nadeem-inspired editorial rhythm (May 2026)
+**Ask:** "ادرس محتويات الصفحة المرجعية (نديم) واعمل تعديل في Theme B بحيث عدد الصور وحجمها والمسافات والتنسيق يكون زيه. حافظ على الفونت الحالي والألوان لكن عدّل التقسيم والمسافات وأحجام الصور."
+
+**Approach:** User trusted my judgment. Mapped Nadeem's editorial rhythm onto LIZAM's existing section structure — kept palette (LIZAM navy/cream/brass) and typography (Thmanyah), changed only layout/spacing/image-treatment patterns.
+
+**Components rewritten / created (Theme B only):**
+- `HeroB.jsx` — Centered text-only hero on deep navy. Eyebrow with gold rules each side. Two-line title (second line in gold). Subtitle. Single outlined gold CTA. No image panel, no chip rail. ~82vh.
+- `PublicationCardB.jsx` — Landscape cover (16:10) on top, then type+date eyebrow, title, summary, meta footer. Lock badge for gated publications. Soft hover lift.
+- `FeaturedPublicationsB.jsx` — Single warm-paper band. Centered heading "أحدث الإصدارات" with thin gold underline. 3 horizontal cards in a row. Centered outlined "View all" button. py-32/40.
+- `NewsletterB.jsx` (new) — Deep navy band before Contact. Centered editorial heading. Single email + button (gold filled). Posts to `/api/public/newsletter/subscribe`.
+- `HeaderB.jsx` — Transparent on dark hero (light text + white logo), paper bg with dark text when scrolled past hero. Admin shortcut button preserved.
+
+**Backend additions:**
+- `POST /api/public/newsletter/subscribe` — stores email in `newsletter_subscribers` collection, idempotent on email, rate-limited 8/10min/IP. Email delivery is no-op until Resend key is configured.
+- `GET /api/admin/newsletter` — lists subscribers (admin only).
+- `DELETE /api/admin/newsletter/{id}` — soft-unsubscribe.
+- New unique index on `newsletter_subscribers.email` and compound `(status, created_at)`.
+
+**Test evidence:**
+- 108/108 pytest passing (no regressions).
+- Live curl verified: subscribe new (201), duplicate idempotent, invalid 400, admin list returns count.
+- Playwright Theme B home: hero present, featured present, newsletter form submission shows success message, header transparent at top + paper when scrolled, all 5 sections render in correct rhythm.
+
+**Final state:** `active_theme=A` restored as default per user's standing instruction. Theme B available for switching from `/admin/branding` → "ثيمة الموقع العام".
 **Ask:** "خلي الداش بورد كلها default بتاعها عربي" + add an admin shortcut
 button on the public site (visible only to admin roles).
 

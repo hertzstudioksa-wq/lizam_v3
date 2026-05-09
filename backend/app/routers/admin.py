@@ -422,3 +422,23 @@ async def admin_patch_message(mid: str, body: dict,
         raise HTTPException(status_code=404, detail="Message not found")
     await audit_log(user, "update", "message", mid, {"status": status})
     return {"ok": True, "status": status}
+
+
+# ---------------- Newsletter subscribers ---------------------------------
+@router.get("/newsletter")
+async def admin_list_newsletter(user: dict = Depends(require_permission("messages.read"))):
+    items = await db.newsletter_subscribers.find({}, {"_id": 0}).sort("created_at", -1).to_list(length=2000)
+    active = await db.newsletter_subscribers.count_documents({"status": "active"})
+    return {"items": items, "active_count": active}
+
+
+@router.delete("/newsletter/{sub_id}")
+async def admin_unsubscribe_newsletter(sub_id: str,
+                                       user: dict = Depends(require_permission("messages.read"))):
+    r = await db.newsletter_subscribers.update_one(
+        {"id": sub_id}, {"$set": {"status": "unsubscribed"}}
+    )
+    if r.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+    await audit_log(user, "update", "newsletter", sub_id, {"status": "unsubscribed"})
+    return {"ok": True}

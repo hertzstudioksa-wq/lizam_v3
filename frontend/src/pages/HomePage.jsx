@@ -16,6 +16,7 @@ import PullBandB from "@/components/theme-b/PullBandB";
 import ObjectivesB from "@/components/theme-b/ObjectivesB";
 import FieldsOfWorkB from "@/components/theme-b/FieldsOfWorkB";
 import FeaturedPublicationsB from "@/components/theme-b/FeaturedPublicationsB";
+import NewsletterB from "@/components/theme-b/NewsletterB";
 import ContactBlockB from "@/components/theme-b/ContactBlockB";
 
 export default function HomePage() {
@@ -30,6 +31,7 @@ export default function HomePage() {
       {isB ? <ObjectivesB /> : <Objectives />}
       {isB ? <FieldsOfWorkB /> : <FieldsOfWork />}
       {isB ? <FeaturedPublicationsB /> : <FeaturedPublications />}
+      {isB && <NewsletterB />}
       {isB ? <ContactBlockB /> : <ContactBlock />}
     </PublicLayout>
   );

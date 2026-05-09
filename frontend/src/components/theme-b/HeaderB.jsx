@@ -50,13 +50,19 @@ export default function HeaderB() {
         background: scrolled ? "rgba(249, 247, 243, 0.92)" : "transparent",
         backdropFilter: scrolled ? "blur(14px)" : "none",
         borderBottom: scrolled ? "1px solid var(--tb-hairline)" : "1px solid transparent",
+        // When over the dark hero (not scrolled), text/links are paper-light.
+        // When scrolled past the hero, header sits on paper bg with navy text.
+        ["--tb-header-fg"]: scrolled ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
+        ["--tb-header-fg-muted"]: scrolled ? "var(--tb-text-muted)" : "rgba(251, 250, 247, 0.78)",
+        color: scrolled ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
       }}
       data-testid="site-header"
       data-theme-component="theme-b-header"
+      data-scrolled={scrolled ? "true" : "false"}
     >
       <div className="mx-auto max-w-[1360px] px-5 md:px-10 lg:px-14">
         <div className="flex items-center justify-between h-[72px] md:h-[82px]">
-          <Logo height={44} data-testid="header-logo" />
+          <Logo height={44} variant={scrolled ? "default" : "light"} data-testid="header-logo" />
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-10" data-testid="desktop-nav">
@@ -67,6 +73,7 @@ export default function HeaderB() {
                 end={it.to === "/"}
                 data-testid={it.testid}
                 className={({ isActive }) => `tb-nav-link ${isActive ? "active" : ""}`}
+                style={{ color: "var(--tb-header-fg)" }}
               >
                 {it.label}
               </NavLink>
@@ -80,6 +87,7 @@ export default function HeaderB() {
               className="tb-btn-ghost"
               aria-label="Switch language"
               data-testid="language-switch"
+              style={{ color: "var(--tb-header-fg)" }}
             >
               <span className={lang === "ar" ? "font-sans" : "font-arabic"}>
                 {t("lang.switch")}
@@ -91,6 +99,7 @@ export default function HeaderB() {
                 className="tb-btn-ghost inline-flex items-center gap-1.5"
                 data-testid="admin-entry-btn"
                 title={t("nav.admin")}
+                style={{ color: "var(--tb-header-fg)" }}
               >
                 <LayoutDashboard size={14} strokeWidth={1.8} />
                 <span>{t("nav.admin")}</span>
@@ -112,7 +121,7 @@ export default function HeaderB() {
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="md:hidden h-11 w-11 inline-flex items-center justify-center"
-            style={{ color: "var(--tb-navy-900)" }}
+            style={{ color: scrolled ? "var(--tb-navy-900)" : "var(--tb-paper-base)" }}
             aria-label={open ? "Close menu" : "Open menu"}
             data-testid="mobile-menu-toggle"
           >

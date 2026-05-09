@@ -56,6 +56,8 @@ async def seed_all() -> None:
     await db.publications.create_index([("status", 1), ("published_at", -1)])
     await db.categories.create_index("id", unique=True)
     await db.authors.create_index("id", unique=True)
+    await db.newsletter_subscribers.create_index("email", unique=True)
+    await db.newsletter_subscribers.create_index([("status", 1), ("created_at", -1)])
 
     # Roles
     default_roles = [

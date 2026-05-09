@@ -309,3 +309,52 @@ async def public_submit_contact(body: dict, request: Request):
     except Exception:  # noqa: BLE001
         pass
     return {"ok": True, "id": doc["id"]}
+
+
+@router.post("/newsletter/subscribe")
+async def public_newsletter_subscribe(body: dict, request: Request):
+    """Public newsletter signup. Stores email in Mongo (idempotent on email).
+    Email delivery is a no-op until a Resend key is configured. Rate-limited
+    per IP to prevent abuse.
+    """
+    from app.rate_limit import check_and_record_attempt, reset_fail
+    from app.security import uid
+
+    email = (body.get("email") or "").strip().lower()[:160]
+    language = (body.get("language") or "ar").strip().lower()
+    if language not in ("ar", "en"):
+        language = "ar"
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=400, detail="A valid email address is required")
+
+    # Per-IP rate limiting: 8 submissions per 10 min, 30 min lock.
+    await check_and_record_attempt(
+        request, "newsletter", subject=email,
+        max_fails=8, window_s=600, lock_s=1800,
+    )
+
+    existing = await db.newsletter_subscribers.find_one(
+        {"email": email}, {"_id": 0, "id": 1, "status": 1}
+    )
+    if existing:
+        # Reactivate if previously unsubscribed
+        if existing.get("status") != "active":
+            await db.newsletter_subscribers.update_one(
+                {"email": email},
+                {"$set": {"status": "active", "language": language, "resubscribed_at": utc_iso()}},
+            )
+        await reset_fail([f"newsletter:subj:{email}"])
+        return {"ok": True, "id": existing["id"], "already_subscribed": True}
+
+    doc = {
+        "id": uid(),
+        "email": email,
+        "language": language,
+        "status": "active",
+        "source": "home_newsletter",
+        "created_at": utc_iso(),
+        "ip": request.client.host if request.client else "",
+    }
+    await db.newsletter_subscribers.insert_one(doc)
+    await reset_fail([f"newsletter:subj:{email}"])
+    return {"ok": True, "id": doc["id"], "already_subscribed": False}
