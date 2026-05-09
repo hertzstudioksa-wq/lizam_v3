@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
@@ -16,6 +17,7 @@ export default function LoginPage() {
     !site || (site.feature_toggles?.registration !== false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleEnabled, setGoogleEnabled] = useState(false);
@@ -103,15 +105,33 @@ export default function LoginPage() {
               />
             </Field>
             <Field label={t("admin.password")}>
-              <input
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-11 px-3 border border-rule focus:border-navy focus:ring-0 outline-none text-[15px]"
-                data-testid="login-password"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-11 px-3 pe-11 border border-rule focus:border-navy focus:ring-0 outline-none text-[15px]"
+                  data-testid="login-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={
+                    lang === "ar"
+                      ? showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"
+                      : showPassword ? "Hide password" : "Show password"
+                  }
+                  aria-pressed={showPassword}
+                  className="absolute top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-8 w-8 text-mute hover:text-navy-deep focus:outline-none focus:text-navy-deep transition-colors"
+                  style={{ insetInlineEnd: 6 }}
+                  data-testid="login-password-toggle"
+                  tabIndex={0}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
             </Field>
 
             {err && (
