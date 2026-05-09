@@ -25,12 +25,14 @@ export default function MissionVisionB() {
   const Card = ({ index, kicker, title, body, points, testid, accentDark }) => (
     <article
       data-testid={testid}
-      className="relative h-full"
+      className="lz-mv-card relative h-full"
       style={{
         background: "var(--tb-paper-base)",
         border: "1px solid var(--tb-hairline)",
         borderRadius: 6,
-        padding: "1.85rem 2rem 2rem",
+        padding: "2.1rem 2.25rem 2.25rem",
+        transition: "transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s cubic-bezier(.2,.7,.2,1), border-color .45s ease",
+        ["--tb-accent"]: accentDark ? "var(--tb-navy-900)" : "var(--tb-gold)",
       }}
     >
       {/* Top row: index + kicker + dot */}
@@ -38,35 +40,40 @@ export default function MissionVisionB() {
         <div className="flex items-center gap-2.5">
           <span
             style={{
-              fontSize: 12,
+              fontSize: 13,
               letterSpacing: "0.18em",
               color: "var(--tb-text-muted)",
               fontFeatureSettings: '"tnum" 1',
+              fontWeight: 500,
             }}
           >
             {index}
           </span>
-          <span style={{ height: 1, width: 22, background: "var(--tb-gold)" }} />
-          <span className="tb-overline">{kicker}</span>
+          <span style={{ height: 1, width: 26, background: "var(--tb-gold)" }} />
+          <span className="tb-overline" style={{ fontSize: 13 }}>
+            {kicker}
+          </span>
         </div>
         <span
           aria-hidden
+          className="lz-mv-dot"
           style={{
             display: "inline-block",
-            width: 7,
-            height: 7,
+            width: 8,
+            height: 8,
             borderRadius: 999,
             background: accentDark ? "var(--tb-navy-900)" : "var(--tb-gold)",
             opacity: 0.9,
+            transition: "transform .45s ease",
           }}
         />
       </div>
 
       {/* Heading — modest, tagline-style */}
       <h3
-        className="tb-display mt-5"
+        className="tb-display mt-6"
         style={{
-          fontSize: "clamp(1.05rem, 1.25vw, 1.225rem)",
+          fontSize: "clamp(1.25rem, 1.5vw, 1.45rem)",
           lineHeight: 1.45,
           fontWeight: 500,
           maxWidth: "30ch",
@@ -77,10 +84,10 @@ export default function MissionVisionB() {
 
       {/* Body */}
       <p
-        className="mt-3.5"
+        className="mt-4"
         style={{
-          fontSize: 14.5,
-          lineHeight: 1.85,
+          fontSize: 16,
+          lineHeight: 1.9,
           color: "var(--tb-text)",
           maxWidth: "60ch",
         }}
@@ -91,25 +98,25 @@ export default function MissionVisionB() {
       {/* Points */}
       {points.length > 0 && (
         <ul
-          className="mt-6 space-y-3"
-          style={{ borderTop: "1px solid var(--tb-hairline)", paddingTop: "1.1rem" }}
+          className="mt-7 space-y-3.5"
+          style={{ borderTop: "1px solid var(--tb-hairline)", paddingTop: "1.25rem" }}
         >
           {points.map((p, i) => (
             <li key={i} className="flex items-start gap-3">
               <span
                 aria-hidden
                 style={{
-                  marginTop: 10,
+                  marginTop: 11,
                   flexShrink: 0,
-                  width: 12,
+                  width: 14,
                   height: 1,
                   background: "var(--tb-gold)",
                 }}
               />
               <span
                 style={{
-                  fontSize: 13.5,
-                  lineHeight: 1.78,
+                  fontSize: 15,
+                  lineHeight: 1.85,
                   color: "var(--tb-text)",
                 }}
               >
@@ -129,6 +136,23 @@ export default function MissionVisionB() {
       data-theme-component="theme-b-mission"
       style={{ background: "var(--tb-paper-deep)" }}
     >
+      <style>{`
+        .lz-mv-card { will-change: transform, box-shadow; }
+        .lz-mv-card:hover {
+          transform: translateY(-3px);
+          border-color: var(--tb-accent);
+          box-shadow:
+            0 1px 0 0 rgba(0,0,0,0.02),
+            0 18px 36px -22px rgba(14,26,44,0.22),
+            0 6px 14px -10px rgba(14,26,44,0.10);
+        }
+        .lz-mv-card:hover .lz-mv-dot {
+          transform: scale(1.45);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .lz-mv-card, .lz-mv-card:hover, .lz-mv-dot { transition: none !important; transform: none !important; }
+        }
+      `}</style>
       <div className="mx-auto max-w-[1180px] px-6 md:px-10 lg:px-12 py-20 md:py-24">
         {/* Compact section intro */}
         <div className="max-w-[680px]">
@@ -141,8 +165,8 @@ export default function MissionVisionB() {
           <h2
             className="tb-display mt-4"
             style={{
-              fontSize: "clamp(1.4rem, 1.9vw, 1.8rem)",
-              lineHeight: 1.35,
+              fontSize: "clamp(1.6rem, 2.1vw, 2rem)",
+              lineHeight: 1.32,
               fontWeight: 500,
               maxWidth: "32ch",
             }}
@@ -152,10 +176,10 @@ export default function MissionVisionB() {
               : "What drives our work — and where we are headed."}
           </h2>
           <p
-            className="mt-3.5"
+            className="mt-4"
             style={{
-              fontSize: 14.5,
-              lineHeight: 1.8,
+              fontSize: 15.5,
+              lineHeight: 1.85,
               color: "var(--tb-text-muted)",
               maxWidth: "58ch",
             }}
@@ -167,7 +191,7 @@ export default function MissionVisionB() {
         </div>
 
         {/* Two equal-weight cards */}
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6 items-stretch">
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-7 items-stretch">
           <Card
             index="01"
             kicker={lang === "ar" ? "الرسالة" : "Mission"}
