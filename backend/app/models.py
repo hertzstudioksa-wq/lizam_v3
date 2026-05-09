@@ -55,6 +55,9 @@ class SiteSettingsIn(BaseModel):
     footer_text_en: Optional[str] = None
     social_links: Optional[SocialLinks] = None
     feature_toggles: Optional[FeatureToggles] = None
+    # Ordered list of header-nav item keys. Items NOT in the array are hidden
+    # from the public header. Allowed keys: "home" | "publications" | "about" | "contact"
+    header_nav_order: Optional[List[str]] = None
 
 
 class BrandingIn(BaseModel):
@@ -141,6 +144,7 @@ class AuthorIn(BaseModel):
     photo_url: Optional[str] = None
     email: Optional[str] = None
     linkedin: Optional[str] = None
+    sort_order: Optional[int] = None
     active: Optional[bool] = None
 
 

@@ -250,7 +250,7 @@ async def pdf_stream(token: str, request: Request):
 
 @router.get("/authors")
 async def list_authors():
-    items = await db.authors.find({"active": True}, {"_id": 0, "email": 0}).to_list(length=200)
+    items = await db.authors.find({"active": True}, {"_id": 0, "email": 0}).sort([("sort_order", 1), ("created_at", 1)]).to_list(length=200)
     return {"items": items}
 
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Plus, ArrowLeft } from "lucide-react";
 import { AdminPage, Field, TextInput, TextArea, Select, Toggle, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
+import HelpTip from "@/admin/components/HelpTip";
 import TiptapField from "@/admin/components/TiptapField";
 import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
@@ -29,6 +30,8 @@ export function PublicationsListAdmin() {
 
   return (
     <AdminPage title={tr("الإصدارات", "Publications")} subtitle={tr("إدارة المحتوى · المكتبة البحثية", "CMS · Research library")}
+      helpAr={"إدارة كل الإصدارات (دراسات، أبحاث، أوراق سياسات، تقارير...). كل إصدار له حالة (مسودة/قيد المراجعة/منشور/مؤرشف) ومستوى وصول يحدد من يستطيع قراءته. فقط «المنشورة» تظهر للزوار."}
+      helpEn="Manage all publications (studies, research, policy papers, reports). Each has a status (draft/under-review/published/archived) and an access level controlling who can read it. Only Published items appear publicly."
       actions={<Link to="/admin/publications/new" className="lz-btn-primary" data-testid="new-pub-btn"><Plus size={15} /><span>{tr("إصدار جديد", "New publication")}</span></Link>}>
       <div className="flex flex-wrap gap-3 mb-6">
         <TextInput value={q} onChange={setQ} placeholder={tr("بحث في العنوان أو الوسوم…", "Search title / tag…")} testid="pub-list-search" />
@@ -164,6 +167,8 @@ export function PublicationEditAdmin() {
     <AdminPage
       title={isNew ? tr("إصدار جديد", "New publication") : (form.value.title_ar || form.value.title_en || tr("تعديل الإصدار", "Edit publication"))}
       subtitle={tr("إدارة المحتوى · المحرر", "CMS · Editor")}
+      helpAr="حرّر بيانات الإصدار. الحقول التقنية في العمود الجانبي (الحالة، مستوى الوصول، وصول PDF) لها أيقونات معلومات ⓘ - مرّر عليها للشرح."
+      helpEn="Edit the publication's content and metadata. Technical fields in the side panel (status, access level, PDF access) have ⓘ icons — hover for explanations."
       actions={<Link to="/admin/publications" className="lz-btn-ghost"><ArrowLeft size={15} /> {tr("رجوع", "Back")}</Link>}
     >
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -198,7 +203,7 @@ export function PublicationEditAdmin() {
 
         {/* Side metadata panel */}
         <aside className="space-y-5 xl:sticky xl:top-6 self-start">
-          <Field label={tr("الحالة", "Status")}>
+          <Field label={<span className="inline-flex items-center">{tr("الحالة", "Status")}<HelpTip ar={"فقط الإصدارات بحالة «منشور» تظهر للزوار. «مؤرشف» يخفيها مع الاحتفاظ بالبيانات."} en="Only Published items appear publicly. Archived hides them while keeping all data." /></span>}>
             <Select value={form.value.status} onChange={(v) => form.patch("status", v)} options={[
               { value: "draft", label: tr("مسودة", "Draft") },
               { value: "under_review", label: tr("قيد المراجعة", "Under review") },
@@ -222,7 +227,7 @@ export function PublicationEditAdmin() {
               ...categories.map((c) => ({ value: c.id, label: c.title_en || c.title_ar })),
             ]} testid="pub-category" />
           </Field>
-          <Field label={tr("مستوى الوصول", "Access level")} hint={tr("عام: متاح للجميع · معاينة + تسجيل: ملخص فقط للزائر · للمسجلين: لازم تسجيل دخول · مخفي: لا يظهر", "Public: open · Preview+login: summary only · Registered: requires login · Hidden: not shown")}>
+          <Field label={<span className="inline-flex items-center">{tr("مستوى الوصول", "Access level")}<HelpTip ar="عام: متاح للجميع. معاينة + تسجيل: ملخص فقط للزائر، النص الكامل بعد الدخول. للمسجلين: لازم تسجيل دخول لقراءة أي شيء. مخفي: لا يظهر إطلاقاً." en="Public: open. Preview+login: summary only for guests, full text for members. Registered: login required for any content. Hidden: not shown at all." /></span>}>
             <Select value={form.value.access_level} onChange={(v) => form.patch("access_level", v)} options={[
               { value: "public", label: tr("عام", "Public") },
               { value: "preview_login", label: tr("معاينة + تسجيل دخول", "Preview + login") },
@@ -230,7 +235,7 @@ export function PublicationEditAdmin() {
               { value: "hidden", label: tr("مخفي / مسودة", "Hidden / draft") },
             ]} testid="pub-access" />
           </Field>
-          <Field label={tr("الوصول إلى ملف PDF", "PDF access")}>
+          <Field label={<span className="inline-flex items-center">{tr("الوصول إلى ملف PDF", "PDF access")}<HelpTip ar="منفصل عن مستوى الوصول للنص. عام: تحميل مفتوح. يتطلب دخول: لازم تسجيل دخول لتنزيل الملف. معطّل: لا يظهر زر التحميل إطلاقاً." en="Independent of content access. Public: open download. Login required: must sign in to download. Disabled: no download button at all." /></span>}>
             <Select value={form.value.pdf_access_level} onChange={(v) => form.patch("pdf_access_level", v)} options={[
               { value: "public", label: tr("عام", "Public") },
               { value: "login_required", label: tr("يتطلب تسجيل الدخول", "Login required") },
@@ -238,8 +243,8 @@ export function PublicationEditAdmin() {
               { value: "disabled", label: tr("معطّل", "Disabled") },
             ]} testid="pub-pdf-access" />
           </Field>
-          <Toggle checked={!!form.value.featured} onChange={(v) => form.patch("featured", v)} label={tr("إصدار مميّز", "Featured")} testid="pub-featured" />
-          <Toggle checked={!!form.value.responses_enabled} onChange={(v) => form.patch("responses_enabled", v)} label={tr("استقبال الردود البحثية", "Responses enabled")} testid="pub-responses" />
+          <Toggle checked={!!form.value.featured} onChange={(v) => form.patch("featured", v)} label={<span className="inline-flex items-center">{tr("إصدار مميّز", "Featured")}<HelpTip ar={"يجعل الإصدار يظهر في قسم «أحدث الإصدارات» بالصفحة الرئيسية. لو لا يوجد إصدار مميّز، يعرض القسم أحدث الإصدارات تلقائياً."} en="Pins the publication to the home page Featured section. If nothing is featured, the section falls back to the latest publications automatically." /></span>} testid="pub-featured" />
+          <Toggle checked={!!form.value.responses_enabled} onChange={(v) => form.patch("responses_enabled", v)} label={<span className="inline-flex items-center">{tr("استقبال الردود البحثية", "Responses enabled")}<HelpTip ar="يعرض نموذج إرسال الردود البحثية أسفل صفحة الإصدار. الردود تخضع لمراجعة الإدارة قبل النشر." en="Shows the research-response form on this publication's page. All submissions are moderated before they appear." /></span>} testid="pub-responses" />
 
           <Field label={tr("الباحثون", "Authors")}>
             <div className="space-y-1 max-h-52 overflow-auto bg-white border border-rule p-2">

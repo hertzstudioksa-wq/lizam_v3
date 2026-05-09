@@ -90,7 +90,9 @@ export default function BrandingAdmin() {
   );
 
   return (
-    <AdminPage title={tr("الهوية والتصميم", "Design & Branding")} subtitle={tr("الهوية البصرية · الثيمة · الخطوط", "Visual identity · Theme · Fonts")}>
+    <AdminPage title={tr("الهوية والتصميم", "Design & Branding")} subtitle={tr("الهوية البصرية · الثيمة · الخطوط", "Visual identity · Theme · Fonts")}
+      helpAr="الهوية البصرية الكاملة للموقع: ثيمة العرض، الخط الافتراضي، الشعار، والألوان الأساسية. أي تغيير ينعكس فوراً على الموقع العام بعد الحفظ بدون إعادة تحميل."
+      helpEn="The full visual identity: theme, default font, logo, and core palette. Saved changes apply to the public site instantly without a hard reload.">
       {/* Theme Selector */}
       <section className="mb-12" data-testid="theme-selector-section">
         <div className="flex items-baseline gap-3 mb-4">

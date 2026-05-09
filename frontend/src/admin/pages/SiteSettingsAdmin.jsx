@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AdminPage, Field, TextInput, TextArea, Select, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
+import { ReorderControls, moveItem } from "@/admin/components/ReorderControls";
 import { useLang } from "@/i18n/LanguageContext";
 import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 
@@ -29,6 +30,7 @@ export default function SiteSettingsAdmin() {
       address_ar: form.value.address_ar, address_en: form.value.address_en,
       footer_text_ar: form.value.footer_text_ar, footer_text_en: form.value.footer_text_en,
       social_links: form.value.social_links || {},
+      header_nav_order: form.value.header_nav_order || undefined,
     };
     const r = await apiCall("patch", "/admin/site-settings", payload);
     setSaving(false);
@@ -54,6 +56,44 @@ export default function SiteSettingsAdmin() {
         <Field label={tr("العنوان بالإنجليزية", "English address")}><TextInput value={form.value.address_en} onChange={(v) => form.patch("address_en", v)} dir="ltr" testid="address-en" /></Field>
         <Field label={tr("نص التذييل بالعربية", "Arabic footer text")}><TextArea value={form.value.footer_text_ar} onChange={(v) => form.patch("footer_text_ar", v)} dir="rtl" rows={2} testid="footer-ar" /></Field>
         <Field label={tr("نص التذييل بالإنجليزية", "English footer text")}><TextArea value={form.value.footer_text_en} onChange={(v) => form.patch("footer_text_en", v)} rows={2} testid="footer-en" /></Field>
+      </div>
+
+      <h3 className="lz-h3 mt-12">{tr("ترتيب القائمة الرئيسية في الهيدر", "Header navigation order")}</h3>
+      <p className="text-[13px] text-mute mt-2 max-w-[60ch]">
+        {tr(
+          "رتّب عناصر القائمة كما تظهر للزائر، أو أخفِ عنصراً بالضغط على \"إخفاء\". العناصر المخفية تختفي تماماً من الهيدر العام.",
+          "Reorder the items as they appear to visitors, or hide an item by clicking \"Hide\". Hidden items disappear from the public header entirely."
+        )}
+      </p>
+      <div className="mt-5 max-w-[640px] bg-white border border-rule" data-testid="header-nav-order">
+        <ul className="divide-y divide-rule">
+          {navOrder.map((key, idx) => (
+            <li key={key} className="flex items-center gap-3 px-5 py-2.5" data-testid={`nav-order-row-${key}`}>
+              <span className="text-[12px] text-mute tabular-nums w-6">{idx + 1}</span>
+              <span className="flex-1 text-[14px] text-navy-deep">{NAV_LABELS[key]}</span>
+              <ReorderControls index={idx} total={navOrder.length} onMove={moveNav} testid={`nav-order-${key}`} />
+              <button type="button" onClick={() => hideNav(key)}
+                className="text-[12px] text-mute hover:text-red-700 ms-2"
+                data-testid={`nav-hide-${key}`}>
+                {tr("إخفاء", "Hide")}
+              </button>
+            </li>
+          ))}
+        </ul>
+        {navHidden.length > 0 && (
+          <div className="border-t border-rule px-5 py-3 bg-paper">
+            <div className="text-[11.5px] uppercase tracking-[0.16em] text-mute mb-2">{tr("مخفية", "Hidden")}</div>
+            <div className="flex flex-wrap gap-2">
+              {navHidden.map((key) => (
+                <button key={key} type="button" onClick={() => showNav(key)}
+                  className="text-[12.5px] px-3 py-1 border border-rule hover:border-navy bg-white"
+                  data-testid={`nav-show-${key}`}>
+                  + {NAV_LABELS[key]}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <h3 className="lz-h3 mt-12">{tr("روابط التواصل الاجتماعي", "Social Links")}</h3>

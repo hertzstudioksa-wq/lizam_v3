@@ -62,8 +62,9 @@ export default function ResponsesAdmin() {
   ];
 
   return (
-    <AdminPage title={tr("الردود البحثية", "Research Responses")} subtitle={tr("المراجعة · إرسال → اعتماد / رفض / أرشفة", "Moderation · Submit → Approve / Reject / Archive")}>
-      {msg && <div className="mb-4 px-4 py-2.5 bg-paper border-l-2 border-brass text-[13px]" data-testid="responses-status">{msg}</div>}
+    <AdminPage title={tr("الردود البحثية", "Research Responses")} subtitle={tr("المراجعة · إرسال → اعتماد / رفض / أرشفة", "Moderation · Submit → Approve / Reject / Archive")}
+      helpAr={"ردود الزوار على الإصدارات. كل رد يبدأ بحالة «مُرسَل» ويظل مخفياً حتى تعتمده الإدارة. اعتماد الرد + تفعيل خانة «مرئي للعموم» يُظهره أسفل صفحة الإصدار."}
+      helpEn={'Visitor responses to publications. Each response starts as Submitted and stays hidden until moderated. Approve and tick "Publicly visible" to show it under the publication page.'}>      {msg && <div className="mb-4 px-4 py-2.5 bg-paper border-l-2 border-brass text-[13px]" data-testid="responses-status">{msg}</div>}
 
       <div className="flex items-center gap-2 mb-6 flex-wrap" data-testid="responses-filters">
         {FILTERS.map(([k, label]) => (

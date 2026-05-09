@@ -42,7 +42,9 @@ export default function AuditLogAdmin() {
   ];
 
   return (
-    <AdminPage title={tr("سجل النشاط", "Audit Log")} subtitle={tr("نشاط الإدارة · آخر 200 حدث", "Admin activity · Last 200 events")}>
+    <AdminPage title={tr("سجل النشاط", "Audit Log")} subtitle={tr("نشاط الإدارة · آخر 200 حدث", "Admin activity · Last 200 events")}
+      helpAr="سجل لكل تعديل قامت به الإدارة (تسجيل دخول، تعديل إصدار، تغيير صلاحية، إلخ). يُحفظ تلقائياً ولا يُعدّل يدوياً، ويستخدم للمراجعة الأمنية."
+      helpEn="Append-only record of every admin action (login, publication edits, role changes, etc.). Used for security review; cannot be edited manually.">
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <label className="text-[12.5px] text-mute">
           {tr("نوع الهدف:", "Target type:")}

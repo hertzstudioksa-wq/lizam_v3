@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Save } from "lucide-react";
+import { Save, Lightbulb } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
 
-export function AdminPage({ title, subtitle, children, actions }) {
+export function AdminPage({ title, subtitle, children, actions, helpAr, helpEn }) {
+  const { lang } = useLang();
+  const help = lang === "ar" ? helpAr : (helpEn || helpAr);
   return (
     <div className="p-8 md:p-10" data-testid="admin-page">
       <div className="flex items-start justify-between gap-6 mb-8">
@@ -14,6 +16,17 @@ export function AdminPage({ title, subtitle, children, actions }) {
         </div>
         <div className="flex items-center gap-3">{actions}</div>
       </div>
+      {help && (
+        <aside
+          className="mb-8 max-w-[1100px] flex items-start gap-3 px-5 py-4 bg-paper border-l-2 border-brass"
+          data-testid="admin-page-help"
+          role="note"
+          dir={lang === "ar" ? "rtl" : "ltr"}
+        >
+          <Lightbulb size={16} strokeWidth={1.7} className="text-brass mt-0.5 shrink-0" />
+          <p className="text-[13.5px] leading-[1.85] text-ink/80">{help}</p>
+        </aside>
+      )}
       {children}
     </div>
   );

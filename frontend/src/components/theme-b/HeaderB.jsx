@@ -1,18 +1,20 @@
 import { NavLink, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Menu, X, LayoutDashboard } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useLang } from "@/i18n/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
 
-const navItems = (t) => [
-  { to: "/", label: t("nav.home"), testid: "nav-home" },
-  { to: "/publications", label: t("nav.publications"), testid: "nav-publications" },
-  { to: "/about", label: t("nav.about"), testid: "nav-about" },
-  { to: "/contact", label: t("nav.contact"), testid: "nav-contact" },
-];
+const NAV_DEFS = (t) => ({
+  home:         { to: "/",             label: t("nav.home"),         testid: "nav-home" },
+  publications: { to: "/publications", label: t("nav.publications"), testid: "nav-publications" },
+  about:        { to: "/about",        label: t("nav.about"),        testid: "nav-about" },
+  contact:      { to: "/contact",      label: t("nav.contact"),      testid: "nav-contact" },
+});
+const DEFAULT_ORDER = ["home", "publications", "about", "contact"];
 
 /**
  * Theme B — Premium Editorial Header.
@@ -22,6 +24,7 @@ const navItems = (t) => [
 export default function HeaderB() {
   const { lang, toggle, t } = useLang();
   const { user } = useAuth();
+  const { data: site } = useSiteSettings();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -39,7 +42,13 @@ export default function HeaderB() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const items = navItems(t);
+  const items = useMemo(() => {
+    const defs = NAV_DEFS(t);
+    const order = (site?.header_nav_order && site.header_nav_order.length)
+      ? site.header_nav_order
+      : DEFAULT_ORDER;
+    return order.map((k) => defs[k]).filter(Boolean);
+  }, [t, site?.header_nav_order]);
   const isAuthed = user && typeof user === "object";
   const isAdmin = isAuthed && ADMIN_ROLES.has(user.role);
 

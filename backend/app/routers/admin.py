@@ -1,5 +1,5 @@
 """Admin CRUD router + audit logging + feature toggles."""
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.config import db
 from app.models import (
@@ -246,8 +246,24 @@ async def admin_archive_publication(pub_id: str,
 # ---------------------------------------------------------------------------
 @router.get("/authors")
 async def admin_list_authors(user: dict = Depends(require_permission("authors.read"))):
-    items = await db.authors.find({}, {"_id": 0}).sort("created_at", -1).to_list(length=500)
+    items = await db.authors.find({}, {"_id": 0}).sort([("sort_order", 1), ("created_at", -1)]).to_list(length=500)
     return {"items": items}
+
+
+@router.post("/authors/reorder")
+async def admin_reorder_authors(body: List[dict],
+                                user: dict = Depends(require_permission("authors.edit"))):
+    """Bulk-set sort_order. Body: [{"id": "...", "sort_order": 0}, ...]"""
+    for item in body:
+        if not item.get("id"):
+            continue
+        await db.authors.update_one(
+            {"id": item["id"]},
+            {"$set": {"sort_order": int(item.get("sort_order", 0)),
+                      "updated_at": utc_iso(), "_seed_origin": "admin"}},
+        )
+    await audit_log(user, "reorder", "author", "bulk", {"count": len(body)})
+    return {"ok": True, "count": len(body)}
 
 
 @router.post("/authors")
@@ -296,6 +312,22 @@ async def admin_archive_author(author_id: str,
 async def admin_list_categories(user: dict = Depends(require_permission("categories.read"))):
     items = await db.categories.find({}, {"_id": 0}).sort("sort_order", 1).to_list(length=500)
     return {"items": items}
+
+
+@router.post("/categories/reorder")
+async def admin_reorder_categories(body: List[dict],
+                                   user: dict = Depends(require_permission("categories.edit"))):
+    """Bulk-set sort_order. Body: [{"id": "...", "sort_order": 0}, ...]"""
+    for item in body:
+        if not item.get("id"):
+            continue
+        await db.categories.update_one(
+            {"id": item["id"]},
+            {"$set": {"sort_order": int(item.get("sort_order", 0)),
+                      "updated_at": utc_iso(), "_seed_origin": "admin"}},
+        )
+    await audit_log(user, "reorder", "category", "bulk", {"count": len(body)})
+    return {"ok": True, "count": len(body)}
 
 
 @router.post("/categories")

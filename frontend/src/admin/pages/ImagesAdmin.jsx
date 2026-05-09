@@ -60,6 +60,8 @@ export default function ImagesAdmin() {
     <AdminPage
       title={tr("إدارة الصور", "Image Management")}
       subtitle={tr("صور الموقع العام · الثيمة B", "Public site imagery · Theme B")}
+      helpAr="الصور المُنسَّقة المستخدمة في خلفيات وأقسام الموقع. لكل خانة مقاس مُفضَّل ونص بديل (alt) للقراء. عطّل أي خانة لتعود الخلفية إلى لونها الأساسي."
+      helpEn="The curated images used as backgrounds across the public site. Each slot has a recommended size and alt text. Deactivate to fall back to a solid background."
     >
       <p className="max-w-[760px] text-[14px] text-ink/75 leading-relaxed mb-10">
         {tr(
