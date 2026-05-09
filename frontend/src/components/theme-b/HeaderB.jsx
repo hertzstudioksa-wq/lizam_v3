@@ -1,4 +1,4 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { Menu, X, LayoutDashboard } from "lucide-react";
 import Logo from "@/components/brand/Logo";
@@ -7,6 +7,11 @@ import { useAuth } from "@/auth/AuthContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
+
+// Routes that render a dark, full-bleed hero behind the (transparent) header.
+// On every other route the header must be in "solid" mode from the first paint
+// otherwise its paper-coloured links are invisible against the paper page bg.
+const DARK_HERO_ROUTES = new Set(["/"]);
 
 const NAV_DEFS = (t) => ({
   home:         { to: "/",             label: t("nav.home"),         testid: "nav-home" },
@@ -25,8 +30,13 @@ export default function HeaderB() {
   const { lang, toggle, t } = useLang();
   const { user } = useAuth();
   const { data: site } = useSiteSettings();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // On any non-hero page the header must paint solid from the start.
+  const overDarkHero = DARK_HERO_ROUTES.has(pathname);
+  const solid = scrolled || !overDarkHero;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -56,22 +66,23 @@ export default function HeaderB() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500`}
       style={{
-        background: scrolled ? "rgba(249, 247, 243, 0.92)" : "transparent",
-        backdropFilter: scrolled ? "blur(14px)" : "none",
-        borderBottom: scrolled ? "1px solid var(--tb-hairline)" : "1px solid transparent",
-        // When over the dark hero (not scrolled), text/links are paper-light.
-        // When scrolled past the hero, header sits on paper bg with navy text.
-        ["--tb-header-fg"]: scrolled ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
-        ["--tb-header-fg-muted"]: scrolled ? "var(--tb-text-muted)" : "rgba(251, 250, 247, 0.78)",
-        color: scrolled ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
+        background: solid ? "rgba(249, 247, 243, 0.92)" : "transparent",
+        backdropFilter: solid ? "blur(14px)" : "none",
+        borderBottom: solid ? "1px solid var(--tb-hairline)" : "1px solid transparent",
+        // When over the dark hero (not solid), text/links are paper-light.
+        // When solid (scrolled or on a non-hero route), header sits on paper bg with navy text.
+        ["--tb-header-fg"]: solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
+        ["--tb-header-fg-muted"]: solid ? "var(--tb-text-muted)" : "rgba(251, 250, 247, 0.78)",
+        color: solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
       }}
       data-testid="site-header"
       data-theme-component="theme-b-header"
       data-scrolled={scrolled ? "true" : "false"}
+      data-solid={solid ? "true" : "false"}
     >
       <div className="mx-auto max-w-[1360px] px-5 md:px-10 lg:px-14">
         <div className="flex items-center justify-between h-[72px] md:h-[82px]">
-          <Logo height={44} variant={scrolled ? "default" : "light"} data-testid="header-logo" />
+          <Logo height={44} variant={solid ? "default" : "light"} data-testid="header-logo" />
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-10" data-testid="desktop-nav">
@@ -130,7 +141,7 @@ export default function HeaderB() {
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="md:hidden h-11 w-11 inline-flex items-center justify-center"
-            style={{ color: scrolled ? "var(--tb-navy-900)" : "var(--tb-paper-base)" }}
+            style={{ color: solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)" }}
             aria-label={open ? "Close menu" : "Open menu"}
             data-testid="mobile-menu-toggle"
           >
