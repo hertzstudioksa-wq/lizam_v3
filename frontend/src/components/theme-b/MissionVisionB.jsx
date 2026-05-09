@@ -32,7 +32,6 @@ export default function MissionVisionB() {
         borderRadius: 6,
         padding: "2.1rem 2.25rem 2.25rem",
         transition: "transform .45s cubic-bezier(.2,.7,.2,1), box-shadow .45s cubic-bezier(.2,.7,.2,1), border-color .45s ease",
-        ["--tb-accent"]: accentDark ? "var(--tb-navy-900)" : "var(--tb-gold)",
       }}
     >
       {/* Top row: index + kicker + dot */}
@@ -140,14 +139,15 @@ export default function MissionVisionB() {
         .lz-mv-card { will-change: transform, box-shadow; }
         .lz-mv-card:hover {
           transform: translateY(-3px);
-          border-color: var(--tb-accent);
+          border-color: var(--tb-gold) !important;
           box-shadow:
             0 1px 0 0 rgba(0,0,0,0.02),
-            0 18px 36px -22px rgba(14,26,44,0.22),
+            0 18px 36px -22px rgba(180, 145, 74, 0.35),
             0 6px 14px -10px rgba(14,26,44,0.10);
         }
         .lz-mv-card:hover .lz-mv-dot {
           transform: scale(1.45);
+          background: var(--tb-gold) !important;
         }
         @media (prefers-reduced-motion: reduce) {
           .lz-mv-card, .lz-mv-card:hover, .lz-mv-dot { transition: none !important; transform: none !important; }

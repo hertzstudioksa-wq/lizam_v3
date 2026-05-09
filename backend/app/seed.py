@@ -145,28 +145,34 @@ async def seed_all() -> None:
         "hero_cta_primary_ar": "استعراض الإصدارات", "hero_cta_primary_en": "Explore Publications",
         "hero_cta_secondary_ar": "تواصل مع المركز", "hero_cta_secondary_en": "Contact the Center",
         "about_ar": "يجسّد مركز لزام مبادرة جماعية من نخبة من الأكاديميين القانونيين السعوديين الملتزمين بتطوير البحث القانوني الرصين، وتحديث الممارسات القانونية بما يستلهم التجارب العالمية القائمة على أسس علمية ومؤسسية.",
-        "about_en": "LIZAM Center for Legal Research is a Saudi research center dedicated to advancing rigorous legal research and producing studies and analyses relevant to public policy, governance, and institutional practice — serving the needs of the public and private sectors and enriching legal knowledge in the Kingdom of Saudi Arabia.",
+        "about_en": "LIZAM Center is a collective initiative led by a select group of Saudi legal academics committed to advancing rigorous legal research and modernising legal practice in light of leading global experiences grounded in scholarly and institutional foundations.",
         "about_extended_ar": "ويقوم المركز على اعتقاد راسخ بأن الأنظمة القانونية تتطور من خلال الاجتهاد البحثي المستمر، والحوار المؤسسي، والمساهمات التحليلية المعمقة في عملية صنع القرار في القطاعين العام والخاص.",
-        "about_extended_en": "LIZAM is founded on the belief that credible legal research requires intellectual independence, methodological rigour, and a precise understanding of regulatory and institutional contexts.",
+        "about_extended_en": "The Center rests on a firm conviction that legal systems evolve through sustained scholarly inquiry, institutional dialogue, and substantive analytical contributions to decision-making across the public and private sectors.",
         "mission_ar": "تتمثل رسالة المركز في الارتقاء بالبحث القانوني في المملكة العربية السعودية من خلال إنتاج دراسات قانونية أصيلة ومعاصرة وذات صلة بالسياسات العامة، تسهم في تطوير القانون والمؤسسات القانونية وممارسات الحوكمة في الكيانات العامة والخاصة وغير الربحية. ولا ينظر المركز إلى البحث القانوني كمجرد تحليل وصفي، بل كنشاط نقدي وبنّاء يفحص القواعد القانونية والترتيبات المؤسسية والخيارات التنظيمية في ضوء سياقاتها المتنوعة.",
-        "mission_en": "To advance legal research in the Kingdom of Saudi Arabia by producing rigorous, original, and policy-relevant legal studies.",
+        "mission_en": "The Center's mission is to advance legal research in the Kingdom of Saudi Arabia by producing original, contemporary, and policy-relevant legal studies that contribute to the development of law, legal institutions, and governance practices across public, private, and non-profit entities. Legal research, in our view, is not a merely descriptive exercise but a critical and constructive activity that examines legal rules, institutional arrangements, and regulatory choices in light of their diverse contexts.",
         "mission_points_ar": [
             "تعزيز جودة وعمق البحوث القانونية المتعلقة بالأنظمة والمؤسسات القانونية السعودية، بما يعزّز مكانتها دولياً.",
             "تجسير الفجوة بين الدراسات القانونية الأكاديمية والممارسة المؤسسية.",
             "تعزيز ثقافة بحثية تثمن المنهجية الصارمة، والاستقلال الفكري، والتبادل المعرفي المفتوح.",
         ],
         "mission_points_en": [
-            "Elevate the quality and depth of legal research on Saudi legal systems and institutions.",
+            "Elevate the quality and depth of legal research on Saudi legal systems and institutions, strengthening their international standing.",
             "Bridge the gap between academic legal scholarship and institutional practice.",
-            "Establish a research culture grounded in methodological rigour, intellectual independence, and open exchange of knowledge.",
+            "Cultivate a research culture that values methodological rigour, intellectual independence, and open exchange of knowledge.",
         ],
         "vision_ar": "تتمثل رؤية المركز في أن يصبح مؤسسة بحثية قانونية رائدة وعالمية، مقرّها السعودية، ومعترفاً بجدية طرحها الفكري، وعمقها التحليلي، ومساهمتها المستدامة في الفكر القانوني وصياغة السياسات والتطوير التشريعي والمؤسسي.",
-        "vision_en": "To be a leading legal research institution in the Kingdom of Saudi Arabia.",
+        "vision_en": "The Center's vision is to become a leading legal research institution of global standing, headquartered in Saudi Arabia, recognised for the seriousness of its intellectual contribution, the depth of its analysis, and its sustained impact on legal thought, policymaking, and legislative and institutional development.",
         "vision_points_ar": [
             "أن يكون مرجعاً موثوقاً للدراسات القانونية وتحليل السياسات المتعلقة بالمملكة العربية السعودية.",
             "المساهمة الفعّالة في الحوارات الإقليمية والعالمية حول القانون والحوكمة والإصلاح القانوني.",
             "إعداد جيل جديد من الباحثين القانونيين المؤهلين للتعامل مع القضايا القانونية والمؤسسية المعقدة.",
             "تقديم نموذج استشاري قانوني قائم على منهجيات البحث السليمة والمعاصرة، ومحققاً لآثار مؤسسية طويلة الأمد.",
+        ],
+        "vision_points_en": [
+            "To serve as a trusted reference for legal research and policy analysis relevant to the Kingdom of Saudi Arabia.",
+            "To contribute meaningfully to regional and global conversations on law, governance, and legal reform.",
+            "To prepare a new generation of legal researchers equipped to engage with complex legal and institutional questions.",
+            "To offer a contemporary legal advisory model rooted in sound research methodologies, with lasting institutional impact.",
         ],
         "vision_points_en": [
             "Serve as a trusted reference for legal research and policy analysis relevant to the Kingdom of Saudi Arabia.",
@@ -179,10 +185,10 @@ async def seed_all() -> None:
             for i, o in enumerate([
                 {"title_ar": "النهوض بالدراسات القانونية", "title_en": "Advancing Legal Studies",
                  "description_ar": "إنتاج بحثي نوعي وطويل المدى، لمعالجة القضايا ذات الصلة بالقانون والحوكمة والسياسات في المملكة، بما يشمل دراسات السياسات وأوراق العمل والدراسات المعمّقة.",
-                 "description_en": "Producing high-quality legal research on jurisprudential, institutional, and theoretical questions relevant to law and governance in the Kingdom."},
+                 "description_en": "Producing high-quality, long-horizon research that addresses pressing questions in law, governance, and policy in the Kingdom — including policy studies, working papers, and in-depth analyses."},
                 {"title_ar": "دعم حوكمة القطاع العام", "title_en": "Supporting Public Sector Governance",
                  "description_ar": "إسناد المؤسسات العامة بدراسات معمّقة ومحايدة ومستندة إلى التحليل والبحث الرصين في قضايا التشريع والتنظيم والصلاحيات المؤسسية والتصميم الإداري، والمساهمة في مداولات السياسات العامة عبر توضيح المفاهيم القانونية والاختصاصات المؤسسية والقيود المعيارية ذات الصلة بالحوكمة واتخاذ القرار.",
-                 "description_en": "Providing research-grounded analysis to public institutions on legislation, regulation, and institutional mandates."},
+                 "description_en": "Supporting public institutions with in-depth, independent, research-grounded analysis on legislation, regulation, institutional mandates, and administrative design — and contributing to policy deliberations by clarifying the legal concepts, institutional competencies, and normative constraints relevant to governance and decision-making."},
                 {"title_ar": "خدمة القطاع الخاص", "title_en": "Serving the Private Sector",
                  "description_ar": "تقديم خدمات بحثية واستشارية تساعد الكيانات الخاصة على فهم الأطر التنظيمية والمخاطر القانونية.",
                  "description_en": "Research and advisory services that help private entities navigate regulatory frameworks and legal risks."},
@@ -191,7 +197,7 @@ async def seed_all() -> None:
                  "description_en": "Mentoring early-career researchers and practitioners engaged with advanced legal research."},
                 {"title_ar": "تعزيز المعرفة المتاحة للجميع", "title_en": "Promoting Open Access to Knowledge",
                  "description_ar": "إتاحة المخرجات البحثية للجمهور، والإسهام في إثراء النقاش العام حول القضايا القانونية والسياسات العامة، وتشجيع تداول الأفكار بين الأوساط الأكاديمية والمهنية وصنّاع القرار.",
-                 "description_en": "Publishing non-commissioned research outputs and making them freely accessible to the public."},
+                 "description_en": "Making research outputs publicly accessible, enriching public discourse on legal and policy matters, and fostering the exchange of ideas across academic, professional, and policy-making communities."},
             ])
         ],
         "fields_of_work": [{**f, "id": uid()} for f in DEFAULT_FIELDS],
@@ -201,22 +207,12 @@ async def seed_all() -> None:
     }
     await _upsert_if_seed(db.home_content, {"id": "home"}, home_defaults)
 
-    # ---- Image asset slots (Theme B and beyond) ----
+    # ---- Image asset slots ----
+    # Only slots actually consumed by the active public theme (Theme B) are
+    # seeded. Adding more here would surface as orphan rows in /admin/images
+    # that have no public effect. To wire up a new visual, add a consumer
+    # component first, then add the slot here.
     image_slots = [
-        {
-            "slot_key": "hero_background",
-            "title_ar": "خلفية القسم الرئيسي",
-            "title_en": "Hero background",
-            "usage_note_ar": "صورة معمارية هادئة خلف العنوان الرئيسي للصفحة الرئيسية. تُعرض بطبقة شفافة فوقها.",
-            "usage_note_en": "Subtle architectural image behind the homepage hero. Rendered with an overlay.",
-            "url": "https://images.unsplash.com/photo-1564769662717-2c1cd28d1664?auto=format&fit=crop&q=80&w=2400",
-            "alt_ar": "تفاصيل معمارية إسلامية",
-            "alt_en": "Islamic architectural detail",
-            "active": True,
-            "recommended_width": 2400, "recommended_height": 1400,
-            "aspect_ratio": "12:7 (wide editorial)",
-            "sort_order": 1,
-        },
         {
             "slot_key": "about_image",
             "title_ar": "صورة قسم \"عن المركز\"",
@@ -229,21 +225,7 @@ async def seed_all() -> None:
             "active": True,
             "recommended_width": 1600, "recommended_height": 2000,
             "aspect_ratio": "4:5 (portrait editorial)",
-            "sort_order": 2,
-        },
-        {
-            "slot_key": "featured_band_background",
-            "title_ar": "خلفية شريط الإصدارات المميزة",
-            "title_en": "Featured publications band background",
-            "usage_note_ar": "صورة خلفية للشريط الإعلامي للإصدارات المميزة. تُستخدم بطبقة داكنة فوقها.",
-            "usage_note_en": "Background image for the featured publications band. Used with a dark overlay.",
-            "url": "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&q=80&w=2400",
-            "alt_ar": "تكوين معماري",
-            "alt_en": "Architectural composition",
-            "active": True,
-            "recommended_width": 2400, "recommended_height": 1200,
-            "aspect_ratio": "2:1 (panoramic band)",
-            "sort_order": 3,
+            "sort_order": 1,
         },
         {
             "slot_key": "objectives_background",
@@ -257,21 +239,7 @@ async def seed_all() -> None:
             "active": False,
             "recommended_width": 2400, "recommended_height": 1400,
             "aspect_ratio": "12:7",
-            "sort_order": 4,
-        },
-        {
-            "slot_key": "publications_hero",
-            "title_ar": "صورة رأس صفحة الإصدارات",
-            "title_en": "Publications page hero",
-            "usage_note_ar": "صورة هادئة في رأس صفحة الإصدارات.",
-            "usage_note_en": "Calm header image for the Publications listing page.",
-            "url": "https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=2400",
-            "alt_ar": "كتب وأوراق",
-            "alt_en": "Books and papers",
-            "active": True,
-            "recommended_width": 2400, "recommended_height": 900,
-            "aspect_ratio": "8:3 (banner)",
-            "sort_order": 5,
+            "sort_order": 2,
         },
     ]
     for slot in image_slots:

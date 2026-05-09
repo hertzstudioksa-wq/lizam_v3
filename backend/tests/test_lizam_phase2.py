@@ -91,7 +91,8 @@ class TestHomeContentRefined:
         # Mission / vision points — both arrays of 4
         mp = d.get("mission_points_ar") or []
         vp = d.get("vision_points_ar") or []
-        assert isinstance(mp, list) and len(mp) == 4, f"mission_points_ar len={len(mp)}"
+        # Per the user-provided content (Feb 2026): mission has 3 points, vision 4.
+        assert isinstance(mp, list) and len(mp) == 3, f"mission_points_ar len={len(mp)}"
         assert isinstance(vp, list) and len(vp) == 4, f"vision_points_ar len={len(vp)}"
 
         # Objectives — 5 items, each with AR/EN title/description (Phase-3 schema simplified, no points)

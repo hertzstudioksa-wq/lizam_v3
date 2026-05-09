@@ -8,8 +8,7 @@ import requests
 BASE = os.environ.get("REACT_APP_BACKEND_URL", "https://lizam-legal.preview.emergentagent.com").rstrip("/")
 API = f"{BASE}/api"
 
-EXPECTED_SLOTS = {"hero_background", "about_image", "featured_band_background",
-                  "objectives_background", "publications_hero"}
+EXPECTED_SLOTS = {"about_image", "objectives_background"}
 
 
 @pytest.fixture(scope="module")
@@ -30,16 +29,13 @@ def test_public_image_assets_returns_active_only():
     # Only active slots should be returned
     for it in items:
         assert it.get("active") is True, f"Inactive slot leaked: {it.get('slot_key')}"
-    # Should include expected active ones (default seed has objectives_background=false)
     slot_keys = {it["slot_key"] for it in items}
-    assert "hero_background" in slot_keys
+    # about_image is the always-active slot consumed by Theme B
     assert "about_image" in slot_keys
-    assert "featured_band_background" in slot_keys
-    assert "publications_hero" in slot_keys
-    # objectives_background default active=False → should NOT be in public response
+    # objectives_background defaults to active=False → NOT in public response
     assert "objectives_background" not in slot_keys
-    # by_slot lookup
-    assert data["by_slot"]["hero_background"]["url"].startswith("http")
+    # by_slot lookup returns absolute URL
+    assert data["by_slot"]["about_image"]["url"].startswith("http")
 
 
 # --- Admin list requires auth ---
@@ -59,10 +55,10 @@ def test_admin_image_assets_list_as_super_admin(admin_session):
     inactive = [it for it in data["items"] if it.get("active") is False]
     assert any(it["slot_key"] == "objectives_background" for it in inactive)
     # Required metadata
-    hero = next(it for it in data["items"] if it["slot_key"] == "hero_background")
+    about = next(it for it in data["items"] if it["slot_key"] == "about_image")
     for k in ("recommended_width", "recommended_height", "aspect_ratio",
               "usage_note_ar", "usage_note_en", "title_ar", "title_en"):
-        assert k in hero, f"Missing field {k} on hero_background"
+        assert k in about, f"Missing field {k} on about_image"
 
 
 # --- Role-based: editor should NOT be able to list (settings.read gate) ---
@@ -92,7 +88,7 @@ def test_admin_patch_unknown_slot_is_404(admin_session):
 
 # --- PATCH updates url/alt/active; persists; _seed_origin=admin ---
 def test_admin_patch_updates_and_persists(admin_session):
-    slot = "publications_hero"
+    slot = "about_image"
     # Capture original
     before = admin_session.get(f"{API}/admin/image-assets", timeout=15).json()
     orig = next(it for it in before["items"] if it["slot_key"] == slot)
@@ -142,7 +138,7 @@ def test_admin_toggle_active_changes_public_visibility(admin_session):
 
 # --- Seed idempotency: admin-edited slot is NOT overwritten on backend restart ---
 def test_seed_preserves_admin_edits(admin_session):
-    slot = "hero_background"
+    slot = "about_image"
     # Capture & stamp admin edit
     before = admin_session.get(f"{API}/admin/image-assets", timeout=15).json()
     orig = next(it for it in before["items"] if it["slot_key"] == slot)
