@@ -31,7 +31,7 @@ export default function HelpTip({ ar, en, side = "top", testid }) {
           position: "absolute",
           bottom: "calc(100% + 8px)",
           insetInlineStart: 0,
-          background: "var(--lz-navy-deep, #0E1A2C)",
+          background: "#0E1A2C",
           color: "#FAF9F6",
           padding: "10px 14px",
           fontSize: 12.5,
