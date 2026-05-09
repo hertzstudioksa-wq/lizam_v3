@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AdminPage, Field, TextInput, Select, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
 import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
+import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 
 const FONT_OPTIONS = [
   { value: "Thmanyah Sans", label_en: "Thmanyah Sans (UI / body — recommended default)", label_ar: "ثمانية سانس (الافتراضي — واجهة ونص)" },
@@ -58,7 +59,7 @@ export default function BrandingAdmin() {
       msgPrefix = tr("الثيمة + ", "Theme + ");
     }
     setSaving(false);
-    if (r.ok) { form.commit(r.data); setMsg(`${msgPrefix}${tr("تم الحفظ ✓ — حدّث الموقع العام لرؤية التغييرات.", "Saved ✓ — refresh the public site to see updates.")}`); setTimeout(() => setMsg(""), 4000); }
+    if (r.ok) { form.commit(r.data); invalidateSiteCache("site"); setMsg(`${msgPrefix}${tr("تم الحفظ ✓ — حدّث الموقع العام لرؤية التغييرات.", "Saved ✓ — refresh the public site to see updates.")}`); setTimeout(() => setMsg(""), 4000); }
     else setMsg(`${tr("خطأ","Error")}: ${r.error}`);
   }
 

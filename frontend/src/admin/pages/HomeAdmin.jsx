@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { AdminPage, Field, TextInput, TextArea, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
+import { AdminPage, Field, TextArea, SaveBar, useDirtyForm, apiCall, TextInput } from "@/admin/components/AdminUI";
 import { useLang } from "@/i18n/LanguageContext";
+import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 
 const SECTIONS = ["hero", "about", "mission", "vision", "objectives", "fields_of_work", "featured_publications", "contact"];
 
@@ -31,7 +32,7 @@ export default function HomeAdmin() {
     setSaving(true);
     const r = await apiCall("patch", "/admin/home", form.value);
     setSaving(false);
-    if (r.ok) { form.commit(r.data); setMsg(tr("تم الحفظ ✓", "Saved ✓")); setTimeout(() => setMsg(""), 2500); }
+    if (r.ok) { form.commit(r.data); invalidateSiteCache("home"); setMsg(tr("تم الحفظ ✓ — حدّث الموقع العام لرؤية التغييرات.", "Saved ✓ — refresh public site to see updates.")); setTimeout(() => setMsg(""), 3500); }
     else setMsg(`${tr("خطأ", "Error")}: ${r.error}`);
   }
 

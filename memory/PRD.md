@@ -178,7 +178,49 @@ Full raw PRD: https://customer-assets.emergentagent.com/job_lizam-legal/artifact
 - ~~Brute-force lockout on `/auth/login`~~
 - ~~PDF streaming proxy with short-lived signed tokens~~
 
-### Theme B redesign — Nadeem-inspired editorial rhythm (May 2026)
+### P0 regression fix #2 (May 2026) — Admin → Public live propagation
+
+**User report:** "أنا جربت حاجات كتير مثل تغيير الصور وتغيير حالة ظهور المنشور للمسجلين فقط وحاجات تانية كتير ومكانتش بتنعكس بشكل صحيح لما اغيرهاـ" — admin changes (images, access levels, branding, home content) don't reflect on the public site after save.
+
+**Root cause:** Two architectural gaps:
+1. **Long-lived components stayed on stale data.** `useSiteSettings` /
+   `useHomeContent` / `useImageAssets` cached at module level. After admin
+   PATCH, calling `invalidate*Cache()` only nulled the cache — it did NOT
+   re-fetch nor notify currently-mounted subscribers. So `BrandThemeSync`
+   (which mounts once at App level) kept the old colors / fonts / site name
+   forever. Same for header/footer that read site-settings.
+2. **`featured` flag did nothing.** Public Featured Publications fetched
+   `usePublications({ limit: 6 })` without `featured=true`, so admin's
+   "إصدار مميّز" toggle had zero visible effect.
+
+**Fix:**
+- `useSiteSettings.js` and `useImageAssets.js` rewritten:
+  `invalidateSiteCache()` and `resetImageAssetsCache()` now re-fetch and push
+  fresh data to every active subscriber via the existing listener pattern.
+  Long-lived consumers (`BrandThemeSync`, both Headers, Footer, all `*B`
+  components) update **without page reload**.
+- `BrandingAdmin.jsx`, `SiteSettingsAdmin.jsx`, `HomeAdmin.jsx`: each save
+  callback now calls `invalidateSiteCache(...)` after a successful PATCH.
+  (`SimpleAdmins/Toggles` and `ImagesAdmin` already did this.)
+- `FeaturedPublications.jsx` + `FeaturedPublicationsB.jsx`: query
+  `usePublications({ featured: true, limit: 6 })`. Falls back to latest if
+  no publications are flagged featured (avoids empty state).
+
+**Test coverage added:**
+- `tests/test_admin_to_public_full_audit.py` — **55 backend tests** covering
+  every admin save → public read pair: site settings (10 fields × AR/EN +
+  default_language + active_theme + social_links), branding (11 fields),
+  home (18 fields + visible_sections + objectives array), publications
+  (status, access_level, pdf_access_level, featured filter, field edits),
+  image assets (url + active toggle), authors / categories CRUD,
+  toggles re-confirm, response moderation.
+- Live Playwright verification: BrandThemeSync re-syncs CSS vars
+  in-place; document.title updates instantly; navigating SPA to / shows
+  fresh values without reload.
+
+**Test evidence:** 163/163 pytest suite passing. Live screenshot shows the
+home page picking up an admin-edited site name in real time without any
+page refresh.
 **Ask:** "ادرس محتويات الصفحة المرجعية (نديم) واعمل تعديل في Theme B بحيث عدد الصور وحجمها والمسافات والتنسيق يكون زيه. حافظ على الفونت الحالي والألوان لكن عدّل التقسيم والمسافات وأحجام الصور."
 
 **Approach:** User trusted my judgment. Mapped Nadeem's editorial rhythm onto LIZAM's existing section structure — kept palette (LIZAM navy/cream/brass) and typography (Thmanyah), changed only layout/spacing/image-treatment patterns.

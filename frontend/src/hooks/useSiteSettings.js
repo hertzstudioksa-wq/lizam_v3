@@ -4,104 +4,67 @@ import { api } from "@/lib/api";
 /**
  * Shared singleton fetchers — very light, no dependency on react-query for Phase 1.
  * Cached on module level to avoid refetching on route changes.
+ *
+ * Cache invalidation rule: when admin PATCHes a setting/home/branding, call
+ * invalidateSiteCache(...). This ALWAYS re-fetches and pushes the fresh data
+ * to every currently-mounted listener — so long-lived components like
+ * BrandThemeSync update without a hard reload.
  */
 const cache = { site: null, home: null };
 const listeners = { site: new Set(), home: new Set() };
+const fetchers = {
+  site: async () => (await api.get("/public/site-settings")).data,
+  home: async () => (await api.get("/public/home-content")).data,
+};
+let inflight = { site: null, home: null };
 
-async function loadOnce(key, fetcher) {
-  if (cache[key]) return cache[key];
-  const data = await fetcher();
-  cache[key] = data;
+function notify(key, data) {
   listeners[key].forEach((l) => l(data));
-  return data;
+}
+
+async function loadOnce(key) {
+  if (cache[key]) return cache[key];
+  if (inflight[key]) return inflight[key];
+  inflight[key] = fetchers[key]()
+    .then((d) => { cache[key] = d; notify(key, d); return d; })
+    .finally(() => { inflight[key] = null; });
+  return inflight[key];
 }
 
 /**
- * Invalidate cached site/home data so the next consumer re-fetches.
- * Admin pages call this after a successful PATCH so the public-facing
- * pages don't show stale toggles/branding within the same SPA session.
+ * Invalidate cached data and immediately re-fetch + push the fresh value
+ * to every active subscriber. Use this after a successful admin PATCH.
  */
 export function invalidateSiteCache(key) {
-  if (key === "site" || !key) cache.site = null;
-  if (key === "home" || !key) cache.home = null;
+  const keys = key ? [key] : ["site", "home"];
+  for (const k of keys) {
+    cache[k] = null;
+    fetchers[k]()
+      .then((d) => { cache[k] = d; notify(k, d); })
+      .catch(() => {});
+  }
 }
 
-export function useSiteSettings() {
-  const [data, setData] = useState(cache.site);
-  const [loading, setLoading] = useState(!cache.site);
+function useShared(key) {
+  const [data, setData] = useState(cache[key]);
+  const [loading, setLoading] = useState(!cache[key]);
   const [error, setError] = useState(null);
-
   useEffect(() => {
     let active = true;
-    const update = (d) => {
-      if (active) setData(d);
-    };
-    listeners.site.add(update);
-    if (!cache.site) {
-      loadOnce("site", async () => {
-        const { data } = await api.get("/public/site-settings");
-        return data;
-      })
-        .then((d) => {
-          if (active) {
-            setData(d);
-            setLoading(false);
-          }
-        })
-        .catch((e) => {
-          if (active) {
-            setError(e);
-            setLoading(false);
-          }
-        });
-    } else {
+    const update = (d) => { if (active) { setData(d); setLoading(false); } };
+    listeners[key].add(update);
+    if (cache[key]) {
       setLoading(false);
+    } else {
+      loadOnce(key)
+        .then((d) => { if (active) { setData(d); setLoading(false); } })
+        .catch((e) => { if (active) { setError(e); setLoading(false); } });
     }
-    return () => {
-      active = false;
-      listeners.site.delete(update);
-    };
+    return () => { active = false; listeners[key].delete(update); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   return { data, loading, error };
 }
 
-export function useHomeContent() {
-  const [data, setData] = useState(cache.home);
-  const [loading, setLoading] = useState(!cache.home);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    let active = true;
-    const update = (d) => {
-      if (active) setData(d);
-    };
-    listeners.home.add(update);
-    if (!cache.home) {
-      loadOnce("home", async () => {
-        const { data } = await api.get("/public/home-content");
-        return data;
-      })
-        .then((d) => {
-          if (active) {
-            setData(d);
-            setLoading(false);
-          }
-        })
-        .catch((e) => {
-          if (active) {
-            setError(e);
-            setLoading(false);
-          }
-        });
-    } else {
-      setLoading(false);
-    }
-    return () => {
-      active = false;
-      listeners.home.delete(update);
-    };
-  }, []);
-
-  return { data, loading, error };
-}
+export function useSiteSettings() { return useShared("site"); }
+export function useHomeContent() { return useShared("home"); }

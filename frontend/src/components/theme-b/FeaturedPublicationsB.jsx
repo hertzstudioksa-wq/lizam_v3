@@ -12,8 +12,10 @@ import PublicationCardB from "@/components/theme-b/PublicationCardB";
  */
 export default function FeaturedPublicationsB() {
   const { lang } = useLang();
-  const { data } = usePublications({ limit: 6 });
-  const items = data?.items || [];
+  // Prefer admin-curated featured publications; fall back to latest if none flagged.
+  const featuredQuery = usePublications({ featured: true, limit: 6 });
+  const latestQuery = usePublications({ limit: 6 });
+  const items = (featuredQuery.data?.items?.length ? featuredQuery.data.items : latestQuery.data?.items) || [];
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
   if (!items.length) return null;
