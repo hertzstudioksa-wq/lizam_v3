@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminPage, Field, TextInput, TextArea, Select, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
 import { ReorderControls, moveItem } from "@/admin/components/ReorderControls";
 import { useLang } from "@/i18n/LanguageContext";
 import { invalidateSiteCache } from "@/hooks/useSiteSettings";
+
+const ALL_NAV_KEYS = ["home", "publications", "about", "contact"];
+const DEFAULT_NAV_ORDER = ["home", "publications", "about", "contact"];
 
 export default function SiteSettingsAdmin() {
   const { lang } = useLang();
@@ -11,6 +14,29 @@ export default function SiteSettingsAdmin() {
   const [msg, setMsg] = useState("");
   const form = useDirtyForm({});
   const tr = (ar, en) => (lang === "ar" ? ar : en);
+
+  const NAV_LABELS = useMemo(() => ({
+    home:         tr("الرئيسية", "Home"),
+    publications: tr("الإصدارات", "Publications"),
+    about:        tr("عن المركز", "About"),
+    contact:      tr("تواصل", "Contact"),
+  }), [lang]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const rawNav = form.value.header_nav_order;
+  const navOrder = Array.isArray(rawNav) && rawNav.length
+    ? rawNav.filter((k) => ALL_NAV_KEYS.includes(k))
+    : DEFAULT_NAV_ORDER;
+  const navHidden = ALL_NAV_KEYS.filter((k) => !navOrder.includes(k));
+
+  function moveNav(from, to) {
+    form.patch("header_nav_order", moveItem(navOrder, from, to));
+  }
+  function hideNav(key) {
+    form.patch("header_nav_order", navOrder.filter((k) => k !== key));
+  }
+  function showNav(key) {
+    form.patch("header_nav_order", [...navOrder, key]);
+  }
 
   useEffect(() => {
     apiCall("get", "/admin/site-settings").then((r) => {

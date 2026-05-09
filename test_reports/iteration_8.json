@@ -1,0 +1,34 @@
+{
+  "summary": "RETEST after SiteSettingsAdmin regression fix. CRITICAL REGRESSION RESOLVED. /admin/settings now renders cleanly with 4 nav rows (home, publications, about, contact) — all 6 previously-undefined symbols (navOrder, NAV_LABELS, moveNav, hideNav, navHidden, showNav) plus ALL_NAV_KEYS / DEFAULT_NAV_ORDER are now declared at lines 7-39 of SiteSettingsAdmin.jsx. E2E flows verified end-to-end with admin@lizam.sa: (1) Login OK; (2) /admin/settings renders 4 nav rows in default order; (3) Reorder via Down arrow on 'home' + Save → UI shows ['publications','home','about','contact']; public header `<header>` reflects new order within ~2.5s as 'الإصدارات | الرئيسية | عن المركز | تواصل' — cache invalidation via invalidateSiteCache('site') working; (4) Hide 'contact' + Save → public header drops 'تواصل' (verified absent); Show contact + Save → restored; (5) Theme switch on /admin/branding: B → A persists via PATCH /api/admin/site-settings, public site shows data-theme='a'; restored to canonical Theme A; (6) /admin/{toggles,publications,responses,categories,authors} all render with 0 page errors — no parse-error regression; (7) Backend pytest 169/169 PASS in 54.16s; (8) Backend GET/PATCH /api/admin/site-settings with header_nav_order list works and persists across reload. ZERO pageerror events during entire 2-flow run. Final state RESTORED to canonical defaults: active_theme='A', header_nav_order=['home','publications','about','contact'].",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/admin/categories/reorder & /api/admin/authors/reorder", "issue": "Spec says PATCH but impl accepts only POST. Cosmetic mismatch carried over from iteration_7 (unchanged, not a regression)."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/pytest/iteration_8_results.xml",
+    "/app/backend/tests/"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "SiteSettingsAdmin.jsx fix is clean: ALL_NAV_KEYS + DEFAULT_NAV_ORDER as module constants, NAV_LABELS in useMemo (correctly recomputed when lang changes), navOrder/navHidden derived from form state with safe fallback (filter to known keys + length check). moveNav/hideNav/showNav are pure form.patch wrappers — no stale closures.",
+    "useMemo dep array uses [lang] with eslint-disable-next-line react-hooks/exhaustive-deps. Acceptable since `tr` is stable per render and only depends on lang.",
+    "Recommendation (non-blocking): enable ESLint 'no-undef' rule + run `yarn lint` in CI to catch this class of regression before merge. The previous bug (6 undefined symbols) would have failed lint.",
+    "/admin/branding theme selector uses data-testid='theme-option-A'/'theme-option-B' — testable. Public site exposes data-theme='a'/'b' on <html> for CSS targeting; verified live.",
+    "Reorder API method mismatch (POST vs PATCH spec) is the only outstanding item — works correctly via POST."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (169/169 pytest)", "frontend": "100% (all retest scenarios pass; 0 page errors across /admin/settings, /admin/branding, /admin/toggles, /admin/publications, /admin/responses, /admin/categories, /admin/authors)"},
+  "test_credentials": "admin@lizam.sa / Lizam@2026 (from /app/memory/test_credentials.md) — verified working.",
+  "seed_data_creation": "None. All mutations (nav reorder, hide/show contact, theme B→A) were restored to canonical defaults at end of run: active_theme='A', header_nav_order=['home','publications','about','contact'].",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "(1) Site Settings route is /admin/settings (NOT /admin/site-settings). (2) Theme switcher is on /admin/branding via data-testid='theme-option-A'/'theme-option-B'; saving PATCHes /api/admin/site-settings.active_theme; public site reflects via data-theme attr on <html>. (3) Header nav DnD: data-testid='nav-order-{key}-up/down', data-testid='nav-hide-{key}', data-testid='nav-show-{key}', container='header-nav-order'. (4) Login button is 'دخول' (NOT 'تسجيل الدخول'); save button is 'حفظ'. (5) Cache invalidation works — public site picks up nav changes within ~2.5s without hard reload. (6) Reorder endpoints for categories/authors use POST (not PATCH).",
+  "rca of the issue": "RESOLVED. SiteSettingsAdmin.jsx now declares ALL_NAV_KEYS, DEFAULT_NAV_ORDER (module-level), NAV_LABELS (useMemo on lang), navOrder/navHidden (derived from form.value.header_nav_order with whitelist filter and DEFAULT_NAV_ORDER fallback), and moveNav/hideNav/showNav (form.patch wrappers around moveItem from ReorderControls). End-to-end: reorder + save → public header within 5s ✓; hide+save → public header drops item ✓; show+save → restored ✓; theme A/B switch via /admin/branding → data-theme on <html> ✓. No new bugs surfaced."
+}
