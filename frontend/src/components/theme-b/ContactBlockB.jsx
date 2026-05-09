@@ -1,12 +1,13 @@
 import { Mail, ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useSiteSettings, useHomeContent } from "@/hooks/useSiteSettings";
 
 /** Theme B — Contact Block: editorial pairing + premium email lockup. */
 export default function ContactBlockB() {
   const { lang } = useLang();
   const { data: site } = useSiteSettings();
+  const { data: home } = useHomeContent();
   const email = site?.contact_email || "info@lizam.sa";
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
@@ -22,7 +23,7 @@ export default function ContactBlockB() {
           <div className="md:col-span-5">
             <div className="tb-section-eyebrow">
               <span className="rule" />
-              <span className="tb-overline">{lang === "ar" ? "تواصل" : "Contact"}</span>
+              <span className="tb-overline">{home?.[`contact_eyebrow_${lang}`] || (lang === "ar" ? "تواصل" : "Contact")}</span>
             </div>
             <h2
               className="tb-display mt-8 max-w-[22ch]"

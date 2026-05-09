@@ -19,6 +19,18 @@ def admin_session():
     return s
 
 
+@pytest.fixture(autouse=True)
+def reset_objectives_background(admin_session):
+    """Defensive: other suites may have left objectives_background active=True.
+    These tests assume the seed default (active=False)."""
+    admin_session.patch(
+        f"{API}/admin/image-assets/objectives_background",
+        json={"active": False},
+        timeout=15,
+    )
+    yield
+
+
 # --- Public endpoint (no auth) ---
 def test_public_image_assets_returns_active_only():
     r = requests.get(f"{API}/public/image-assets", timeout=15)

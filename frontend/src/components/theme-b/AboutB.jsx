@@ -44,7 +44,7 @@ export default function AboutB() {
           <div className={`order-1 lg:order-2 ${showImg ? "lg:col-span-7" : "lg:col-span-12"}`}>
             <div className="tb-section-eyebrow">
               <span className="rule" />
-              <span className="tb-overline">{lang === "ar" ? "عن المركز" : "About"}</span>
+              <span className="tb-overline">{home[`about_eyebrow_${lang}`] || (lang === "ar" ? "عن المركز" : "About")}</span>
             </div>
             <h2
               className="tb-display mt-8 max-w-[28ch]"

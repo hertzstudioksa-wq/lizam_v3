@@ -33,7 +33,7 @@ export default function ObjectivesB() {
           <div className="tb-section-eyebrow">
             <span className="rule" />
             <span className="tb-overline" style={{ color: "var(--tb-gold-soft)" }}>
-              {lang === "ar" ? "الأهداف" : "Objectives"}
+              {home[`objectives_eyebrow_${lang}`] || (lang === "ar" ? "الأهداف" : "Objectives")}
             </span>
           </div>
           <h2

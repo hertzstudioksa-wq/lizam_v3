@@ -141,7 +141,7 @@ export default function MissionVisionB() {
           <div className="flex items-center gap-3">
             <span style={{ height: 1, width: 24, background: "var(--tb-gold)" }} />
             <span className="tb-overline">
-              {lang === "ar" ? "المنطلقات" : "Foundations"}
+              {home[`mission_eyebrow_${lang}`] || (lang === "ar" ? "المنطلقات" : "Foundations")}
             </span>
           </div>
           <h2

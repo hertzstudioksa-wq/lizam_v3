@@ -123,6 +123,8 @@ async def seed_all() -> None:
             "featured_publications": True, "policy_pages": False,
             "pdf_download": True, "social_icons": True,
         },
+        # Public-site typography scale (1.0 = baseline). Range 0.85–1.25 each.
+        "font_scale": {"hero": 1.0, "heading": 1.0, "body": 1.0},
         "updated_at": utc_iso(),
     }
     await _upsert_if_seed(db.site_settings, {"id": "site"}, site_defaults)
@@ -132,12 +134,30 @@ async def seed_all() -> None:
         {"id": "site", "active_theme": {"$exists": False}},
         {"$set": {"active_theme": "B"}},
     )
+    # One-time backfill: ensure font_scale exists on existing admin-edited site_settings docs
+    await db.site_settings.update_one(
+        {"id": "site", "font_scale": {"$exists": False}},
+        {"$set": {"font_scale": {"hero": 1.0, "heading": 1.0, "body": 1.0}}},
+    )
 
     # Home content — seeded once, refreshed on seed-only restarts
     home_defaults = {
         "id": "home",
         "hero_eyebrow_ar": "المجلد الأول · إصدار 2026",
         "hero_eyebrow_en": "Volume I · Edition 2026",
+        # Section eyebrows (kicker labels). Editable from /admin/home.
+        "about_eyebrow_ar": "عن المركز",
+        "about_eyebrow_en": "About",
+        "mission_eyebrow_ar": "المنطلقات",
+        "mission_eyebrow_en": "Foundations",
+        "objectives_eyebrow_ar": "الأهداف",
+        "objectives_eyebrow_en": "Objectives",
+        "fields_eyebrow_ar": "مجالات العمل",
+        "fields_eyebrow_en": "Fields of Work",
+        "featured_eyebrow_ar": "المكتبة البحثية",
+        "featured_eyebrow_en": "Research Library",
+        "contact_eyebrow_ar": "تواصل",
+        "contact_eyebrow_en": "Contact",
         "hero_title_ar": "بحث قانوني رصين\nلصناعة قرار أكثر نضجاً",
         "hero_title_en": "Rigorous Legal Research\nfor Sharper Decisions",
         "hero_subtitle_ar": "مركز لزام للدراسات القانونية مركز بحثي سعودي متخصص في الدراسات القانونية والسياسات العامة، ينتج معرفة قانونية مستقلة تخدم القطاعين العام والخاص، وتدعم صنّاع القرار برؤى تحليلية موثوقة.",

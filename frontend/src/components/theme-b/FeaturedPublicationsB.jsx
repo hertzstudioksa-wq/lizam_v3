@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
+import { useHomeContent } from "@/hooks/useSiteSettings";
 import { usePublications } from "@/hooks/usePublications";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
 
@@ -12,6 +13,7 @@ import PublicationCardB from "@/components/theme-b/PublicationCardB";
  */
 export default function FeaturedPublicationsB() {
   const { lang } = useLang();
+  const { data: home } = useHomeContent();
   // Prefer admin-curated featured publications; fall back to latest if none flagged.
   const featuredQuery = usePublications({ featured: true, limit: 6 });
   const latestQuery = usePublications({ limit: 6 });
@@ -31,7 +33,7 @@ export default function FeaturedPublicationsB() {
         {/* Centered heading block — Nadeem rhythm */}
         <header className="text-center mx-auto max-w-[720px]">
           <div className="tb-overline" style={{ color: "var(--tb-gold-deep)", letterSpacing: "0.22em" }}>
-            {lang === "ar" ? "المكتبة البحثية" : "Research Library"}
+            {home?.[`featured_eyebrow_${lang}`] || (lang === "ar" ? "المكتبة البحثية" : "Research Library")}
           </div>
           <h2
             className="tb-display mt-6 mx-auto"

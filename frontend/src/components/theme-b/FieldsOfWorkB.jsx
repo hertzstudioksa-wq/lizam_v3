@@ -29,7 +29,7 @@ export default function FieldsOfWorkB() {
           <div className="md:col-span-5">
             <div className="tb-section-eyebrow">
               <span className="rule" />
-              <span className="tb-overline">{lang === "ar" ? "مجالات العمل" : "Fields of Work"}</span>
+              <span className="tb-overline">{home[`fields_eyebrow_${lang}`] || (lang === "ar" ? "مجالات العمل" : "Fields of Work")}</span>
             </div>
             <h2
               className="tb-display mt-7 max-w-[20ch]"

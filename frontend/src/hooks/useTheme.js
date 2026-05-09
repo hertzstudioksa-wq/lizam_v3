@@ -11,6 +11,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 export function useTheme() {
   const { data } = useSiteSettings();
   const theme = (data?.active_theme || "B").toUpperCase() === "A" ? "A" : "B";
+  const fs = data?.font_scale || {};
 
   useEffect(() => {
     const root = document.documentElement;
@@ -29,7 +30,17 @@ export function useTheme() {
         `"${data.font_en}", "Thmanyah Sans", "Inter", system-ui, sans-serif`,
       );
     }
-  }, [theme, data?.font_ar, data?.font_en]);
+
+    // Public-site typography scale (admin-controlled, range 0.85–1.25 each).
+    const clamp = (n, fallback) => {
+      const v = typeof n === "number" ? n : parseFloat(n);
+      if (!Number.isFinite(v)) return fallback;
+      return Math.max(0.85, Math.min(1.25, v));
+    };
+    root.style.setProperty("--tb-fs-hero", String(clamp(fs.hero, 1)));
+    root.style.setProperty("--tb-fs-heading", String(clamp(fs.heading, 1)));
+    root.style.setProperty("--tb-fs-body", String(clamp(fs.body, 1)));
+  }, [theme, data?.font_ar, data?.font_en, fs.hero, fs.heading, fs.body]);
 
   return { theme, settings: data };
 }

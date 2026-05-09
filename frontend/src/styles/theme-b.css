@@ -11,6 +11,11 @@
    ========================================================================= */
 
 html[data-theme="b"] {
+  /* Public-site typography scale (admin-controlled). Default 1.0 = baseline. */
+  --tb-fs-hero: 1;
+  --tb-fs-heading: 1;
+  --tb-fs-body: 1;
+
   /* Palette — cleaner off-white base, warmth preserved in accent panels only */
   --tb-paper-base: #FBFAF7;       /* near-white with whisper of warmth */
   --tb-paper-surface: #FFFFFF;
@@ -71,6 +76,23 @@ html[data-theme="b"] :focus-visible {
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--tb-navy-900);
+}
+
+/* Apply admin font-scale to all section-level h1/h2/h3 (idiomatic public-site
+   targets). h1 follows the hero scale, h2/h3 follow the heading scale. */
+html[data-theme="b"] .tb-content h1,
+html[data-theme="b"] [data-theme-component="theme-b-hero"] h1,
+html[data-theme="b"] [data-theme-component="theme-b-hero"] h2 {
+  font-size: calc(1em * var(--tb-fs-hero));
+}
+html[data-theme="b"] section h2:not([data-fs-skip]),
+html[data-theme="b"] section h3:not([data-fs-skip]) {
+  font-size: calc(1em * var(--tb-fs-heading));
+}
+html[data-theme="b"] .tb-body-lg,
+html[data-theme="b"] section p:not([data-fs-skip]),
+html[data-theme="b"] section li:not([data-fs-skip]) {
+  font-size: calc(1em * var(--tb-fs-body));
 }
 html[dir="rtl"] .tb-display {
   font-family: "Thmanyah Serif Display", "IBM Plex Sans Arabic", sans-serif;

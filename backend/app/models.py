@@ -58,6 +58,8 @@ class SiteSettingsIn(BaseModel):
     # Ordered list of header-nav item keys. Items NOT in the array are hidden
     # from the public header. Allowed keys: "home" | "publications" | "about" | "contact"
     header_nav_order: Optional[List[str]] = None
+    # Three-axis typography scale applied to public Theme B (range 0.85–1.25 each)
+    font_scale: Optional[Dict[str, float]] = None  # {hero, heading, body}
 
 
 class BrandingIn(BaseModel):
@@ -77,8 +79,22 @@ class BrandingIn(BaseModel):
 
 class HomeContentIn(BaseModel):
     model_config = ConfigDict(extra="ignore")
+    # Section eyebrows (small kicker labels above each section heading)
     hero_eyebrow_ar: Optional[str] = None
     hero_eyebrow_en: Optional[str] = None
+    about_eyebrow_ar: Optional[str] = None
+    about_eyebrow_en: Optional[str] = None
+    mission_eyebrow_ar: Optional[str] = None
+    mission_eyebrow_en: Optional[str] = None
+    objectives_eyebrow_ar: Optional[str] = None
+    objectives_eyebrow_en: Optional[str] = None
+    fields_eyebrow_ar: Optional[str] = None
+    fields_eyebrow_en: Optional[str] = None
+    featured_eyebrow_ar: Optional[str] = None
+    featured_eyebrow_en: Optional[str] = None
+    contact_eyebrow_ar: Optional[str] = None
+    contact_eyebrow_en: Optional[str] = None
+    # Hero
     hero_title_ar: Optional[str] = None
     hero_title_en: Optional[str] = None
     hero_subtitle_ar: Optional[str] = None

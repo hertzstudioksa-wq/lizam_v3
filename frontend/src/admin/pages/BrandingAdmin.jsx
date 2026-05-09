@@ -43,7 +43,12 @@ export default function BrandingAdmin() {
   useEffect(() => {
     apiCall("get", "/admin/branding").then((r) => { if (r.ok) form.commit(r.data || {}); setLoaded(true); });
     apiCall("get", "/admin/site-settings").then((r) => {
-      if (r.ok) setSiteForm({ active_theme: r.data?.active_theme || "A" });
+      if (r.ok) {
+        setSiteForm({
+          active_theme: r.data?.active_theme || "A",
+          font_scale: r.data?.font_scale || { hero: 1, heading: 1, body: 1 },
+        });
+      }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -53,7 +58,10 @@ export default function BrandingAdmin() {
     const r = await apiCall("patch", "/admin/branding", form.value);
     let msgPrefix = "";
     if (siteDirty) {
-      const r2 = await apiCall("patch", "/admin/site-settings", { active_theme: siteForm.active_theme });
+      const r2 = await apiCall("patch", "/admin/site-settings", {
+        active_theme: siteForm.active_theme,
+        font_scale: siteForm.font_scale,
+      });
       if (!r2.ok) { setSaving(false); setMsg(`${tr("خطأ","Error")}: ${r2.error}`); return; }
       setSiteDirty(false);
       msgPrefix = tr("الثيمة + ", "Theme + ");
@@ -173,6 +181,77 @@ export default function BrandingAdmin() {
             >
               {tr("إعادة إلى خط ثمانية الافتراضي", "Revert to default Thmanyah")}
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Font Scale (Public-site typography sliders) */}
+      <section className="mb-12" data-testid="font-scale-section">
+        <div className="flex items-baseline gap-3 mb-2">
+          <h3 className="text-[18px] font-medium text-navy-deep">{tr("حجم الخط على الموقع العام", "Public-site type scale")}</h3>
+          <span className="text-[12.5px] text-mute">— {tr("85% – 125% لكل محور", "85% – 125% per axis")}</span>
+        </div>
+        <p className="text-[13px] text-mute max-w-[64ch] mb-4">
+          {tr(
+            "تحكم في حجم الخط العام للموقع على ثلاثة محاور: الهيرو (الصفحة الرئيسية الكبيرة)، عناوين الأقسام، ونصوص الفقرات. التغييرات تنعكس على الموقع العام بعد الحفظ.",
+            "Control the public-site font size on three axes: Hero (large home headline), section headings, and body copy. Changes apply after saving.",
+          )}
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1100px] p-6 border border-rule bg-white">
+          {[
+            { key: "hero",    labelAr: "الهيرو", labelEn: "Hero",    sample: tr("بحث قانوني رصين", "Rigorous legal research"), sz: 36 },
+            { key: "heading", labelAr: "العناوين", labelEn: "Headings", sample: tr("عنوان قسم", "Section heading"), sz: 24 },
+            { key: "body",    labelAr: "النصوص",  labelEn: "Body",    sample: tr("نموذج لنص فقرة في الموقع.", "Sample body paragraph text."), sz: 15 },
+          ].map((axis) => {
+            const v = (siteForm.font_scale || {})[axis.key] ?? 1;
+            const pct = Math.round(v * 100);
+            const setVal = (n) => {
+              const nv = Math.max(0.85, Math.min(1.25, n));
+              setSiteForm((s) => ({ ...s, font_scale: { ...(s.font_scale || {}), [axis.key]: Math.round(nv * 100) / 100 } }));
+              setSiteDirty(true);
+            };
+            return (
+              <div key={axis.key} className="flex flex-col gap-2" data-testid={`font-scale-${axis.key}`}>
+                <div className="flex items-baseline justify-between">
+                  <label className="text-[13px] font-medium text-navy-deep">{tr(axis.labelAr, axis.labelEn)}</label>
+                  <span className="text-[12px] text-mute tabular-nums">{pct}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.85"
+                  max="1.25"
+                  step="0.05"
+                  value={v}
+                  onChange={(e) => setVal(parseFloat(e.target.value))}
+                  className="w-full accent-brass cursor-pointer"
+                  data-testid={`font-scale-${axis.key}-slider`}
+                />
+                <div className="flex items-center gap-1 text-[11px] text-mute">
+                  <button type="button" onClick={() => setVal(1)} className="hover:text-navy underline underline-offset-2" data-testid={`font-scale-${axis.key}-reset`}>
+                    {tr("إعادة إلى 100%", "Reset to 100%")}
+                  </button>
+                </div>
+                <div className="mt-2 p-3 border border-rule bg-paper" dir={lang === "ar" ? "rtl" : "ltr"}>
+                  <span style={{ fontSize: axis.sz * v, fontFamily: axis.key === "hero" || axis.key === "heading" ? '"Thmanyah Serif Display", serif' : '"Thmanyah Sans", sans-serif', color: "#0A111C", lineHeight: 1.3 }}>
+                    {axis.sample}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+          <div className="lg:col-span-3 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                setSiteForm((s) => ({ ...s, font_scale: { hero: 1, heading: 1, body: 1 } }));
+                setSiteDirty(true);
+              }}
+              className="text-[13px] text-mute hover:text-navy underline underline-offset-4"
+              data-testid="font-scale-reset-all"
+            >
+              {tr("إعادة كل المحاور إلى 100%", "Reset all axes to 100%")}
+            </button>
+            <span className="text-[12px] text-mute">— {tr("التغييرات تتطبق على ثيمة B (الموقع العام).", "Applies to Theme B on the public site.")}</span>
           </div>
         </div>
       </section>
