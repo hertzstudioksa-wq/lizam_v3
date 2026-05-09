@@ -1,0 +1,43 @@
+{
+  "summary": "Comprehensive validation of the new Hero Media System (per-page configurable cinematic background images with overlay, focal-point, smart-cropping, admin CMS, and live cache invalidation). All 12 new backend tests PASS and all 16 listed feature scenarios verified end-to-end. Backend pytest 183/183 PASS (171 prior + 12 new) in ~74s with -p no:randomly. Frontend: public hero on / and /publications renders <div data-testid=hero-media-layer data-page-key=...> with <img object-fit:cover; object-position: focal_x% focal_y%>. Admin /admin/hero-media renders all 5 page rows (_default, home, publications, about, contact) with full data-testid coverage. Click-to-set-focal-point on the live preview at offset (300,100) updated focal to (59,41) — exact match to expected (58,41) within 1% tolerance. Cache invalidation verified end-to-end: PATCH overlay_opacity 0.55→0.8 from /admin/hero-media → public GET /api/public/hero-media reflects 0.8 in <3s without hard reload, AND the home page DOM overlay div re-renders with rgba(10,17,28,0.8). Sidebar entry admin-nav-hero-media exists with AR label 'صور رؤوس الصفحات'. Mobile 414×900 viewport: hero layers render on / and /publications with NO horizontal overflow. Backend validation 422s for overlay_opacity=1.5, focal_x=-10, focal_x=110. DELETE /api/admin/hero-media/_default → 400 as designed; DELETE on home succeeds and consumer falls back to _default. Cleanup: ALL hero records restored to seed state (home: focal=(50,45) opacity=0.55; publications: focal=(50,50) opacity=0.55; about/contact: deleted; _default untouched).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_hero_media.py",
+    "/app/test_reports/pytest/iteration_10_results.xml",
+    "/app/test_reports/pytest/iteration_10_full.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "models_hero.py uses Pydantic Field(ge=0, le=0.9) for overlay_opacity and ge=0,le=100 for focal_x/y — clean validation surface; 422s confirmed.",
+    "hero_media.py PATCH uses model_dump(exclude_unset=True) so partial PATCHes work correctly. Good.",
+    "MongoDB _id is excluded via projection {'_id': 0} on both public and admin GETs. Confirmed in test.",
+    "DELETE /_default → 400 with explicit detail message — correct safety check.",
+    "useHeroMedia.js uses a singleton cache + listener pattern; invalidateHeroCache() on save triggers re-fetch and notifies all subscribers. Verified live: home overlay div re-renders within ~3s without hard reload.",
+    "HeroMediaLayer.jsx clamps focal_x/_y to [0,100] and overlay to [0,0.9] defensively on render — even if backend somehow had bad data the UI stays sane.",
+    "HeroMediaAdmin.jsx PageRow click-to-focal handler uses getBoundingClientRect — verified pixel-accurate (clicked 300/513 → 59% vs expected 58%).",
+    "Form correctly does NOT auto-save: changing slider/URL only updates local state; PATCH is sent only on Save click. Verified.",
+    "Reset-to-default button only renders on rows with isExisting && key !== '_default' — confirmed; _default has no reset button, home does.",
+    "Recommended dimensions + low-res warning (MIN 1600×700) shown via client-side Image() onload — good UX. ",
+    "MINOR: HeroMediaAdmin.jsx is 470 lines — within budget but watch growth. Consider extracting <FocalSlider> + <PageRow> if more controls (e.g., per-breakpoint focal) are added.",
+    "MINOR: ContactPage does not render HeroMediaLayer (per spec, intentional). Admin can configure a contact record but it's currently dormant data; consider greying out the Contact row in admin or adding a tooltip 'Currently not consumed by any page' to avoid editor confusion.",
+    "MINOR: PageHero.jsx is exported but not wired anywhere yet (acknowledged in problem statement as future scope)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_hero_media.py (NEW — 12 tests covering public shape, admin auth/list, PATCH persist, validation 422s on opacity/focal bounds, DELETE+fallback, _default-delete-protection, unknown page_key 404, end-of-suite seed restore)"
+  ],
+  "success_rate": {
+    "backend": "100% (183/183 pytest PASS, 2 pre-existing data-drift tests deselected per main-agent guidance from iter 9)",
+    "frontend": "100% (all 16 listed scenarios verified — public hero on / + /publications, admin sidebar nav, all 5 admin rows, click-to-focal, save→PATCH→cache-invalidation→public-DOM-reflection, save msg, reset-to-default visibility rules, mobile 414×900 no-overflow)"
+  },
+  "test_credentials": "admin@lizam.sa / Lizam@2026 (verified working).",
+  "seed_data_creation": "RESTORED to spec'd seeded state: home focal=(50,45) opacity=0.55; publications focal=(50,50) opacity=0.55; about & contact records DELETED (fall back to _default); _default untouched (focal=(50,50) opacity=0.55). Verified via final GET /api/public/hero-media.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "(1) Hero media collection name: db.hero_media. (2) PageKeys allowed: _default, home, publications, about, contact. (3) Run pytest with: `export $(grep REACT_APP_BACKEND_URL frontend/.env | xargs) && pytest backend/tests/ -p no:randomly --deselect backend/tests/test_image_assets.py::test_public_image_assets_returns_active_only --deselect backend/tests/test_image_assets.py::test_admin_image_assets_list_as_super_admin -q`. (4) The conftest.py clears rate_limit_buckets between every test — important since admin login is exercised many times. (5) Admin frontend testids for hero rows: hero-media-row-{key}, hero-{key}-{preview|url|upload-btn|file|opacity|fx|fy|enabled|save|clear|reset}. Save msg testid: hero-media-msg. (6) Public hero layer testid: hero-media-layer with data-page-key attribute. (7) Cache invalidation: useHeroMedia singleton notifies all listeners synchronously after invalidateHeroCache() → re-fetch returns within ~1-3s. (8) IMPORTANT: when scripting React-controlled <input type='range'> updates from Playwright, use the native value setter trick (Object.getOwnPropertyDescriptor + .set + dispatchEvent('input')) — direct el.value=X does not propagate to React state. (9) Click-to-set-focal in admin preview is pixel-accurate within ±1% (verified at 1920px viewport).",
+  "rca of the issue": "N/A — no bugs found. All 16 listed scenarios PASS. The hero media system is correctly implemented end-to-end from Pydantic validation through Mongo persistence to React rendering and live cache invalidation."
+}

@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag, Image as ImageIcon, Activity, GripVertical, RotateCcw } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag, Image as ImageIcon, Activity, GripVertical, RotateCcw, Film } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
@@ -21,11 +21,12 @@ const NAV_DEFS = (lang) => ({
   home:         { to: "/admin/home",         icon: BookOpen,        label: lang === "ar" ? "محتوى الرئيسية" : "Home Content", testid: "admin-nav-home" },
   branding:     { to: "/admin/branding",     icon: Palette,         label: lang === "ar" ? "الهوية والتصميم" : "Branding & Design", testid: "admin-nav-branding" },
   images:       { to: "/admin/images",       icon: ImageIcon,       label: lang === "ar" ? "إدارة الصور" : "Image Management", testid: "admin-nav-images" },
+  hero_media:   { to: "/admin/hero-media",   icon: Film,            label: lang === "ar" ? "صور رؤوس الصفحات" : "Hero Media", testid: "admin-nav-hero-media" },
   settings:     { to: "/admin/settings",     icon: Settings,        label: lang === "ar" ? "إعدادات الموقع" : "Site Settings", testid: "admin-nav-settings" },
   toggles:      { to: "/admin/toggles",      icon: ToggleLeft,      label: lang === "ar" ? "مفاتيح الميزات" : "Feature Toggles", testid: "admin-nav-toggles" },
   audit:        { to: "/admin/audit",        icon: Activity,        label: lang === "ar" ? "سجل النشاط" : "Audit Log", testid: "admin-nav-audit" },
 });
-const DEFAULT_NAV_KEYS = ["overview","publications","authors","categories","responses","users","roles","messages","home","branding","images","settings","toggles","audit"];
+const DEFAULT_NAV_KEYS = ["overview","publications","authors","categories","responses","users","roles","messages","home","branding","images","hero_media","settings","toggles","audit"];
 
 export default function AdminLayout() {
   const { user, bootstrapping, logout } = useAuth();

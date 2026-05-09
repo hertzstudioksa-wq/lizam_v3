@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent, useSiteSettings } from "@/hooks/useSiteSettings";
+import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 
 /**
  * Theme B — Premium Editorial Hero (Nadeem-inspired refinement).
@@ -27,7 +28,7 @@ export default function HeroB() {
   return (
     <section
       id="hero"
-      className="relative pt-[120px] md:pt-[140px] pb-24 md:pb-28"
+      className="relative isolate pt-[120px] md:pt-[140px] pb-24 md:pb-28 overflow-hidden"
       style={{
         background: "var(--tb-navy-900)",
         color: "var(--tb-paper-base)",
@@ -36,6 +37,9 @@ export default function HeroB() {
       data-testid="hero-section"
       data-theme-component="theme-b-hero"
     >
+      {/* Configurable hero media — extends behind the fixed header */}
+      <HeroMediaLayer pageKey="home" extendBehindHeader />
+
       {/* Subtle gold rule at very top under header */}
       <div
         aria-hidden
@@ -43,10 +47,11 @@ export default function HeroB() {
           position: "absolute", top: 0, insetInlineStart: "50%", transform: "translateX(-50%)",
           width: 1, height: 80, background: "linear-gradient(180deg, var(--tb-gold) 0%, transparent 100%)",
           opacity: 0.5,
+          zIndex: 5,
         }}
       />
 
-      <div className="mx-auto max-w-[920px] px-6 md:px-10 text-center flex flex-col items-center justify-center" style={{ minHeight: "calc(82vh - 240px)" }}>
+      <div className="relative z-10 mx-auto max-w-[920px] px-6 md:px-10 text-center flex flex-col items-center justify-center" style={{ minHeight: "calc(82vh - 240px)" }}>
         {/* Eyebrow */}
         <div className="tb-rise inline-flex items-center gap-3" data-testid="hero-eyebrow">
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />

@@ -380,4 +380,46 @@ async def seed_all() -> None:
             }
             await db.publications.insert_one(doc)
 
+    # ---- Hero media (per-page hero background images) ----
+    # Seeds the global default + a few per-page records. _upsert_if_seed
+    # respects admin edits — once an editor changes a record, the seed will
+    # never overwrite it.
+    hero_defaults = [
+        {
+            "page_key": "_default",
+            "media_type": "image",
+            "url": "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2400",
+            "overlay_opacity": 0.55,
+            "focal_x": 50, "focal_y": 50,
+            "enabled": True,
+            "alt_ar": "منظر معماري كلاسيكي للمكتبة",
+            "alt_en": "Classical library architectural view",
+            "updated_at": utc_iso(),
+        },
+        {
+            "page_key": "home",
+            "media_type": "image",
+            "url": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=2400",
+            "overlay_opacity": 0.55,
+            "focal_x": 50, "focal_y": 45,
+            "enabled": True,
+            "alt_ar": "مساحة عمل بحثية",
+            "alt_en": "Research workspace",
+            "updated_at": utc_iso(),
+        },
+        {
+            "page_key": "publications",
+            "media_type": "image",
+            "url": "https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&q=80&w=2400",
+            "overlay_opacity": 0.55,
+            "focal_x": 50, "focal_y": 50,
+            "enabled": True,
+            "alt_ar": "أرشيف الإصدارات",
+            "alt_en": "Publications archive",
+            "updated_at": utc_iso(),
+        },
+    ]
+    for doc in hero_defaults:
+        await _upsert_if_seed(db.hero_media, {"page_key": doc["page_key"]}, {**doc, "id": uid()})
+
     logger.info("Seed complete (guarded)")

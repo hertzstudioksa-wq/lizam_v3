@@ -21,6 +21,7 @@ import SiteSettingsAdmin from "@/admin/pages/SiteSettingsAdmin";
 import BrandingAdmin from "@/admin/pages/BrandingAdmin";
 import HomeAdmin from "@/admin/pages/HomeAdmin";
 import ImagesAdmin from "@/admin/pages/ImagesAdmin";
+import HeroMediaAdmin from "@/admin/pages/HeroMediaAdmin";
 import ResponsesAdmin from "@/admin/pages/ResponsesAdmin";
 import AuditLogAdmin from "@/admin/pages/AuditLogAdmin";
 import { PublicationsListAdmin, PublicationEditAdmin } from "@/admin/pages/PublicationsAdmin";
@@ -98,6 +99,7 @@ function App() {
               <Route path="home" element={<HomeAdmin />} />
               <Route path="branding" element={<BrandingAdmin />} />
               <Route path="images" element={<ImagesAdmin />} />
+              <Route path="hero-media" element={<HeroMediaAdmin />} />
               <Route path="settings" element={<SiteSettingsAdmin />} />
               <Route path="categories" element={<CategoriesAdmin />} />
               <Route path="toggles" element={<TogglesAdmin />} />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Search, X } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import PublicationCard from "@/components/publications/PublicationCard";
+import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 import { useLang } from "@/i18n/LanguageContext";
 import { usePublications, useCategories } from "@/hooks/usePublications";
 
@@ -53,18 +54,23 @@ export default function PublicationsPage() {
 
   return (
     <PublicLayout>
-      {/* Masthead */}
-      <section className="bg-ivory pt-[130px] md:pt-[150px] pb-12 md:pb-16" data-testid="publications-masthead">
-        <div className="mx-auto max-w-[1360px] px-6 md:px-10 lg:px-14">
-          <div className="lz-eyebrow text-navy/70">
+      {/* Masthead — cinematic hero band (image background + dark overlay) */}
+      <section
+        className="relative isolate pt-[130px] md:pt-[150px] pb-12 md:pb-16 overflow-hidden"
+        data-testid="publications-masthead"
+        style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
+      >
+        <HeroMediaLayer pageKey="publications" extendBehindHeader />
+        <div className="relative z-10 mx-auto max-w-[1360px] px-6 md:px-10 lg:px-14">
+          <div className="lz-eyebrow" style={{ color: "var(--tb-gold, #B4914A)" }}>
             {lang === "ar" ? "مكتبة المركز" : "Library"}
           </div>
-          <div className="mt-3 h-px w-12 bg-brass" />
+          <div className="mt-3 h-px w-12" style={{ background: "var(--tb-gold, #B4914A)" }} />
           <div className="mt-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <h1 className="lz-display max-w-[22ch]" style={{ color: "#121A2A" }}>
+            <h1 className="lz-display max-w-[22ch]" style={{ color: "var(--tb-paper-base, #FBFAF7)" }}>
               {lang === "ar" ? "الإصدارات البحثية" : "Research Publications"}
             </h1>
-            <p className="text-[13.5px] uppercase tracking-[0.18em] text-mute tabular-nums">
+            <p className="text-[13.5px] uppercase tracking-[0.18em] tabular-nums" style={{ color: "rgba(251,250,247,0.72)" }}>
               {total} {lang === "ar" ? "إصدار منشور" : "published items"}
             </p>
           </div>
