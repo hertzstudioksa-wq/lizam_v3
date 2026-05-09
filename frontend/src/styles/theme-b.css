@@ -188,6 +188,25 @@ html[dir="rtl"] .tb-btn-primary:hover svg { transform: translateX(-3px); }
   transform: translateY(-2px);
 }
 
+/* Header-context variant: inherits color from --tb-header-fg so the button
+ * stays visible whether the header is solid (navy text on paper) OR
+ * transparent over a dark hero (paper text on photo). */
+header[data-theme-component="theme-b-header"] .tb-btn-secondary {
+  color: var(--tb-header-fg);
+  border-color: var(--tb-header-fg);
+  background: transparent;
+}
+header[data-theme-component="theme-b-header"][data-solid="false"] .tb-btn-secondary:hover {
+  background: rgba(251, 250, 247, 0.10);
+  border-color: var(--tb-gold);
+  color: var(--tb-paper-base);
+}
+header[data-theme-component="theme-b-header"][data-solid="true"] .tb-btn-secondary:hover {
+  background: rgba(10, 17, 28, 0.04);
+  border-color: var(--tb-gold);
+  color: var(--tb-navy-900);
+}
+
 .tb-btn-ghost {
   display: inline-flex; align-items: center; gap: 0.5rem;
   padding: 0.5rem 0.9rem;
