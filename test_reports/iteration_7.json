@@ -1,0 +1,47 @@
+{
+  "summary": "E2E validation of admin reorder/tooltip/bilingual features after JSX parse-error fix. Backend pytest 169/169 PASS (tests in /app/backend/tests/, ~54s). Frontend smoke + deep tests: login admin@lizam.sa/Lizam@2026 → /admin OK; Arabic is default; AR/EN toggle in sidebar switches strings live (Overview/Publications/Researchers etc render in English). /admin/toggles renders cleanly with help banner + 11 HelpTip ⓘ tooltips (toggle-tip-{key} testids verified). /admin/publications & /admin/responses render with 0 page errors and 0 parse errors. /admin/home: 8 home_section reorder buttons (section-order-{s}-up/down). /admin/categories: 14 reorder rows (cat-reorder-{id}-up/down/save) — DnD persists across reload (verified end-to-end: moved row 0 down → save → reload → row 0 confirmed in position 1 → restored). /admin/authors: 50 reorder buttons (author-reorder-{id}-up/down). Backend reorder POST /api/admin/categories/reorder returns 200 {ok:true,count:14}. Newsletter: POST /api/public/newsletter/subscribe → 200 {ok:true,already_subscribed:false}; GET /api/admin/newsletter → 200 with new subscriber listed. CRITICAL REGRESSION FOUND: /admin/settings (Site Settings) crashes with ReferenceError: navOrder is not defined (also NAV_LABELS, moveNav, hideNav, navHidden, showNav are referenced but never declared in /app/frontend/src/admin/pages/SiteSettingsAdmin.jsx lines 70-91). The page renders the React error overlay instead of the form. Header navigation order DnD is therefore UNUSABLE. Note: Review request referenced /admin/site-settings but the actual route is /admin/settings (App.js:101 — element=<SiteSettingsAdmin />); navigating /admin/site-settings 404s to public homepage. Theme switching could not be tested because the Settings page itself is broken.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/admin/categories/reorder", "issue": "Review request states the method as PATCH; actual implementation accepts only POST (PATCH returns 422 model_attributes_type). Same applies to /api/admin/authors/reorder. Cosmetic spec/impl mismatch — works correctly via POST."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "SiteSettingsAdmin", "issue": "ReferenceError: navOrder is not defined. The component uses navOrder, NAV_LABELS, moveNav, hideNav, navHidden, showNav at lines 70/73/74/75/83/87/88/91 but none are declared. Page crashes with React error overlay; nav-order DnD is unreachable.", "selector": "[data-testid='header-nav-order']", "priority": "CRITICAL"}
+    ],
+    "integration_issues": [
+      {"flow": "Admin → public propagation for header nav order & active_theme", "issue": "Cannot be exercised because /admin/settings is broken. invalidateSiteCache('site') call site is unreachable.", "affected_selectors": ["[data-testid='header-nav-order']"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_ordering.py",
+    "/app/backend/tests/test_admin_to_public_full_audit.py",
+    "/app/backend/tests/test_phase4_phase5.py",
+    "/app/test_reports/pytest/iteration_7_results.xml",
+    "/app/test_reports/phase3_screenshots/iter7_settings_correct.png"
+  ],
+  "action_items": [
+    "CRITICAL: Fix /app/frontend/src/admin/pages/SiteSettingsAdmin.jsx — add missing declarations: const navOrder = form.value.header_nav_order || DEFAULT_NAV; const navHidden = ALL_NAV_KEYS.filter(k => !navOrder.includes(k)); const NAV_LABELS = { home: tr('الرئيسية','Home'), publications: tr('الإصدارات','Publications'), about: tr('عن المركز','About'), contact: tr('تواصل','Contact'), ... }; function moveNav(from,to){ form.patch('header_nav_order', moveItem(navOrder, from, to)); } function hideNav(key){ form.patch('header_nav_order', navOrder.filter(k=>k!==key)); } function showNav(key){ form.patch('header_nav_order', [...navOrder, key]); }",
+    "After fix, retest: nav reorder + save + verify public header reflects within 5s (cache invalidation via invalidateSiteCache).",
+    "After fix, retest: theme switch A↔B in /admin/settings reflects on public site, then restore to Theme A (default).",
+    "Optional: Update API documentation/review-request to reflect that /admin/{categories,authors}/reorder accept POST (not PATCH), or add a PATCH alias for API consistency.",
+    "Optional: Add data-testid attributes to AR/EN sidebar toggle (e.g., 'lang-toggle-ar', 'lang-toggle-en') for stable Playwright tests."
+  ],
+  "critical_code_review_comments": [
+    "SiteSettingsAdmin.jsx: classic 'undefined symbol' regression — six identifiers used without declaration. The lint should have caught this; suggest enabling no-undef rule in ESLint and running it in CI.",
+    "ReorderControls.jsx is well-designed: dependency-free, accessible (aria-label), keyboard-friendly (button + disabled), bilingual via useLang.",
+    "HelpTip.jsx is CSS-only, no portal — clean implementation. Confirmed 11 ⓘ tooltips render in /admin/toggles.",
+    "Backend reorder endpoints are POST not PATCH; consider adding a PATCH alias if the spec mandates PATCH semantics for partial updates.",
+    "/admin/{categories|authors|home|toggles|publications|responses|messages|audit|overview} all render with 0 console/page errors after the recent JSX fix to PublicationsAdmin/ResponsesAdmin — JSX fix verified clean."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (169/169 pytest)", "frontend": "92% (12/13 admin pages render & function — SiteSettingsAdmin is the one regression)"},
+  "test_credentials": "Super Admin admin@lizam.sa / Lizam@2026 — verified working.",
+  "seed_data_creation": "Created TEST newsletter subscriber id 5a9a02c3-41c9-4050-947e-f465b68c0d82 via /api/public/newsletter/subscribe; reordered/restored categories list during DnD persistence test (no net change).",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "(1) Site Settings route is /admin/settings (NOT /admin/site-settings as stated in the review request). (2) After the SiteSettingsAdmin fix, verify: nav-order DnD persists, theme switch works, public header reflects nav reorder within 5s. (3) Reorder API methods are POST not PATCH for both categories and authors. (4) AR/EN toggle is the bottom-most button (visible text 'EN' or 'AR') in the admin sidebar — only one is shown at a time. (5) Categories DnD persistence already proven E2E: ordering survives reload. (6) /admin/objectives is exposed via HomeAdmin tab, not a separate page — its reorder buttons use testid 'objective-reorder-{idx}-up/down'.",
+  "rca of the issue": "SiteSettingsAdmin.jsx was extended (post JSX fix) to render a header navigation order DnD list. The author wired up the JSX (lines 68-96) referring to navOrder, NAV_LABELS, moveNav, hideNav, navHidden, showNav, but never declared the corresponding state, helpers, or constants in the component body. Result: ReferenceError on render. The error is loud (React error overlay, captured pageerror = 'navOrder is not defined') but was missed because the Site Settings page was never opened during the JSX-only smoke after the prior fix. Fix: declare the missing symbols (snippet provided in action_items)."
+}
