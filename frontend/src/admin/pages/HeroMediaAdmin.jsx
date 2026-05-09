@@ -13,8 +13,8 @@ const PAGES = [
   { key: "_default", labelAr: "افتراضي عام", labelEn: "Global default", helpAr: "يستخدم لأي صفحة لا يوجد لها صورة مخصصة.", helpEn: "Used by any page that doesn't have a dedicated record." },
   { key: "home", labelAr: "الصفحة الرئيسية", labelEn: "Home page" },
   { key: "publications", labelAr: "صفحة الإصدارات", labelEn: "Publications page" },
-  { key: "about", labelAr: "صفحة عن المركز", labelEn: "About page" },
-  { key: "contact", labelAr: "صفحة التواصل", labelEn: "Contact page" },
+  { key: "about", labelAr: "صفحة عن المركز", labelEn: "About page", inactive: true, inactiveAr: "غير مفعّل بعد على الموقع العام (سيتم وصلها لاحقاً).", inactiveEn: "Not yet wired to the public site (coming soon)." },
+  { key: "contact", labelAr: "صفحة التواصل", labelEn: "Contact page", inactive: true, inactiveAr: "غير مفعّل بعد على الموقع العام (سيتم وصلها لاحقاً).", inactiveEn: "Not yet wired to the public site (coming soon)." },
 ];
 
 /* Recommended dimensions per page */
@@ -203,6 +203,12 @@ function PageRow({ page, item, onChange, onSave, onReset, saving, tr, lang, isEx
           {(page.helpAr || page.helpEn) && (
             <p className="text-[12.5px] text-mute mt-1 max-w-[60ch]">
               {tr(page.helpAr || "", page.helpEn || "")}
+            </p>
+          )}
+          {page.inactive && (
+            <p className="text-[12px] text-amber-700 mt-1 max-w-[60ch] inline-flex items-center gap-1.5">
+              <AlertTriangle size={12} />
+              {tr(page.inactiveAr || "", page.inactiveEn || "")}
             </p>
           )}
         </div>

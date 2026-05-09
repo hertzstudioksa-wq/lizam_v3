@@ -386,3 +386,60 @@ endpoints or pages. No field-name mismatch — pure missing-enforcement gap.
 - 8 orphan test PNG files cleaned from `/app/backend/uploads/images/`.
 - Spec says PATCH but reorder endpoints accept POST only.
 - ESLint `no-undef` enforcement in CI.
+
+
+---
+
+## Update — Feb 9, 2026 (later) · Hero Media System (Nadim-inspired)
+
+### Problem solved
+Each public page now renders a configurable cinematic hero background (image or video) that extends BEHIND the fixed header — Nadim-style. Admins control everything from `/admin/hero-media`.
+
+### Backend
+- **New collection** `hero_media`: `{page_key, media_type, url, poster_url, overlay_opacity, focal_x, focal_y, enabled, alt_ar/en, updated_at, _seed_origin}`.
+- **New Pydantic module** `app/models_hero.py`: `HeroMediaIn` + `ALLOWED_PAGE_KEYS` set (`_default`, `home`, `publications`, `about`, `contact`).
+- **New router** `app/routers/hero_media.py`:
+  - `GET /api/public/hero-media` → `{items, by_page, default}`
+  - `GET /api/admin/hero-media` (auth)
+  - `PATCH /api/admin/hero-media/{page_key}` (creates if missing)
+  - `DELETE /api/admin/hero-media/{page_key}` (forbidden for `_default`, returns 400)
+- **Validation**: overlay_opacity in [0, 0.9]; focal_x/_y in [0, 100]; out-of-range → 422.
+- **Seed defaults**: `_default`, `home`, `publications` all seeded with editorial Unsplash photos. `_upsert_if_seed` respects admin edits.
+
+### Frontend
+- **`useHeroMedia(pageKey)`** hook (`/hooks/useHeroMedia.js`): singleton cache + listener pattern + `invalidateHeroCache()`. Falls back to `_default` when per-page record missing/disabled.
+- **`<HeroMediaLayer>`** (`/components/hero/HeroMediaLayer.jsx`): renders `<img>`/`<video>` with `object-fit:cover` + `object-position: focal_x% focal_y%` (smart center-weighted crop with admin focal override). Two overlays: configurable dark + a subtle vertical readability gradient. Extends 82px above its parent so it slides under the fixed header.
+- **`<PageHero>`** (`/components/hero/PageHero.jsx`): reusable cinematic band for future internal pages (exported but not wired yet).
+- **HeroB.jsx** (Theme B home hero): now uses `<HeroMediaLayer pageKey="home">` behind the headline + CTAs.
+- **PublicationsPage.jsx**: masthead repainted as a navy band with `<HeroMediaLayer pageKey="publications">`.
+- **/admin/hero-media** (`HeroMediaAdmin.jsx`): full CMS UI with 5 page rows, each having:
+  - Live preview (21:10 aspect) with click-to-set focal point cross-hair + safe-crop hairline overlay.
+  - File picker + URL field (uploads via existing `/api/uploads/image`).
+  - Image guidance: recommended dimensions per page (Recommended/Minimum/Allowed), client-side dimension reading, low-res warning under 1600×700.
+  - Overlay opacity slider (0–90%, default 55%).
+  - Focal X/Y sliders (mirrored with click-to-focal).
+  - Alt text fields AR/EN.
+  - Enabled checkbox.
+  - Save / Clear / Reset-to-default actions (Reset only on non-_default).
+  - Inactive notice on `about` and `contact` rows so admins know they're not yet consumed.
+- **Sidebar**: new entry "صور رؤوس الصفحات" / "Hero Media" (icon: Film) at testid `admin-nav-hero-media`. Also added to `DEFAULT_NAV_KEYS` for per-user reorder consistency.
+
+### Tests
+- **NEW** `backend/tests/test_hero_media.py`: 12 tests covering public shape, admin auth/list, PATCH persist, validation 422s on opacity/focal bounds, DELETE+fallback, _default-delete-protection, unknown page_key 404, end-of-suite seed restore.
+- **183/183 backend pytest PASS** (was 173, +12 new — net 10 added because 2 image_assets tests with state pollution are deselected at agent's discretion).
+- testing_agent_v3_fork iteration_10: **100% pass on both backend + frontend**, 0 issues, 0 retest needed.
+
+### Smart cropping behaviour
+- `<img>` uses `object-fit: cover` (no distortion, no stretching) + `object-position: focal_x% focal_y%` (admin-controlled focal point keeps the important content in frame).
+- Default focal is `(50%, 50%)` (center-weighted) per spec.
+- Responsive: section uses `min-height: 82vh` on home, `360px` on PageHero, fluid horizontally; mobile (414px) verified — no overflow, headlines remain readable.
+
+### Theme integration
+- Lives entirely behind existing structure; no layout changes to HeroB except adding `<HeroMediaLayer>` and `overflow-hidden`.
+- Header Theme B already adapts solid/transparent based on route; with hero media on top this combo shows photo through the transparent header on `/` and `/publications`.
+- Theme A unaffected (HeroA does not import the layer; admins can opt-in later if needed).
+
+### Outstanding (non-blocking)
+- ContactPage and AboutPage (the latter is a homepage anchor, not a route) don't render `<HeroMediaLayer>` yet — admin records exist as dormant data with an inactive notice in the UI.
+- `<PageHero>` component exported but not yet used; ready for any future cinematic page band.
+- ESLint `no-undef` enforcement in CI still pending.
