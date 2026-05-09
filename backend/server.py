@@ -53,8 +53,10 @@ api.include_router(uploads_router.router)
 api.include_router(image_assets_router.router)
 app.include_router(api)
 
-# Static uploads
-app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+# Static uploads — MUST be served under /api/* because the Kubernetes ingress
+# only proxies /api/* to the backend. Anything else hits the frontend dev
+# server and returns the React HTML fallback (silently breaking images).
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,

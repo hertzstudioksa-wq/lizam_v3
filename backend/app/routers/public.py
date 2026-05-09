@@ -225,12 +225,15 @@ async def pdf_stream(token: str, request: Request):
 
     # Prefer uploaded file if present
     if pub.get("pdf_file_url"):
-        # Expect relative path like /uploads/pdfs/xxx.pdf
+        # Accepts either legacy "/uploads/pdfs/x.pdf" or new "/api/uploads/pdfs/x.pdf".
         rel = pub["pdf_file_url"].lstrip("/")
-        file_path = UPLOAD_DIR / rel.replace("uploads/", "", 1) if rel.startswith("uploads/") else None
-        if file_path and file_path.is_file():
-            return FileResponse(str(file_path), media_type="application/pdf",
-                                filename=os.path.basename(str(file_path)))
+        for prefix in ("api/uploads/", "uploads/"):
+            if rel.startswith(prefix):
+                file_path = UPLOAD_DIR / rel[len(prefix):]
+                if file_path.is_file():
+                    return FileResponse(str(file_path), media_type="application/pdf",
+                                        filename=os.path.basename(str(file_path)))
+                break
     # Fallback to external URL via server-side fetch (hides the raw URL)
     url = pub.get("external_pdf_url")
     if not url:

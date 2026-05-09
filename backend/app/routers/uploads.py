@@ -37,7 +37,7 @@ async def _save(file: UploadFile, subdir: str, allowed_mimes: set[str]) -> dict:
         "original": _safe_filename(file.filename or name),
         "size": len(contents),
         "mime": file.content_type,
-        "url": f"/uploads/{subdir}/{name}",
+        "url": f"/api/uploads/{subdir}/{name}",
     }
 
 

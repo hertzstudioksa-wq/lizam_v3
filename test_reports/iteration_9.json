@@ -1,0 +1,40 @@
+{
+  "summary": "Comprehensive validation of (a) the /api/uploads mount fix, (b) Theme B as default, and (c) full /admin/* sweep. PRIMARY ASK FULLY VERIFIED: POST /api/uploads/image returns URLs starting with '/api/uploads/images/...' and GET on that URL returns HTTP 200 with content-type 'image/png' (NOT HTML). Same for PDFs (returns /api/uploads/pdfs/... with content-type application/pdf). Cache invalidation verified end-to-end: after uploading a fresh PNG to slot 'about_b_portrait' and clicking 'حفظ التغييرات', GET /api/public/image-assets reflects the new /api/uploads/images/<uuid>.png URL within ~3s. Theme B is the active theme on /, /about, /publications, /contact (<html data-theme='b'>) and HeaderB is visible on every public route. Login (admin@lizam.sa / Lizam@2026) succeeds and routes to /admin. Show-password eye toggle on /login flips type='password' ↔ 'text'. Full admin sweep across all 14 routes (/admin, /admin/{publications,authors,categories,responses,users,roles,messages,home,branding,images,settings,toggles,audit}) — ALL render with 0 page errors and 0 console errors. /admin/images displays 14 image slots with full data-testid coverage (image-slot-*, image-upload-*, image-url-*, image-active-*, image-save-*, alt-ar-*, alt-en-*) including Theme B-specific slots (hero_b_main, about_b_portrait, principle_1/2/3_image). Backend pytest: 171/171 PASS (109s) including 4 NEW upload-path tests; 2 pre-existing data-drift tests deselected per main-agent instructions. Theme B left as canonical default per instructions; uploaded test image was reverted (about_b_portrait restored to original Unsplash URL).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Homepage AboutB visual reflection", "issue": "On public '/' the about_b_portrait <img> was NOT found in the DOM even after scrolling 4800px (only 2 logo <img> + 1 hero CSS bg-image visible). The PUBLIC API reflects the new URL correctly (verified GET /api/public/image-assets returns the freshly-uploaded /api/uploads/images/<uuid>.png within ~3s), so cache invalidation is working. The visual non-render is likely either (a) AboutB section below the scrolled viewport at viewport=1920x1080, (b) lazy-loaded via IntersectionObserver with trigger off-screen, or (c) only shown on '/about' route under different conditions. Recommend main agent verify AboutB component renders <img src> from useImageAssets hook on the homepage.", "affected_selectors": ["[data-testid='about-b-portrait-img']", "section.about-b img"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_uploads_api_path.py",
+    "/app/test_reports/pytest/iteration_9_results.xml"
+  ],
+  "action_items": [
+    "(LOW) Verify AboutB component on homepage '/' renders an <img> element with src bound to about_b_portrait slot URL. The backend/API is correct; frontend rendering of that one slot couldn't be visually confirmed. The primary upload-mount fix is fully working. ",
+    "(LOW, carryover) /api/admin/categories/reorder & /api/admin/authors/reorder spec mismatch — accepts POST not PATCH (cosmetic, not a regression)."
+  ],
+  "critical_code_review_comments": [
+    "Upload-mount fix is correct: server.py mounts StaticFiles at '/api/uploads' (the only path the K8s ingress proxies to backend); uploads.py emits {'url': '/api/uploads/{subdir}/{name}'} matching the mount. Direct fetch returns 200 with image/png. ",
+    "_safe_filename + uuid4 for filename + ALLOWED_IMAGE_MIME / ALLOWED_PDF_MIME + size cap via _MAX_BYTES + require_permission('uploads.create') — multi-layered defense in depth. Good. ",
+    "useImageAssets cache invalidation (resetImageAssetsCache after PATCH) verified working via public API roundtrip in ~3s. ",
+    "All 14 admin pages have stable data-testid coverage on interactive elements. Excellent test surface area.",
+    "Backend test suite is large (171 tests) and runs in ~110s — consider parallel execution (pytest-xdist) in CI to keep wall-clock short.",
+    "Two pre-existing tests in test_image_assets.py expect hero_background.active=true but live DB has it deactivated (Theme B uses hero_b_main). Recommend updating those tests OR seeding hero_background back to active=true to match expectations. Not a regression from this iteration."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_uploads_api_path.py (NEW — 4 tests covering image/pdf upload + URL prefix + content-type + auth gating)"
+  ],
+  "success_rate": {
+    "backend": "100% (171/171 pytest PASS, 2 pre-existing data-drift deselected per main-agent instruction)",
+    "frontend": "97% (14/14 admin routes render 0-error; 4/4 public routes verified Theme B + header visible; upload→API reflection verified; only the visual placement of about_b_portrait <img> on homepage couldn't be confirmed)"
+  },
+  "test_credentials": "admin@lizam.sa / Lizam@2026 (verified working). No new accounts seeded.",
+  "seed_data_creation": "Restored: about_b_portrait URL reverted to original https://images.unsplash.com/photo-1568667256549-094345857637?auto=format&fit=crop&q=80&w=1200 at end of run. Theme B left as canonical default (active_theme='B') per main-agent instruction. Three test PNG files were uploaded to /api/uploads/images/ during testing — these are harmless orphans (not referenced by any active slot now); main agent may optionally garbage-collect them.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "(1) Run pytest with REACT_APP_BACKEND_URL exported from frontend/.env (conftest does NOT set it). Use: `export $(grep REACT_APP_BACKEND_URL /app/frontend/.env) && pytest backend/tests/ --deselect backend/tests/test_image_assets.py::test_public_image_assets_returns_active_only --deselect backend/tests/test_image_assets.py::test_admin_image_assets_list_as_super_admin -q`. (2) Upload mount is at '/api/uploads' — anything under '/uploads' (no /api prefix) is proxied by K8s ingress to the React dev server and returns HTML fallback (this is acceptable per spec). (3) /admin/images data-testids: image-slot-{key}, image-upload-{key} (file input), image-url-{key} (text input), image-active-{key} (checkbox), image-save-{key} (button), alt-ar-{key}, alt-en-{key}. Save button text in AR is 'حفظ التغييرات' / 'لا تغييرات' when no diff. (4) Cache invalidation works via resetImageAssetsCache() after PATCH; public API picks up changes within ~3s without hard reload. (5) about_b_portrait slot has 14 total slots on /admin/images. Visible Theme B-specific: hero_b_main, about_b_portrait, principle_1_image, principle_2_image, principle_3_image. (6) Login button is type=submit, NOT a specific text selector. (7) Three orphan test uploads exist in /api/uploads/images/ from this iteration — harmless.",
+  "rca of the issue": "ROOT CAUSE OF ORIGINAL UPLOAD BUG (now fixed by main agent): Server mounted StaticFiles at '/uploads' but Kubernetes ingress only proxies '/api/*' to the backend pod — so requests to '/uploads/images/X.png' hit the React dev server which served its index.html fallback (text/html), making images appear broken. FIX (verified): mount moved to '/api/uploads' in server.py:59 + uploads.py:40 emits matching '/api/uploads/{subdir}/{name}' URL. Verification: POST /api/uploads/image → URL='/api/uploads/images/<uuid>.png' (status 200, content-type image/png on direct GET). Legacy '/uploads/images/X' now returns React HTML — acceptable per spec since no code references it anymore. End-to-end E2E flow: upload PNG via /admin/images → URL set on form → save → PATCH /api/admin/image-assets/about_b_portrait → resetImageAssetsCache() → next GET /api/public/image-assets includes new URL within ~3s. ALL FIXED. "
+}
