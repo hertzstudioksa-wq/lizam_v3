@@ -323,3 +323,34 @@ endpoints or pages. No field-name mismatch — pure missing-enforcement gap.
 - CORS regex is permissive — tighten to specific origins before public launch
 - MongoDB Arabic text index (with Arabic analyzer) to replace regex search in list endpoint
 - View count increments on every call including admin previews — add dedup or admin-exclude in Phase 3
+
+
+---
+
+## Update — Feb 9, 2026 · Admin UX & DnD ordering hardening
+
+### Done in this session
+- ✅ Fixed React JSX parse errors in `PublicationsAdmin.jsx` and `ResponsesAdmin.jsx` (escaped `\"` inside JSX string attributes → wrapped in `{"…"}` JS expressions, replaced inner double-quotes with Arabic guillemets «…»).
+- ✅ Fixed CRITICAL regression in `SiteSettingsAdmin.jsx`: declared the missing `ALL_NAV_KEYS`, `DEFAULT_NAV_ORDER`, `NAV_LABELS` (useMemo on lang), `navOrder`/`navHidden` (derived from `form.value.header_nav_order` with whitelist filter), and `moveNav`/`hideNav`/`showNav` (form.patch wrappers around `moveItem`).
+- ✅ E2E retest (testing_agent_v3_fork iteration_8) all green:
+  - Login → /admin → AR/EN sidebar toggle works
+  - /admin/settings nav-order DnD: reorder + save → public header reflects within ~2.5s via `invalidateSiteCache('site')`
+  - Hide/Show nav items propagate to public header
+  - Theme switch A↔B on /admin/branding reflects via `data-theme` on `<html>`
+  - /admin/{toggles, publications, responses, categories, authors, home} all render with help banners + tooltips, 0 page errors
+  - Backend pytest 169/169 PASS
+
+### Final state (canonical defaults restored after testing)
+- `active_theme = 'A'` (Baseline)
+- `header_nav_order = ['home','publications','about','contact']`
+
+### Outstanding (non-blocking)
+- Spec says PATCH but `/api/admin/categories/reorder` and `/api/admin/authors/reorder` accept POST only. Cosmetic mismatch; works correctly via POST.
+- Recommend enabling ESLint `no-undef` rule in CI (would have caught the SiteSettingsAdmin regression before merge).
+
+### Deployment readiness checklist (P0 before launch)
+- [ ] Rotate `JWT_SECRET` in production `.env`
+- [ ] Set `ALLOWED_ORIGIN_REGEX` to production domain pattern (currently permissive)
+- [ ] Add Resend API key to enable email delivery (currently no-op fallback)
+- [ ] Verify Thmanyah font licensing for commercial deployment
+- [ ] Post-deploy smoke test on production domain
