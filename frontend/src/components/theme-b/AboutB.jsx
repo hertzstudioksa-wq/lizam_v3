@@ -13,6 +13,7 @@ export default function AboutB() {
   const img = bySlot.about_image;
   const showImg = img?.active && img?.url;
   const altText = img?.[`alt_${lang}`] || img?.alt_en || "";
+  const titleScale = home?.section_styles?.about?.title_scale ?? 1;
   // Focal point in % (0–100). Defaults to centre.
   const fx = Math.max(0, Math.min(100, Number(img?.focal_x ?? 50)));
   const fy = Math.max(0, Math.min(100, Number(img?.focal_y ?? 50)));
@@ -60,7 +61,11 @@ export default function AboutB() {
             </div>
             <h2
               className="tb-display mt-8 max-w-[28ch]"
-              style={{ fontSize: "clamp(2.1rem, 3.6vw, 3.1rem)", lineHeight: 1.22, fontWeight: 500 }}
+              style={{
+                fontSize: `calc(clamp(2.1rem, 3.6vw, 3.1rem) * ${titleScale})`,
+                lineHeight: 1.22,
+                fontWeight: 500,
+              }}
             >
               {lang === "ar"
                 ? "مركز بحثي سعودي للدراسات القانونية والسياسات العامة."

@@ -25,6 +25,7 @@ export default function MissionVisionB() {
   const vision = pick(home, "vision");
   const mp = home[`mission_points_${lang}`] || [];
   const vp = home[`vision_points_${lang}`] || [];
+  const titleScale = home?.section_styles?.mission?.title_scale ?? 1;
 
   const Card = ({ index, kicker, title, body, points, testid }) => (
     <article
@@ -78,6 +79,7 @@ export default function MissionVisionB() {
           fontWeight: 500,
           lineHeight: 1.4,
           maxWidth: "30ch",
+          fontSize: `calc(21px * ${titleScale})`,
         }}
       >
         {title}

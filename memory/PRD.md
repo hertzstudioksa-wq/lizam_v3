@@ -607,6 +607,53 @@ existing data migration required):
 
 ---
 
+## Update — Feb 10, 2026 (later 2) · Wired section_styles + featured controls + hero links to public Theme B
+
+### What changed
+Phase-2 wiring of the new `/admin/home` controls into the public Theme B
+components, so admin changes actually reflect on the live site.
+
+**Per-section font scale** — applied to inline `fontSize` via a `calc(...)`
+multiplier that respects existing responsive `clamp()` values:
+- `HeroB.jsx` → `home.section_styles?.hero?.title_scale` on the H1 title.
+- `ObjectivesB.jsx` → `home.section_styles?.objectives?.title_scale` on each
+  objective card H3 (the 5 priority cards).
+- `AboutB.jsx` → `home.section_styles?.about?.title_scale` on the About H2.
+- `MissionVisionB.jsx` → `home.section_styles?.mission?.title_scale` on
+  Mission and Vision card H3s.
+
+**Featured Publications** — `FeaturedPublicationsB.jsx` now reads:
+- `home.featured_count` ∈ {3, 6, 9} — caps how many cards render
+- `home.featured_sort` ∈ {"latest", "most_viewed"} — passed to
+  `usePublications({ sort })`. Backend already supports
+  `?sort=most_viewed|latest`.
+
+**Hero CTAs** — `HeroB.jsx` now respects:
+- `home.hero_cta_primary_link` (defaults to `/publications`).
+- `home.hero_cta_secondary_*` (label + link). Secondary button only renders
+  when an admin sets a secondary label, so the existing single-CTA design is
+  preserved by default.
+
+### Constraints honoured
+- All scaling uses `calc(<existing_clamp_or_px> * <scale>)` so the original
+  responsive design behaviour is preserved at scale=1.0 (default).
+- No new CSS rules, no new tokens — purely inline style overrides per
+  component.
+- Defaults are hard-coded so users with no admin tweaks get the existing
+  visual exactly as before.
+
+### Verified live
+- Hero title at `scale=1.15` → `99.36px`; back at `scale=1.0` → `86.4px` ✓
+- Hero secondary CTA appears with `to="/about"` only when admin sets a label ✓
+- Featured grid sort changed to `most_viewed` and the cards re-ordered by
+  view_count (839 → 29 → 1) ✓
+- Objective H3 = 24px at scale=1.0 ✓ (responsive to slider in real time)
+- 195/195 backend pytest PASS — no regressions
+- Frontend lint clean across all 5 wired components
+
+
+---
+
 ## Update — Feb 10, 2026 · Backend test stability fix
 
 ### Two pre-existing data-drift test failures resolved

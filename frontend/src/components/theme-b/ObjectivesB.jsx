@@ -14,6 +14,7 @@ export default function ObjectivesB() {
   const items = home.objectives || [];
   const bg = bySlot.objectives_background;
   const useBg = bg?.active && bg?.url;
+  const titleScale = home?.section_styles?.objectives?.title_scale ?? 1;
 
   return (
     <section
@@ -73,6 +74,7 @@ export default function ObjectivesB() {
                       color: "var(--tb-paper-base)",
                       fontWeight: 500,
                       lineHeight: 1.32,
+                      fontSize: `calc(24px * ${titleScale})`,
                     }}
                   >
                     {o[`title_${lang}`]}

@@ -17,6 +17,10 @@ export default function HeroB() {
   const title = pick(home, "hero_title", "");
   const subtitle = pick(home, "hero_subtitle", "");
   const ctaPrimary = pick(home, "hero_cta_primary", "") || t("hero.explore");
+  const ctaSecondary = pick(home, "hero_cta_secondary", "");
+  const ctaPrimaryLink = home?.hero_cta_primary_link || "/publications";
+  const ctaSecondaryLink = home?.hero_cta_secondary_link || "";
+  const titleScale = home?.section_styles?.hero?.title_scale ?? 1;
 
   const eyebrow = lang === "ar"
     ? "مركز بحثي مستقل · المملكة العربية السعودية"
@@ -68,7 +72,7 @@ export default function HeroB() {
         <h1
           className="tb-display tb-rise tb-rise-d1 mt-12 mx-auto"
           style={{
-            fontSize: "clamp(2.8rem, 6.4vw, 5.4rem)",
+            fontSize: `calc(clamp(2.8rem, 6.4vw, 5.4rem) * ${titleScale})`,
             lineHeight: lang === "ar" ? 1.18 : 1.04,
             fontWeight: 500,
             letterSpacing: lang === "ar" ? "0" : "-0.018em",
@@ -100,10 +104,10 @@ export default function HeroB() {
           </p>
         )}
 
-        {/* Single CTA */}
-        <div className="mt-16 tb-rise tb-rise-d3">
+        {/* CTAs — primary always shown; secondary appears only when admin sets a label */}
+        <div className="mt-16 tb-rise tb-rise-d3 flex flex-wrap items-center justify-center gap-4">
           <Link
-            to="/publications"
+            to={ctaPrimaryLink}
             className="inline-flex items-center gap-3 px-9 py-4 transition-all duration-400"
             style={{
               border: "1px solid var(--tb-gold)",
@@ -127,6 +131,26 @@ export default function HeroB() {
             <span>{ctaPrimary}</span>
             <Arrow size={15} strokeWidth={1.6} />
           </Link>
+          {ctaSecondary && (
+            <Link
+              to={ctaSecondaryLink || "#about"}
+              className="inline-flex items-center gap-2 px-7 py-4 transition-colors duration-400"
+              style={{
+                color: "rgba(251, 250, 247, 0.85)",
+                fontFamily: '"Thmanyah Sans", sans-serif',
+                fontSize: 14,
+                letterSpacing: "0.14em",
+                textTransform: lang === "ar" ? "none" : "uppercase",
+                fontWeight: 500,
+                borderBottom: "1px solid rgba(251, 250, 247, 0.35)",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--tb-paper-base)"; e.currentTarget.style.borderBottomColor = "var(--tb-paper-base)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(251, 250, 247, 0.85)"; e.currentTarget.style.borderBottomColor = "rgba(251, 250, 247, 0.35)"; }}
+              data-testid="hero-cta-secondary"
+            >
+              <span>{ctaSecondary}</span>
+            </Link>
+          )}
         </div>
       </div>
     </section>

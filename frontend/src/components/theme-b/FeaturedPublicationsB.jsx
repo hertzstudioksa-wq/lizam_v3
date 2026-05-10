@@ -18,11 +18,14 @@ export default function FeaturedPublicationsB() {
   const { bySlot } = useImageAssets();
   const bg = bySlot.library_background;
   const hasBg = bg && bg.active && bg.url;
+  // Admin-controlled count + sort (saved in /admin/home → "Featured Publications" card).
+  const cardCount = [3, 6, 9].includes(home?.featured_count) ? home.featured_count : 3;
+  const sortMode = home?.featured_sort === "most_viewed" ? "most_viewed" : "latest";
   // Prefer admin-curated featured publications, then fill with latest until we
-  // have up to 3 unique items. Ensures the home section reflects ALL recent
-  // published items even if fewer than 3 are flagged "featured".
-  const featuredQuery = usePublications({ featured: true, limit: 6 });
-  const latestQuery = usePublications({ limit: 6 });
+  // have up to `cardCount` unique items. Ensures the home section reflects ALL recent
+  // published items even if fewer than `cardCount` are flagged "featured".
+  const featuredQuery = usePublications({ featured: true, sort: sortMode, limit: cardCount * 2 });
+  const latestQuery = usePublications({ sort: sortMode, limit: cardCount * 2 });
   const featuredItems = featuredQuery.data?.items || [];
   const latestItems = latestQuery.data?.items || [];
   const seen = new Set();
@@ -31,7 +34,7 @@ export default function FeaturedPublicationsB() {
     if (!p?.id || seen.has(p.id)) continue;
     seen.add(p.id);
     merged.push(p);
-    if (merged.length >= 3) break;
+    if (merged.length >= cardCount) break;
   }
   const items = merged;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
