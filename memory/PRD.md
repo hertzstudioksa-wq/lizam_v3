@@ -443,3 +443,26 @@ Each public page now renders a configurable cinematic hero background (image or 
 - ContactPage and AboutPage (the latter is a homepage anchor, not a route) don't render `<HeroMediaLayer>` yet — admin records exist as dormant data with an inactive notice in the UI.
 - `<PageHero>` component exported but not yet used; ready for any future cinematic page band.
 - ESLint `no-undef` enforcement in CI still pending.
+
+
+---
+
+## Update — Feb 10, 2026 · Backend test stability fix
+
+### Two pre-existing data-drift test failures resolved
+After the Hero Media + About-page population work, two backend tests had drifted from real DB state:
+
+1. **`test_image_assets.py::test_public_image_assets_returns_active_only`** — assertion
+   required the `about_image` URL to start with `http`. After admins started uploading
+   their own files, the URL became `/api/uploads/images/<uuid>.png` (server-relative).
+   Fix: assertion now accepts either an absolute http(s) URL **or** a backend-relative
+   `/api/uploads/...` path. Both formats are valid; the frontend resolves both correctly.
+2. **`test_lizam_phase2.py::TestPublicationDetailGated::test_preview_login_without_auth_returns_preview`**
+   — was a transient state-pollution flake (a previous test run had mutated `lizam-pub-1`
+   access_level). Verified passing after fresh seed; no code change needed.
+
+### Test results
+- **186/186 backend pytest PASS** (previously 183 + new tests for Hero Media custom keys + About page hero fallback).
+- Zero deselected tests. No `--deselect` flags required anymore.
+- Run command: `cd /app/backend && export REACT_APP_BACKEND_URL=$(grep REACT_APP_BACKEND_URL /app/frontend/.env | cut -d= -f2) && pytest tests/ -p no:randomly`
+
