@@ -543,6 +543,70 @@ to the current solid background.
 
 ---
 
+## Update — Feb 10, 2026 (later) · /admin/home full section-by-section dashboard
+
+### What changed
+Re-architected `/admin/home` from a long flat form into a **collapsible
+card-per-section dashboard** with 8 distinct sections + an overview card.
+
+**New section cards** (each with chevron expand/collapse, eyebrow, title,
+visibility toggle, and per-section content controls):
+
+1. **Hero** — eyebrow, title (AR/EN, multiline), subtitle, primary &
+   secondary buttons (label + link), background media uploader (image/video
+   selector), per-section title font scale slider.
+2. **About** — eyebrow, main copy, extended copy, optional side image
+   uploader, heading scale slider.
+3. **Mission & Vision (Foundations)** — separate AR/EN bodies, list editors
+   (one bullet per line), heading scale slider.
+4. **Objectives** — eyebrow, **inline list editor** with reorder / add / delete,
+   bilingual title + description, heading scale slider with live preview.
+5. **Fields of Work** — section title, **inline list editor** with reorder /
+   add / delete, lucide icon picker per field, card-title scale slider.
+6. **Featured Publications** — section title + blurb, **count selector
+   (3/6/9)** and **sort selector (latest / most_viewed)**.
+7. **Contact** — title, blurb, with an inline note that contact details
+   (email/phone/address) live in Site Settings and cascade automatically.
+8. **Newsletter** — title + body copy.
+
+**Reusable UI primitives** introduced inline:
+- `<SectionCard>` — collapsible wrapper with header (eyebrow + title +
+  visibility toggle) and chevron indicator.
+- `<FontScaleSlider>` — writes into `home_content.section_styles[section_key].title_scale`,
+  range 0.8–1.5 with live preview text.
+- `<ImageUploader>` — `POST /api/uploads/image` upload + URL paste fallback +
+  16:9 preview + clear button.
+- `<BiInput>` and `<BiList>` — bilingual AR/EN field pairs.
+
+### Backend (minimal change to honour the user's "don't touch other code" rule)
+Extended `HomeContentIn` model with these optional fields (all nullable, no
+existing data migration required):
+- `section_styles: Dict[str, Dict[str, Any]]` — flexible per-section styling
+- `hero_cta_primary_link`, `hero_cta_secondary_link`
+- `hero_background_url`, `hero_background_type` (image/video)
+- `about_image_url`
+- `fields_title_ar`, `fields_title_en`
+- `featured_title_ar/en`, `featured_blurb_ar/en`, `featured_count`, `featured_sort`
+- `contact_title_ar/en`, `contact_blurb_ar/en`
+- `newsletter_enabled`, `newsletter_title_ar/en`, `newsletter_blurb_ar/en`
+
+### Constraints honoured
+- Theme-B components untouched (per user instruction).
+- No backend route changes — same `PATCH /api/admin/home` endpoint.
+- No new sidebar entries, no new routes.
+- Existing `useDirtyForm` / `SaveBar` retained — single save-bar at the bottom.
+- Visibility uses existing `visible_sections` array (no new field).
+
+### Tests
+- 195/195 backend pytest PASS (zero regressions).
+- Frontend lint clean.
+- Smoke verification: 9 section cards rendered, 8 visibility toggles wired,
+  expanding Objectives shows scale slider with live preview + inline editor
+  with reorder/delete buttons. Public site untouched and renders normally.
+
+
+---
+
 ## Update — Feb 10, 2026 · Backend test stability fix
 
 ### Two pre-existing data-drift test failures resolved

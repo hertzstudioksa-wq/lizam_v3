@@ -118,6 +118,38 @@ class HomeContentIn(BaseModel):
     objectives: Optional[List[Dict[str, Any]]] = None
     fields_of_work: Optional[List[Dict[str, Any]]] = None
     visible_sections: Optional[List[str]] = None
+    # ---------------- Phase: section-by-section dashboard ----------------
+    # Per-section font-scale + small per-section style overrides
+    # (saved as { hero: {title_scale: 1.1}, objectives: {title_scale: 1.05}, ... })
+    section_styles: Optional[Dict[str, Dict[str, Any]]] = None
+    # Hero — buttons & background media
+    hero_cta_primary_link: Optional[str] = None
+    hero_cta_secondary_link: Optional[str] = None
+    hero_background_url: Optional[str] = None
+    hero_background_type: Optional[Literal["image", "video"]] = None
+    # About — optional side image
+    about_image_url: Optional[str] = None
+    # Fields of Work — section heading
+    fields_title_ar: Optional[str] = None
+    fields_title_en: Optional[str] = None
+    # Featured Publications — heading + display rules
+    featured_title_ar: Optional[str] = None
+    featured_title_en: Optional[str] = None
+    featured_blurb_ar: Optional[str] = None
+    featured_blurb_en: Optional[str] = None
+    featured_count: Optional[int] = None  # 3, 6, or 9
+    featured_sort: Optional[Literal["latest", "most_viewed"]] = None
+    # Contact band
+    contact_title_ar: Optional[str] = None
+    contact_title_en: Optional[str] = None
+    contact_blurb_ar: Optional[str] = None
+    contact_blurb_en: Optional[str] = None
+    # Newsletter
+    newsletter_enabled: Optional[bool] = None
+    newsletter_title_ar: Optional[str] = None
+    newsletter_title_en: Optional[str] = None
+    newsletter_blurb_ar: Optional[str] = None
+    newsletter_blurb_en: Optional[str] = None
 
 
 class PublicationIn(BaseModel):
