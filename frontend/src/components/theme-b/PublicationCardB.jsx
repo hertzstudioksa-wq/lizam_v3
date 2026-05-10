@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Eye, Clock, Lock } from "lucide-react";
+import { Eye, Clock, Lock, ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 
 function fmtDate(iso, lang) {
@@ -20,14 +20,16 @@ const TYPE_LABELS = {
 };
 
 const ACCESS_BADGE = {
-  ar: { public: "متاح", preview_login: "معاينة + تسجيل", registered: "للمسجلين", hidden: "مخفي" },
+  ar: { public: "متاح", preview_login: "معاينة", registered: "للمسجلين", hidden: "مخفي" },
   en: { public: "Open", preview_login: "Preview", registered: "Members", hidden: "Hidden" },
 };
 
 /**
- * Theme B — Editorial Publication Card (Nadeem-inspired).
- * Landscape image on top (16:10), then title + summary + meta row below.
- * Generous interior padding, soft-warm background, clean hover lift.
+ * Theme B — Editorial Publication Card.
+ * Typography-first design matching the cleanliness of FieldsOfWorkB cards:
+ * gold edge reveal on hover, refined radius, paper background, hairline border.
+ * No heavy cover-image area — focus is on type/date eyebrow, serif title,
+ * summary, and a minimal meta footer with views + reading time + arrow.
  */
 export default function PublicationCardB({ pub, testid = "pub-card" }) {
   const { lang } = useLang();
@@ -40,104 +42,109 @@ export default function PublicationCardB({ pub, testid = "pub-card" }) {
   const readTime = pub.reading_time_minutes || 0;
   const views = pub.view_count || 0;
   const gated = pub.access_level && pub.access_level !== "public";
-  const cover = pub.cover_image_url;
+  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
   return (
-    <article
-      className="group flex flex-col h-full overflow-hidden transition-all duration-400"
+    <Link
+      to={`/publications/${slug}`}
+      className="block h-full"
       data-testid={testid}
       data-theme-component="theme-b-card"
-      style={{
-        background: "var(--tb-paper-base)",
-        border: "1px solid var(--tb-hairline)",
-        borderRadius: "var(--tb-radius-md, 4px)",
-      }}
-      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 18px 40px -22px rgba(10, 17, 28, 0.22)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
     >
-      <Link to={`/publications/${slug}`} className="block h-full flex flex-col">
-        {/* Landscape cover */}
-        <div
-          className="relative w-full overflow-hidden"
-          style={{
-            aspectRatio: "16/10",
-            background: cover
-              ? `url(${cover}) center/cover no-repeat`
-              : "linear-gradient(135deg, var(--tb-navy-900) 0%, var(--tb-navy-700, var(--tb-navy-900)) 100%)",
-          }}
-        >
-          {!cover && (
-            <div
-              aria-hidden
-              style={{
-                position: "absolute", inset: 0,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "var(--tb-gold)", opacity: 0.4,
-                fontFamily: '"Thmanyah Serif Display", serif',
-                fontSize: 56, fontStyle: "italic",
-              }}
-            >
-              ل
-            </div>
-          )}
-          {gated && (
-            <div
-              className="absolute top-4 inline-flex items-center gap-1.5 px-2.5 py-1"
-              style={{
-                insetInlineEnd: 16,
-                background: "rgba(251, 250, 247, 0.94)",
-                color: "var(--tb-navy-900)",
-                fontSize: 10,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                borderRadius: 999,
-                fontWeight: 600,
-              }}
-            >
-              <Lock size={10} strokeWidth={2} />
-              <span>{access}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Body */}
-        <div className="p-7 md:p-8 flex flex-col flex-1">
-          <div className="flex items-center text-[11px] uppercase tracking-[0.22em]" style={{ color: "var(--tb-text-muted)" }}>
-            <span style={{ color: "var(--tb-gold)", fontWeight: 600 }}>{type}</span>
+      <article
+        className="tb-card flex flex-col h-full"
+        style={{ minHeight: 320 }}
+      >
+        {/* Top row: type · date eyebrow + access badge */}
+        <div className="flex items-start justify-between gap-3">
+          <div
+            className="inline-flex items-center text-[11px] uppercase tracking-[0.22em]"
+            style={{ color: "var(--tb-text-muted)" }}
+          >
+            <span style={{ color: "var(--tb-gold-deep)", fontWeight: 600 }}>{type}</span>
             <span className="tb-meta-sep" />
             <span className="tabular-nums">{date}</span>
           </div>
 
-          <h3
-            className="tb-display mt-5"
-            style={{
-              fontSize: "clamp(1.25rem, 1.65vw, 1.5rem)",
-              lineHeight: 1.4,
-              fontWeight: 500,
-              color: "var(--tb-navy-900)",
-            }}
-          >
-            {title}
-          </h3>
-
-          {summary && (
-            <p
-              className="mt-4"
+          {gated && access && (
+            <span
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 shrink-0"
               style={{
-                fontFamily: '"Thmanyah Serif Text", serif',
-                fontSize: 14.5,
-                lineHeight: 1.95,
-                color: "var(--tb-text-muted)",
+                background: "var(--tb-gold-faint)",
+                color: "var(--tb-gold-deep)",
+                fontSize: 10,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                borderRadius: "var(--tb-radius-pill)",
+                fontWeight: 600,
+                fontFamily: '"Thmanyah Sans", sans-serif',
               }}
             >
-              {summary.length > 140 ? summary.slice(0, 140) + "…" : summary}
-            </p>
+              <Lock size={10} strokeWidth={2} />
+              <span>{access}</span>
+            </span>
           )}
+        </div>
 
-          <div
-            className="mt-auto pt-6 flex items-center text-[12px]"
-            style={{ borderTop: "1px solid var(--tb-hairline)", color: "var(--tb-text-muted)", marginTop: 28 }}
+        {/* Title */}
+        <h3
+          className="mt-7"
+          style={{
+            fontFamily: '"Thmanyah Serif Display", serif',
+            fontSize: "clamp(1.2rem, 1.55vw, 1.45rem)",
+            lineHeight: 1.4,
+            fontWeight: 500,
+            color: "var(--tb-navy-900)",
+          }}
+        >
+          {title}
+        </h3>
+
+        {/* Summary */}
+        {summary && (
+          <p
+            className="mt-4"
+            style={{
+              fontFamily: '"Thmanyah Serif Text", serif',
+              fontSize: 14.5,
+              lineHeight: 1.9,
+              color: "var(--tb-text-muted)",
+            }}
           >
+            {summary.length > 150 ? summary.slice(0, 150) + "…" : summary}
+          </p>
+        )}
+
+        {/* Tags */}
+        {pub.tags && pub.tags.length > 0 && (
+          <div className="mt-5 flex flex-wrap gap-x-3 gap-y-1">
+            {pub.tags.slice(0, 3).map((t, i) => (
+              <span
+                key={i}
+                className="text-[11.5px]"
+                style={{
+                  color: "var(--tb-navy-900)",
+                  opacity: 0.78,
+                  letterSpacing: "0.04em",
+                  fontFamily: '"Thmanyah Sans", sans-serif',
+                }}
+              >
+                <span style={{ color: "var(--tb-gold)" }} className="me-1">/</span>{t}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer meta — hairline divider + views/reading + arrow */}
+        <div
+          className="mt-auto pt-5 flex items-center justify-between text-[12px]"
+          style={{
+            borderTop: "1px solid var(--tb-hairline-soft)",
+            color: "var(--tb-text-muted)",
+            marginTop: 28,
+          }}
+        >
+          <div className="flex items-center">
             <span className="inline-flex items-center gap-1.5">
               <Eye size={12} strokeWidth={1.6} />
               <span className="tabular-nums">{views.toLocaleString(lang === "ar" ? "ar-SA" : "en")}</span>
@@ -148,8 +155,22 @@ export default function PublicationCardB({ pub, testid = "pub-card" }) {
               <span>{readTime} {lang === "ar" ? "د" : "min"}</span>
             </span>
           </div>
+          <span
+            className="tb-card-arrow inline-flex items-center gap-1.5"
+            style={{
+              color: "var(--tb-navy-900)",
+              fontSize: 12,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              fontWeight: 500,
+              fontFamily: '"Thmanyah Sans", sans-serif',
+            }}
+          >
+            <span>{lang === "ar" ? "اقرأ" : "Read"}</span>
+            <Arrow size={13} strokeWidth={1.8} />
+          </span>
         </div>
-      </Link>
-    </article>
+      </article>
+    </Link>
   );
 }

@@ -154,7 +154,7 @@ export default function PublicationsPage() {
           ) : items.length === 0 ? (
             <EmptyState hasFilters={hasFilters} onClear={clearFilters} lang={lang} />
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-rule border border-rule" data-testid="publications-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7" data-testid="publications-grid">
               {items.map((pub) => (
                 <PublicationCard key={pub.id} pub={pub} testid={`pub-${pub.id}`} />
               ))}

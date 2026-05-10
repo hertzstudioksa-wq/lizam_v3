@@ -14,10 +14,22 @@ import PublicationCardB from "@/components/theme-b/PublicationCardB";
 export default function FeaturedPublicationsB() {
   const { lang } = useLang();
   const { data: home } = useHomeContent();
-  // Prefer admin-curated featured publications; fall back to latest if none flagged.
+  // Prefer admin-curated featured publications, then fill with latest until we
+  // have up to 3 unique items. Ensures the home section reflects ALL recent
+  // published items even if fewer than 3 are flagged "featured".
   const featuredQuery = usePublications({ featured: true, limit: 6 });
   const latestQuery = usePublications({ limit: 6 });
-  const items = (featuredQuery.data?.items?.length ? featuredQuery.data.items : latestQuery.data?.items) || [];
+  const featuredItems = featuredQuery.data?.items || [];
+  const latestItems = latestQuery.data?.items || [];
+  const seen = new Set();
+  const merged = [];
+  for (const p of [...featuredItems, ...latestItems]) {
+    if (!p?.id || seen.has(p.id)) continue;
+    seen.add(p.id);
+    merged.push(p);
+    if (merged.length >= 3) break;
+  }
+  const items = merged;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
   if (!items.length) return null;
@@ -66,7 +78,7 @@ export default function FeaturedPublicationsB() {
 
         {/* 3 horizontal cards */}
         <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
-          {items.slice(0, 3).map((pub) => (
+          {items.map((pub) => (
             <PublicationCardB key={pub.id} pub={pub} testid={`featured-pub-${pub.id}`} />
           ))}
         </div>
