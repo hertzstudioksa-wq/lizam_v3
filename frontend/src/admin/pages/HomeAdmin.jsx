@@ -9,8 +9,11 @@ import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 import { api, formatApiError } from "@/lib/api";
 
 // ---------------- Constants ----------------
+// Order in this array is the DEFAULT order for the home page. The actual
+// rendering order on both /admin/home and the public site is driven by
+// `home_content.visible_sections` — see CSS `order` styles below.
 const SECTIONS = [
-  "hero", "about", "mission", "vision", "pull_band", "objectives",
+  "hero", "about", "mission", "pull_band", "objectives",
   "fields_of_work", "featured_publications", "contact", "newsletter",
 ];
 
@@ -44,6 +47,7 @@ function SectionCard({
   return (
     <section
       className="border border-rule bg-white"
+      style={{ order: hasReorder ? orderIndex : 999 }}
       data-testid={testid || `home-section-${id}`}
     >
       <header
@@ -602,24 +606,7 @@ export default function HomeAdmin() {
       helpAr={"كل قسم في بطاقة منفصلة. اضغط على رأس البطاقة للفتح/الإغلاق. التحكم في الإظهار/الإخفاء، النصوص، حجم الخط، والصور — كل شيء فورياً على الحفظ."}
       helpEn={"Each section lives in its own collapsible card. Toggle visibility, edit copy, tweak per-section font scale, and upload images. Save reflects publicly within seconds."}
     >
-      <div className="space-y-6 max-w-[1180px]">
-
-        {/* Hint for hidden sections — surface a small "show again" chip row
-            so the admin can re-enable any section that was hidden via header toggle. */}
-        {hidden.length > 0 && (
-          <div className="px-4 py-3 bg-paper border border-rule" data-testid="home-hidden-sections">
-            <div className="text-[11.5px] uppercase tracking-[0.16em] text-mute mb-2">{tr("أقسام مخفية", "Hidden sections")}</div>
-            <div className="flex flex-wrap gap-2">
-              {hidden.map((s) => (
-                <button key={s} type="button" onClick={() => toggleVisibility(s)}
-                  className="text-[12.5px] px-3 py-1 border border-rule hover:border-navy bg-white"
-                  data-testid={`section-show-${s}`}>
-                  + {sectionLabel(s)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="max-w-[1180px] flex flex-col gap-6">
 
         {/* ============================================================ */}
         {/* 1. HERO                                                        */}
