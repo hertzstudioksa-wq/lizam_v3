@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Image as ImageIcon, Trash2, Plus, Upload } from "lucide-react";
+import { ChevronDown, ChevronUp, Image as ImageIcon, Trash2, Plus, Upload } from "lucide-react";
 import {
   AdminPage, Field, TextArea, TextInput, Select, SaveBar, useDirtyForm, apiCall,
 } from "@/admin/components/AdminUI";
@@ -32,10 +32,15 @@ const uid = () => `id_${Math.random().toString(36).slice(2, 10)}`;
 function SectionCard({
   id, title, eyebrow, children, defaultOpen = false,
   visibleSections, onToggleVisibility, hasVisibilityToggle = true,
+  // Reorder controls (optional). When provided, ↑/↓ buttons render in the header.
+  orderIndex, orderTotal, onMove,
   testid,
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const isVisible = visibleSections.includes(id);
+  const hasReorder = typeof orderIndex === "number" && typeof orderTotal === "number" && typeof onMove === "function";
+  const canMoveUp = hasReorder && orderIndex > 0;
+  const canMoveDown = hasReorder && orderIndex < orderTotal - 1;
   return (
     <section
       className="border border-rule bg-white"
@@ -56,6 +61,33 @@ function SectionCard({
           )}
           <div className="text-[15.5px] font-medium text-navy-deep truncate">{title}</div>
         </div>
+        {hasReorder && (
+          <div
+            className="inline-flex items-center gap-1 shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => canMoveUp && onMove(orderIndex, orderIndex - 1)}
+              disabled={!canMoveUp}
+              className="w-7 h-7 inline-flex items-center justify-center text-mute hover:text-navy hover:bg-paper border border-rule disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="رفع لأعلى"
+              data-testid={`section-move-up-${id}`}
+            >
+              <ChevronUp size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={() => canMoveDown && onMove(orderIndex, orderIndex + 1)}
+              disabled={!canMoveDown}
+              className="w-7 h-7 inline-flex items-center justify-center text-mute hover:text-navy hover:bg-paper border border-rule disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="نزول لأسفل"
+              data-testid={`section-move-down-${id}`}
+            >
+              <ChevronDown size={14} />
+            </button>
+          </div>
+        )}
         {hasVisibilityToggle && (
           <label
             className="inline-flex items-center gap-2 cursor-pointer shrink-0"
@@ -494,8 +526,16 @@ export default function HomeAdmin() {
     form.patch("visible_sections", next);
   };
 
-  // Section ordering helpers (separate card)
+  // Section ordering helpers — each section knows its index in visible_sections
+  // and can move itself up/down via the chevron buttons in its own header.
   const moveSection = (from, to) => form.patch("visible_sections", moveItem(visible, from, to));
+  // Compute (orderIndex, orderTotal) for any section so its header can render
+  // ↑/↓ buttons. Hidden sections are excluded from ordering (they keep their
+  // position when re-enabled).
+  const orderInfo = (sectionId) => {
+    const i = visible.indexOf(sectionId);
+    return { orderIndex: i >= 0 ? i : undefined, orderTotal: visible.length };
+  };
   const SECTION_LABELS_AR = {
     hero: "البطل (Hero)",
     about: "عن المركز",
@@ -564,60 +604,29 @@ export default function HomeAdmin() {
     >
       <div className="space-y-6 max-w-[1180px]">
 
-        {/* ============================================================ */}
-        {/* Section 0 — Order & visibility overview                       */}
-        {/* ============================================================ */}
-        <SectionCard
-          id="__order"
-          title={tr("ترتيب الأقسام وإظهارها", "Section order & visibility")}
-          eyebrow={tr("نظرة عامة", "Overview")}
-          defaultOpen
-          hasVisibilityToggle={false}
-          visibleSections={visible}
-          onToggleVisibility={() => {}}
-          testid="home-section-order"
-        >
-          <p className="text-[13px] text-mute mt-2 max-w-[64ch]">
-            {tr(
-              "اسحب الأسهم لإعادة الترتيب، أو فعّل/عطّل من البطاقات أدناه. القسم المعطّل لا يظهر للجمهور إطلاقاً.",
-              "Use the arrows to reorder. Toggle each card below to show/hide that section publicly.",
-            )}
-          </p>
-          <ul className="mt-4 divide-y divide-rule border border-rule" data-testid="home-sections-order-list">
-            {visible.map((s, idx) => (
-              <li key={s} className="flex items-center gap-3 px-5 py-2.5 bg-white" data-testid={`section-order-row-${s}`}>
-                <span className="text-[12px] text-mute tabular-nums w-6">{idx + 1}</span>
-                <span className="flex-1 text-[14px] text-navy-deep">{sectionLabel(s)}</span>
-                <ReorderControls index={idx} total={visible.length} onMove={moveSection} testid={`section-order-${s}`} />
-                <button type="button" onClick={() => toggleVisibility(s)}
-                  className="text-[12px] text-mute hover:text-red-700 ms-2"
-                  data-testid={`section-hide-${s}`}>
-                  {tr("إخفاء", "Hide")}
+        {/* Hint for hidden sections — surface a small "show again" chip row
+            so the admin can re-enable any section that was hidden via header toggle. */}
+        {hidden.length > 0 && (
+          <div className="px-4 py-3 bg-paper border border-rule" data-testid="home-hidden-sections">
+            <div className="text-[11.5px] uppercase tracking-[0.16em] text-mute mb-2">{tr("أقسام مخفية", "Hidden sections")}</div>
+            <div className="flex flex-wrap gap-2">
+              {hidden.map((s) => (
+                <button key={s} type="button" onClick={() => toggleVisibility(s)}
+                  className="text-[12.5px] px-3 py-1 border border-rule hover:border-navy bg-white"
+                  data-testid={`section-show-${s}`}>
+                  + {sectionLabel(s)}
                 </button>
-              </li>
-            ))}
-          </ul>
-          {hidden.length > 0 && (
-            <div className="mt-3 px-4 py-3 bg-paper border border-rule">
-              <div className="text-[11.5px] uppercase tracking-[0.16em] text-mute mb-2">{tr("مخفية", "Hidden")}</div>
-              <div className="flex flex-wrap gap-2">
-                {hidden.map((s) => (
-                  <button key={s} type="button" onClick={() => toggleVisibility(s)}
-                    className="text-[12.5px] px-3 py-1 border border-rule hover:border-navy bg-white"
-                    data-testid={`section-show-${s}`}>
-                    + {sectionLabel(s)}
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
-          )}
-        </SectionCard>
+          </div>
+        )}
 
         {/* ============================================================ */}
         {/* 1. HERO                                                        */}
         {/* ============================================================ */}
         <SectionCard id="hero" title={tr("قسم البطل (Hero)", "Hero")}
-          eyebrow={tr("١", "1")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("١", "1")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("hero")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة (eyebrow) — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.hero_eyebrow_ar || ""} onChange={(v) => form.patch("hero_eyebrow_ar", v)} dir="rtl" testid="hero-eyebrow-ar" />
@@ -689,7 +698,8 @@ export default function HomeAdmin() {
         {/* 2. ABOUT                                                       */}
         {/* ============================================================ */}
         <SectionCard id="about" title={tr("عن المركز", "About the Center")}
-          eyebrow={tr("٢", "2")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٢", "2")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("about")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.about_eyebrow_ar || ""} onChange={(v) => form.patch("about_eyebrow_ar", v)} dir="rtl" testid="about-eyebrow-ar" />
@@ -725,7 +735,8 @@ export default function HomeAdmin() {
         {/* 3. MISSION & VISION                                            */}
         {/* ============================================================ */}
         <SectionCard id="mission" title={tr("الرسالة والرؤية (المنطلقات)", "Mission & Vision (Foundations)")}
-          eyebrow={tr("٣", "3")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٣", "3")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("mission")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.mission_eyebrow_ar || ""} onChange={(v) => form.patch("mission_eyebrow_ar", v)} dir="rtl" testid="mission-eyebrow-ar" />
@@ -768,7 +779,8 @@ export default function HomeAdmin() {
         {/* 3.5 PULL BAND ("ركيزة عمل المركز")                              */}
         {/* ============================================================ */}
         <SectionCard id="pull_band" title={tr("ركيزة عمل المركز", "Working principle (Pull band)")}
-          eyebrow={tr("٣.٥", "3.5")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٣.٥", "3.5")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("pull_band")} onMove={moveSection}>
           <p className="text-[12.5px] text-mute mt-2 max-w-[64ch]">
             {tr(
               "اقتباس مؤسسي يفصل بين قسم المنطلقات وقسم الأهداف. يُعرض على خلفية ورقية دافئة ويتوسطه نص تحريري قصير.",
@@ -796,7 +808,8 @@ export default function HomeAdmin() {
         {/* 4. OBJECTIVES                                                  */}
         {/* ============================================================ */}
         <SectionCard id="objectives" title={tr("الأهداف", "Objectives")}
-          eyebrow={tr("٤", "4")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٤", "4")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("objectives")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.objectives_eyebrow_ar || ""} onChange={(v) => form.patch("objectives_eyebrow_ar", v)} dir="rtl" />
@@ -856,7 +869,8 @@ export default function HomeAdmin() {
         {/* 5. FIELDS OF WORK                                              */}
         {/* ============================================================ */}
         <SectionCard id="fields_of_work" title={tr("مجالات العمل", "Fields of Work")}
-          eyebrow={tr("٥", "5")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٥", "5")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("fields_of_work")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.fields_eyebrow_ar || ""} onChange={(v) => form.patch("fields_eyebrow_ar", v)} dir="rtl" />
@@ -928,7 +942,8 @@ export default function HomeAdmin() {
         {/* 6. FEATURED PUBLICATIONS                                       */}
         {/* ============================================================ */}
         <SectionCard id="featured_publications" title={tr("الإصدارات المميزة", "Featured Publications")}
-          eyebrow={tr("٦", "6")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٦", "6")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("featured_publications")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.featured_eyebrow_ar || ""} onChange={(v) => form.patch("featured_eyebrow_ar", v)} dir="rtl" />
@@ -981,7 +996,8 @@ export default function HomeAdmin() {
         {/* 7. CONTACT                                                     */}
         {/* ============================================================ */}
         <SectionCard id="contact" title={tr("التواصل", "Contact")}
-          eyebrow={tr("٧", "7")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٧", "7")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("contact")} onMove={moveSection}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
             <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
               <TextInput value={form.value.contact_eyebrow_ar || ""} onChange={(v) => form.patch("contact_eyebrow_ar", v)} dir="rtl" />
@@ -1011,7 +1027,8 @@ export default function HomeAdmin() {
         {/* 8. NEWSLETTER                                                  */}
         {/* ============================================================ */}
         <SectionCard id="newsletter" title={tr("النشرة البريدية", "Newsletter")}
-          eyebrow={tr("٨", "8")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          eyebrow={tr("٨", "8")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("newsletter")} onMove={moveSection}>
           <div className="mt-4">
             <BiInput form={form} keyAr="newsletter_title_ar" keyEn="newsletter_title_en"
               labelAr="العنوان" labelEn="Title" testid="news-title" />
