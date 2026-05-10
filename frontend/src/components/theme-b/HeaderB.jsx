@@ -11,7 +11,7 @@ const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
 // Routes that render a dark, full-bleed hero behind the (transparent) header.
 // On every other route the header must be in "solid" mode from the first paint
 // otherwise its paper-coloured links are invisible against the paper page bg.
-const DARK_HERO_ROUTES = new Set(["/"]);
+const DARK_HERO_ROUTES = new Set(["/", "/publications", "/about", "/contact"]);
 
 const NAV_DEFS = (t) => ({
   home:         { to: "/",             label: t("nav.home"),         testid: "nav-home" },

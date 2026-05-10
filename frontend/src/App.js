@@ -22,6 +22,7 @@ import BrandingAdmin from "@/admin/pages/BrandingAdmin";
 import HomeAdmin from "@/admin/pages/HomeAdmin";
 import ImagesAdmin from "@/admin/pages/ImagesAdmin";
 import HeroMediaAdmin from "@/admin/pages/HeroMediaAdmin";
+import AboutPage from "@/pages/AboutPage";
 import ResponsesAdmin from "@/admin/pages/ResponsesAdmin";
 import AuditLogAdmin from "@/admin/pages/AuditLogAdmin";
 import { PublicationsListAdmin, PublicationEditAdmin } from "@/admin/pages/PublicationsAdmin";
@@ -62,10 +63,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/publications" element={<PublicationsPage />} />
             <Route path="/publications/:slug" element={<PublicationDetailPage />} />
-            <Route
-              path="/about"
-              element={<PlaceholderPage titleKey="nav.about" noteKey="admin.comingSoon" />}
-            />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route
               path="/policy"

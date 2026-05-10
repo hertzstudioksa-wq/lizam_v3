@@ -1,19 +1,32 @@
 """Hero media schema (Pydantic). Kept in a separate module to avoid bloating
 `models.py` and to make the allowed page keys easy to import elsewhere."""
+import re
 from typing import Optional, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 
-# Page keys the CMS can assign hero media to. `_default` is the global fallback
-# used by any page that does not have its own record (or whose record is
-# disabled / has no URL).
-ALLOWED_PAGE_KEYS = {
+# Built-in page keys (always available in the admin UI). Admins can add
+# additional custom keys at runtime via the "Add page" action — the validator
+# accepts any slug-style key (lowercase letters, digits, dashes, underscores).
+BUILTIN_PAGE_KEYS = {
     "_default",
     "home",
     "publications",
     "about",
     "contact",
 }
+
+# Back-compat alias (used by older imports / tests).
+ALLOWED_PAGE_KEYS = BUILTIN_PAGE_KEYS
+
+# Acceptable custom page key pattern. Underscore allowed for the special
+# "_default" sentinel; otherwise lowercase ascii + digits + hyphens, 2..40
+# characters. Disallows leading digits/dashes for cleanliness.
+_KEY_RE = re.compile(r"^(?:_default|[a-z][a-z0-9_-]{1,39})$")
+
+
+def is_valid_page_key(key: str) -> bool:
+    return bool(_KEY_RE.match(key or ""))
 
 
 class HeroMediaIn(BaseModel):
@@ -29,3 +42,5 @@ class HeroMediaIn(BaseModel):
     enabled: Optional[bool] = None
     alt_ar: Optional[str] = None
     alt_en: Optional[str] = None
+    label_ar: Optional[str] = None  # human-readable name shown in admin UI
+    label_en: Optional[str] = None

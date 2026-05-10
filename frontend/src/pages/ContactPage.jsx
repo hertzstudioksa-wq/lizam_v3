@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { Mail, Send } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
+import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 import { useLang } from "@/i18n/LanguageContext";
-import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useSiteSettings, useHomeContent } from "@/hooks/useSiteSettings";
 import { api, formatApiError } from "@/lib/api";
 
 export default function ContactPage() {
   const { lang, t } = useLang();
   const { data: site } = useSiteSettings();
+  const { data: home } = useHomeContent();
+  const contactEyebrow = home?.[`contact_eyebrow_${lang}`] || (lang === "ar" ? "تواصل" : "Contact");
   const email = site?.contact_email || "info@lizam.sa";
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", consent: false });
   const [submitted, setSubmitted] = useState(false);
@@ -34,20 +37,32 @@ export default function ContactPage() {
 
   return (
     <PublicLayout>
-      <section className="pt-[130px] md:pt-[150px] pb-20 bg-ivory min-h-[70vh]">
-        <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14">
-          <div className="lz-eyebrow text-navy/70">{lang === "ar" ? "تواصل" : "Contact"}</div>
-          <div className="mt-3 h-px w-12 bg-brass" />
-          <h1 className="lz-display mt-6 max-w-[22ch]" style={{ color: "#121A2A" }}>
+      {/* ---------- Cinematic masthead ---------- */}
+      <section
+        className="relative isolate pt-[130px] md:pt-[150px] pb-14 min-h-[44vh] overflow-hidden"
+        style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
+        data-testid="contact-masthead"
+      >
+        <HeroMediaLayer pageKey="contact" extendBehindHeader />
+        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full">
+          <div className="flex items-center gap-3">
+            <span style={{ height: 1, width: 26, background: "var(--tb-gold)" }} />
+            <span className="tb-overline" style={{ color: "var(--tb-gold)" }}>{contactEyebrow}</span>
+          </div>
+          <h1 className="tb-display mt-5 max-w-[26ch]" style={{ color: "var(--tb-paper-base)", fontSize: "clamp(1.85rem, 3.4vw, 2.65rem)", lineHeight: 1.2 }}>
             {lang === "ar" ? "تواصل مع المركز" : "Get in touch"}
           </h1>
-          <p className="lz-lede mt-6 max-w-[58ch]">
+          <p className="mt-4 max-w-[58ch]" style={{ color: "rgba(251,250,247,0.82)", fontSize: 16, lineHeight: 1.7 }}>
             {lang === "ar"
               ? "نرحّب بالتعاون البحثي والاستفسارات المؤسسية من القطاعين العام والخاص، ومن الباحثين والممارسين."
               : "We welcome research collaboration and institutional enquiries from the public and private sectors and from researchers and practitioners."}
           </p>
+        </div>
+      </section>
 
-          <div className="mt-14 grid grid-cols-1 md:grid-cols-12 gap-10">
+      <section className="py-16 md:py-20 bg-ivory" data-testid="contact-form-section">
+        <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
             {/* Left: contact info */}
             <aside className="md:col-span-4 space-y-8">
               <div>

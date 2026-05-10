@@ -9,22 +9,25 @@ import { invalidateHeroCache } from "@/hooks/useHeroMedia";
  * The order here drives the order in the admin UI. Page keys MUST match the
  * backend's ALLOWED_PAGE_KEYS enum (see /backend/app/models_hero.py).
  */
-const PAGES = [
-  { key: "_default", labelAr: "افتراضي عام", labelEn: "Global default", helpAr: "يستخدم لأي صفحة لا يوجد لها صورة مخصصة.", helpEn: "Used by any page that doesn't have a dedicated record." },
+const BUILTIN_PAGES = [
+  { key: "_default", labelAr: "افتراضي عام", labelEn: "Global default", helpAr: "يستخدم لأي صفحة لا يوجد لها صورة مخصصة (أو حُذفت صورتها).", helpEn: "Used by any page that doesn't have a dedicated record." },
   { key: "home", labelAr: "الصفحة الرئيسية", labelEn: "Home page" },
   { key: "publications", labelAr: "صفحة الإصدارات", labelEn: "Publications page" },
-  { key: "about", labelAr: "صفحة عن المركز", labelEn: "About page", inactive: true, inactiveAr: "غير مفعّل بعد على الموقع العام (سيتم وصلها لاحقاً).", inactiveEn: "Not yet wired to the public site (coming soon)." },
-  { key: "contact", labelAr: "صفحة التواصل", labelEn: "Contact page", inactive: true, inactiveAr: "غير مفعّل بعد على الموقع العام (سيتم وصلها لاحقاً).", inactiveEn: "Not yet wired to the public site (coming soon)." },
+  { key: "about", labelAr: "صفحة عن المركز", labelEn: "About page" },
+  { key: "contact", labelAr: "صفحة التواصل", labelEn: "Contact page" },
 ];
+const BUILTIN_KEYS = new Set(BUILTIN_PAGES.map((p) => p.key));
 
-/* Recommended dimensions per page */
-const RECO = {
+/* Recommended dimensions per page (built-in only; custom pages get a sensible default). */
+const RECO_BY_KEY = {
   _default: { w: 2400, h: 1100, ratio: "≈ 21:10" },
   home: { w: 2400, h: 1100, ratio: "≈ 21:10" },
   publications: { w: 2400, h: 800, ratio: "≈ 3:1 (cinematic band)" },
   about: { w: 2400, h: 1100, ratio: "≈ 21:10" },
   contact: { w: 2400, h: 800, ratio: "≈ 3:1 (cinematic band)" },
 };
+const RECO_FALLBACK = { w: 2400, h: 1100, ratio: "≈ 21:10" };
+const recoFor = (key) => RECO_BY_KEY[key] || RECO_FALLBACK;
 
 const MIN_W = 1600;
 const MIN_H = 700;
@@ -119,7 +122,47 @@ export function HeroMediaSection() {
     }
   }
 
+  async function deleteCustom(key) {
+    if (BUILTIN_KEYS.has(key)) return resetToDefault(key);
+    if (!window.confirm(tr(`هل تريد حذف "${key}" بالكامل؟`, `Remove the "${key}" custom page entirely?`))) return;
+    try {
+      await api.delete(`/admin/hero-media/${key}`);
+      setItems((s) => { const n = { ...s }; delete n[key]; return n; });
+      invalidateHeroCache();
+      setMsg(tr("تم الحذف ✓", "Deleted ✓"));
+      setTimeout(() => setMsg(""), 3000);
+    } catch (e) {
+      setMsg(`${tr("خطأ في الحذف", "Delete error")}: ${e.message}`);
+    }
+  }
+
+  async function addCustomPage({ page_key, label_ar, label_en }) {
+    const body = {
+      label_ar, label_en,
+      media_type: "image", url: "", overlay_opacity: 0.55,
+      focal_x: 50, focal_y: 50, enabled: true,
+    };
+    const { data } = await api.patch(`/admin/hero-media/${page_key}`, body);
+    setItems((s) => ({ ...s, [page_key]: data }));
+    invalidateHeroCache();
+    setMsg(tr(`أُضيفت الصفحة "${page_key}" ✓`, `Added page "${page_key}" ✓`));
+    setTimeout(() => setMsg(""), 3000);
+  }
+
   if (loading) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
+
+  // Compose the list of rows: built-in pages first (in defined order), then any
+  // custom pages the admin has created via "Add page".
+  const customPages = Object.values(items)
+    .filter((it) => !BUILTIN_KEYS.has(it.page_key))
+    .sort((a, b) => (a.page_key || "").localeCompare(b.page_key || ""))
+    .map((it) => ({
+      key: it.page_key,
+      labelAr: it.label_ar || it.page_key,
+      labelEn: it.label_en || it.page_key,
+      custom: true,
+    }));
+  const allPages = [...BUILTIN_PAGES, ...customPages];
 
   return (
     <>
@@ -131,7 +174,7 @@ export function HeroMediaSection() {
       </p>
       {msg && <div className="mb-4 p-3 border border-rule bg-paper text-[13.5px]" data-testid="hero-media-msg">{msg}</div>}
       <div className="space-y-8 max-w-[1100px]">
-        {PAGES.map((p) => (
+        {allPages.map((p) => (
           <PageRow
             key={p.key}
             page={p}
@@ -139,25 +182,135 @@ export function HeroMediaSection() {
             onChange={(patch) => setItem(p.key, patch)}
             onSave={() => save(p.key)}
             onReset={() => resetToDefault(p.key)}
+            onDeleteCustom={() => deleteCustom(p.key)}
             saving={savingKey === p.key}
             tr={tr}
             lang={lang}
             isExisting={!!items[p.key]}
+            isCustom={!!p.custom}
           />
         ))}
       </div>
+
+      {/* Add custom page */}
+      <AddCustomPageForm
+        existingKeys={Object.keys(items)}
+        onAdd={addCustomPage}
+        tr={tr}
+      />
     </>
   );
 }
 
+function AddCustomPageForm({ existingKeys, onAdd, tr }) {
+  const [open, setOpen] = useState(false);
+  const [key, setKey] = useState("");
+  const [labelAr, setLabelAr] = useState("");
+  const [labelEn, setLabelEn] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  function validate(k) {
+    if (!k) return tr("اكتب معرّف الصفحة.", "Enter a page key.");
+    if (!/^[a-z][a-z0-9_-]{1,39}$/.test(k)) return tr("استخدم أحرف صغيرة، أرقام، شَرطات، يبدأ بحرف، 2-40 رمز.", "Lowercase letters/digits/dashes only, 2–40 chars, starts with a letter.");
+    if (existingKeys.includes(k)) return tr("هذا المعرّف موجود بالفعل.", "This key already exists.");
+    return "";
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    const v = validate(key.trim().toLowerCase());
+    if (v) { setErr(v); return; }
+    setBusy(true); setErr("");
+    try {
+      await onAdd({ page_key: key.trim().toLowerCase(), label_ar: labelAr || key, label_en: labelEn || key });
+      setKey(""); setLabelAr(""); setLabelEn(""); setOpen(false);
+    } catch (e2) {
+      setErr(e2.message || String(e2));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-6 inline-flex items-center gap-2 px-4 py-2 border border-dashed border-rule hover:border-navy-deep text-[13px] text-mute hover:text-navy-deep transition-colors"
+        data-testid="hero-add-custom-page-btn"
+      >
+        + {tr("إضافة صفحة جديدة", "Add another page")}
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="mt-6 p-5 border border-rule bg-paper" data-testid="hero-add-custom-page-form">
+      <h4 className="text-[14px] font-medium text-navy-deep mb-3">{tr("إضافة صفحة hero مخصصة", "Add a custom hero page")}</h4>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-[820px]">
+        <div>
+          <label className="text-[12px] text-navy-deep block mb-1">{tr("معرّف الصفحة (slug)", "Page key (slug)")}</label>
+          <input
+            type="text"
+            value={key}
+            onChange={(e) => setKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
+            placeholder={tr("مثلاً: research", "e.g. research")}
+            className="w-full h-10 px-3 border border-rule focus:border-navy outline-none text-[13.5px]"
+            data-testid="hero-add-key"
+          />
+        </div>
+        <div>
+          <label className="text-[12px] text-navy-deep block mb-1">{tr("اسم بالعربي", "Arabic label")}</label>
+          <input
+            type="text"
+            value={labelAr}
+            onChange={(e) => setLabelAr(e.target.value)}
+            placeholder={tr("مثلاً: صفحة الأبحاث", "e.g. Research page")}
+            className="w-full h-10 px-3 border border-rule focus:border-navy outline-none text-[13.5px]"
+            dir="rtl"
+            data-testid="hero-add-label-ar"
+          />
+        </div>
+        <div>
+          <label className="text-[12px] text-navy-deep block mb-1">{tr("اسم بالإنجليزي", "English label")}</label>
+          <input
+            type="text"
+            value={labelEn}
+            onChange={(e) => setLabelEn(e.target.value)}
+            placeholder="e.g. Research page"
+            className="w-full h-10 px-3 border border-rule focus:border-navy outline-none text-[13.5px]"
+            data-testid="hero-add-label-en"
+          />
+        </div>
+      </div>
+      {err && <div className="mt-3 text-[12.5px] text-red-700">{err}</div>}
+      <div className="mt-4 flex items-center gap-3">
+        <button type="submit" disabled={busy} className="h-10 px-4 bg-navy-deep text-white text-[13px] disabled:opacity-50" data-testid="hero-add-submit">
+          {busy ? tr("جارٍ الإضافة…", "Adding…") : tr("إضافة", "Add")}
+        </button>
+        <button type="button" onClick={() => { setOpen(false); setErr(""); }} className="text-[13px] text-mute hover:text-navy underline underline-offset-4">
+          {tr("إلغاء", "Cancel")}
+        </button>
+      </div>
+      <p className="mt-3 text-[11.5px] text-mute leading-relaxed max-w-[60ch]">
+        {tr(
+          "بعد الإضافة تستطيع رفع صورة هذه الصفحة هنا. لربط الصورة بصفحة عامة جديدة في الموقع، يحتاج المطوّر تركيب مكوّن HeroMediaLayer بنفس المعرّف.",
+          "After adding, you can upload an image for this key. To link it to a new public page, a developer needs to render <HeroMediaLayer pageKey='<key>'> on that page.",
+        )}
+      </p>
+    </form>
+  );
+}
+
 /* ---------------- Per-page row ---------------- */
-function PageRow({ page, item, onChange, onSave, onReset, saving, tr, lang, isExisting }) {
+function PageRow({ page, item, onChange, onSave, onReset, onDeleteCustom, saving, tr, lang, isExisting, isCustom }) {
   const fileRef = useRef(null);
   const [warn, setWarn] = useState(null);
   const [dims, setDims] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const reco = RECO[page.key];
+  const reco = recoFor(page.key);
 
   async function onPickFile(e) {
     const file = e.target.files?.[0];
@@ -221,10 +374,13 @@ function PageRow({ page, item, onChange, onSave, onReset, saving, tr, lang, isEx
               {tr(page.helpAr || "", page.helpEn || "")}
             </p>
           )}
-          {page.inactive && (
-            <p className="text-[12px] text-amber-700 mt-1 max-w-[60ch] inline-flex items-center gap-1.5">
-              <AlertTriangle size={12} />
-              {tr(page.inactiveAr || "", page.inactiveEn || "")}
+          {isCustom && (
+            <p className="text-[11.5px] text-mute mt-1 max-w-[60ch] inline-flex items-center gap-1.5">
+              <AlertTriangle size={11} />
+              {tr(
+                "صفحة مخصصة — يحتاج المطوّر إضافة <HeroMediaLayer /> بنفس المعرّف لظهور الصورة على الموقع.",
+                "Custom page — a developer needs to render <HeroMediaLayer /> with this key to make it visible publicly.",
+              )}
             </p>
           )}
         </div>
@@ -451,7 +607,7 @@ function PageRow({ page, item, onChange, onSave, onReset, saving, tr, lang, isEx
                 {tr("إزالة الصورة", "Clear image")}
               </button>
             )}
-            {page.key !== "_default" && isExisting && (
+            {page.key !== "_default" && isExisting && !isCustom && (
               <button
                 type="button"
                 onClick={onReset}
@@ -460,6 +616,17 @@ function PageRow({ page, item, onChange, onSave, onReset, saving, tr, lang, isEx
               >
                 <RotateCcw size={12} />
                 {tr("إعادة إلى الافتراضي العام", "Reset to global default")}
+              </button>
+            )}
+            {isCustom && (
+              <button
+                type="button"
+                onClick={onDeleteCustom}
+                className="inline-flex items-center gap-1.5 h-10 px-3 text-[12.5px] text-mute hover:text-red-700 underline underline-offset-4"
+                data-testid={`hero-${page.key}-delete-custom`}
+              >
+                <Trash2 size={12} />
+                {tr("حذف هذه الصفحة", "Delete this page")}
               </button>
             )}
           </div>

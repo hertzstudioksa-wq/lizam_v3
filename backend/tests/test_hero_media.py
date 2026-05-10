@@ -160,12 +160,31 @@ def test_delete_default_forbidden(admin_session):
     assert r.status_code == 400
 
 
-# ---------- Unknown page_key ----------
+# ---------- Page key validation ----------
 
-def test_patch_unknown_page_key(admin_session):
-    r = admin_session.patch(f"{BASE_URL}/api/admin/hero-media/unknownpage",
-                            json={"overlay_opacity": 0.5}, timeout=10)
-    assert r.status_code == 404
+def test_patch_invalid_page_key_400(admin_session):
+    """Invalid slug patterns are rejected. Custom valid slugs ARE accepted
+    (admin can add new pages via /admin/images Hero tab)."""
+    # Invalid: uppercase + leading digit + special char
+    for bad in ("UPPER", "1leading", "has space", "weird!key"):
+        r = admin_session.patch(f"{BASE_URL}/api/admin/hero-media/{bad}",
+                                json={"overlay_opacity": 0.5}, timeout=10)
+        assert r.status_code == 400, f"Expected 400 for {bad!r}, got {r.status_code}"
+
+
+def test_patch_custom_page_key_creates_record(admin_session):
+    """Valid slug-style custom keys create a new hero record."""
+    key = "tmpcustomtest"
+    try:
+        r = admin_session.patch(f"{BASE_URL}/api/admin/hero-media/{key}",
+                                json={"label_ar": "اختبار", "label_en": "Test", "overlay_opacity": 0.5},
+                                timeout=10)
+        assert r.status_code == 200
+        body = r.json()
+        assert body["page_key"] == key
+        assert body.get("label_en") == "Test"
+    finally:
+        admin_session.delete(f"{BASE_URL}/api/admin/hero-media/{key}", timeout=10)
 
 
 # ---------- Restore seeded state at end of session ----------

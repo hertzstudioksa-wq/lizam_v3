@@ -46,8 +46,10 @@ def test_public_image_assets_returns_active_only():
     assert "about_image" in slot_keys
     # objectives_background defaults to active=False → NOT in public response
     assert "objectives_background" not in slot_keys
-    # by_slot lookup returns absolute URL
-    assert data["by_slot"]["about_image"]["url"].startswith("http")
+    # by_slot lookup returns a usable URL (absolute http(s) OR backend-relative /api/uploads/...)
+    url = data["by_slot"]["about_image"]["url"]
+    assert url.startswith("http") or url.startswith("/api/uploads/"), \
+        f"Unexpected URL format: {url!r}"
 
 
 # --- Admin list requires auth ---
