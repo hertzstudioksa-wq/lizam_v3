@@ -434,30 +434,146 @@ function BgImageBlock({ form, sectionKey, defaultOverlay = 0.5, label }) {
   );
 }
 
+/**
+ * <FieldTypoControls> — inline typography controls (size + weight + color)
+ * for a single text field. Writes/reads from:
+ *   home_content.section_styles[sectionKey].text_styles[fieldKey]
+ *     = { size: number (0.8–2.0), weight: number (300|400|500|600|700), color: string }
+ *
+ * Defaults: size=1, weight="" (inherit), color="" (inherit). Empty values
+ * fall back to the theme's CSS so existing pages aren't affected.
+ */
+function FieldTypoControls({ form, sectionKey, fieldKey, testid }) {
+  const styles = form.value.section_styles || {};
+  const sectionObj = styles[sectionKey] || {};
+  const textStyles = sectionObj.text_styles || {};
+  const cur = textStyles[fieldKey] || {};
+  const size = typeof cur.size === "number" ? cur.size : 1;
+  const weight = cur.weight || "";
+  const color = cur.color || "";
+
+  const write = (patch) => {
+    const next = {
+      ...styles,
+      [sectionKey]: {
+        ...sectionObj,
+        text_styles: {
+          ...textStyles,
+          [fieldKey]: { ...cur, ...patch },
+        },
+      },
+    };
+    form.patch("section_styles", next);
+  };
+
+  const pct = Math.round(size * 100);
+  const reset = () => write({ size: 1, weight: "", color: "" });
+  const tid = testid || `typo-${sectionKey}-${fieldKey}`;
+
+  return (
+    <div className="border border-rule bg-paper px-3 py-2.5 mb-2" data-testid={tid}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {/* Size slider */}
+        <div className="flex items-center gap-2 min-w-[180px] flex-1">
+          <span className="text-[10.5px] uppercase tracking-[0.14em] text-mute shrink-0">حجم</span>
+          <input
+            type="range"
+            min={0.8}
+            max={2.0}
+            step="0.05"
+            value={size}
+            onChange={(e) => write({ size: parseFloat(e.target.value) })}
+            className="flex-1 accent-brass cursor-pointer"
+            data-testid={`${tid}-size`}
+          />
+          <span className="text-[11px] text-mute tabular-nums w-10 text-end">{pct}%</span>
+        </div>
+
+        {/* Weight selector */}
+        <label className="flex items-center gap-2 shrink-0">
+          <span className="text-[10.5px] uppercase tracking-[0.14em] text-mute">سماكة</span>
+          <select
+            value={weight}
+            onChange={(e) => write({ weight: e.target.value })}
+            className="h-7 text-[12px] border border-rule px-2 bg-white"
+            data-testid={`${tid}-weight`}
+          >
+            <option value="">افتراضي</option>
+            <option value="300">رفيع (300)</option>
+            <option value="400">عادي (400)</option>
+            <option value="500">متوسط (500)</option>
+            <option value="600">سميك (600)</option>
+            <option value="700">عريض (700)</option>
+          </select>
+        </label>
+
+        {/* Color picker */}
+        <label className="flex items-center gap-2 shrink-0">
+          <span className="text-[10.5px] uppercase tracking-[0.14em] text-mute">لون</span>
+          <input
+            type="color"
+            value={color || "#0A111C"}
+            onChange={(e) => write({ color: e.target.value })}
+            className="w-7 h-7 border border-rule cursor-pointer bg-white"
+            data-testid={`${tid}-color`}
+          />
+          {color && (
+            <button
+              type="button"
+              onClick={() => write({ color: "" })}
+              className="text-[10.5px] text-mute hover:text-red-700 underline underline-offset-2"
+              title="إزالة اللون المخصص"
+              data-testid={`${tid}-color-clear`}
+            >
+              مسح
+            </button>
+          )}
+        </label>
+
+        {/* Reset all */}
+        <button
+          type="button"
+          onClick={reset}
+          className="text-[11px] text-mute hover:text-navy underline underline-offset-2 ms-auto"
+          data-testid={`${tid}-reset`}
+        >
+          إعادة الكل
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /** Pair of AR/EN inputs in a 2-col grid. */
-function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows = 3, testid }) {
+function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows = 3, testid, sectionKey, fieldKey }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
   const Cmp = multiline ? TextArea : TextInput;
+  const showTypo = sectionKey && fieldKey;
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية", "AR")}`}>
-        <Cmp
-          value={form.value[keyAr] || ""}
-          onChange={(v) => form.patch(keyAr, v)}
-          dir="rtl"
-          rows={rows}
-          testid={`${testid}-ar`}
-        />
-      </Field>
-      <Field label={`${tr(labelAr, labelEn)} — EN`}>
-        <Cmp
-          value={form.value[keyEn] || ""}
-          onChange={(v) => form.patch(keyEn, v)}
-          rows={rows}
-          testid={`${testid}-en`}
-        />
-      </Field>
+    <div>
+      {showTypo && (
+        <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`typo-${testid}`} />
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية", "AR")}`}>
+          <Cmp
+            value={form.value[keyAr] || ""}
+            onChange={(v) => form.patch(keyAr, v)}
+            dir="rtl"
+            rows={rows}
+            testid={`${testid}-ar`}
+          />
+        </Field>
+        <Field label={`${tr(labelAr, labelEn)} — EN`}>
+          <Cmp
+            value={form.value[keyEn] || ""}
+            onChange={(v) => form.patch(keyEn, v)}
+            rows={rows}
+            testid={`${testid}-en`}
+          />
+        </Field>
+      </div>
     </div>
   );
 }
