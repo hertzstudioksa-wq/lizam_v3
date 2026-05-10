@@ -578,13 +578,62 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
   );
 }
 
-/** Bilingual textarea pair for "one item per line" lists. */
-function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid }) {
+/** Eyebrow AR/EN grid with optional typography controls strip above. */
+function EyebrowRow({ form, keyAr, keyEn, sectionKey, testid }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية (نقطة في كل سطر)", "AR (one per line)")}`}>
+    <div>
+      {sectionKey && (
+        <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey="eyebrow" testid={`typo-${testid || sectionKey}-eyebrow`} />
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <Field label={tr("التسمية الصغيرة (eyebrow) — عربية", "Eyebrow AR")}>
+          <TextInput value={form.value[keyAr] || ""} onChange={(v) => form.patch(keyAr, v)} dir="rtl" testid={`${testid}-eyebrow-ar`} />
+        </Field>
+        <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
+          <TextInput value={form.value[keyEn] || ""} onChange={(v) => form.patch(keyEn, v)} testid={`${testid}-eyebrow-en`} />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+/** Single combined typo block for repeating list-item title + description.
+ *  Writes to section_styles[sectionKey].text_styles.{item_title|item_desc}. */
+function ListItemTypoBlock({ form, sectionKey, testid }) {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
+  return (
+    <div className="mt-4 px-3 py-2.5 bg-amber-50/40 border border-rule" data-testid={`list-typo-${testid || sectionKey}`}>
+      <div className="text-[11px] uppercase tracking-[0.16em] text-brass mb-2">
+        {tr("تنسيق العناصر داخل القائمة (يطبّق على الكل)", "List items typography (applies to all)")}
+      </div>
+      <div className="text-[10.5px] text-mute mb-2">
+        {tr("عنوان العنصر", "Item title")}
+      </div>
+      <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey="item_title" testid={`typo-${testid || sectionKey}-item-title`} />
+      <div className="text-[10.5px] text-mute mb-2">
+        {tr("وصف العنصر", "Item description")}
+      </div>
+      <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey="item_desc" testid={`typo-${testid || sectionKey}-item-desc`} />
+    </div>
+  );
+}
+
+
+/** Bilingual textarea pair for "one item per line" lists. */
+function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid, sectionKey, fieldKey }) {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
+  const showTypo = sectionKey && fieldKey;
+  return (
+    <div>
+      {showTypo && (
+        <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`typo-${testid}`} />
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية (نقطة في كل سطر)", "AR (one per line)")}`}>
         <TextArea
           value={arrToText(form.value[keyAr])}
           onChange={(v) => form.patch(keyAr, textToArr(v))}
@@ -601,6 +650,7 @@ function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid }) {
           testid={`${testid}-en`}
         />
       </Field>
+      </div>
     </div>
   );
 }
@@ -816,23 +866,20 @@ export default function HomeAdmin() {
         <SectionCard id="about" title={tr("عن المركز", "About the Center")}
           eyebrow={tr("٢", "2")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("about")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.about_eyebrow_ar || ""} onChange={(v) => form.patch("about_eyebrow_ar", v)} dir="rtl" testid="about-eyebrow-ar" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.about_eyebrow_en || ""} onChange={(v) => form.patch("about_eyebrow_en", v)} testid="about-eyebrow-en" />
-            </Field>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="about_eyebrow_ar" keyEn="about_eyebrow_en" sectionKey="about" testid="about" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="about_ar" keyEn="about_en"
               labelAr="النص الرئيسي" labelEn="Main copy"
-              multiline rows={5} testid="about-main" />
+              multiline rows={5} testid="about-main"
+              sectionKey="about" fieldKey="main" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="about_extended_ar" keyEn="about_extended_en"
               labelAr="تفاصيل إضافية" labelEn="Extended details"
-              multiline rows={4} testid="about-ext" />
+              multiline rows={4} testid="about-ext"
+              sectionKey="about" fieldKey="extended" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
             <div className="lg:col-span-2">
@@ -853,31 +900,30 @@ export default function HomeAdmin() {
         <SectionCard id="mission" title={tr("الرسالة والرؤية (المنطلقات)", "Mission & Vision (Foundations)")}
           eyebrow={tr("٣", "3")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("mission")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.mission_eyebrow_ar || ""} onChange={(v) => form.patch("mission_eyebrow_ar", v)} dir="rtl" testid="mission-eyebrow-ar" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.mission_eyebrow_en || ""} onChange={(v) => form.patch("mission_eyebrow_en", v)} testid="mission-eyebrow-en" />
-            </Field>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="mission_eyebrow_ar" keyEn="mission_eyebrow_en" sectionKey="mission" testid="mission" />
           </div>
 
           <h4 className="mt-6 mb-2 text-[12.5px] uppercase tracking-[0.16em] text-brass">{tr("الرسالة", "Mission")}</h4>
           <BiInput form={form} keyAr="mission_ar" keyEn="mission_en"
             labelAr="نص الرسالة" labelEn="Mission statement"
-            multiline rows={4} testid="mission-text" />
+            multiline rows={4} testid="mission-text"
+            sectionKey="mission" fieldKey="mission_text" />
           <div className="mt-3">
             <BiList form={form} keyAr="mission_points_ar" keyEn="mission_points_en"
-              labelAr="نقاط الرسالة" labelEn="Mission points" testid="mission-points" />
+              labelAr="نقاط الرسالة" labelEn="Mission points" testid="mission-points"
+              sectionKey="mission" fieldKey="mission_points" />
           </div>
 
           <h4 className="mt-7 mb-2 text-[12.5px] uppercase tracking-[0.16em] text-brass">{tr("الرؤية", "Vision")}</h4>
           <BiInput form={form} keyAr="vision_ar" keyEn="vision_en"
             labelAr="نص الرؤية" labelEn="Vision statement"
-            multiline rows={4} testid="vision-text" />
+            multiline rows={4} testid="vision-text"
+            sectionKey="mission" fieldKey="vision_text" />
           <div className="mt-3">
             <BiList form={form} keyAr="vision_points_ar" keyEn="vision_points_en"
-              labelAr="نقاط الرؤية" labelEn="Vision points" testid="vision-points" />
+              labelAr="نقاط الرؤية" labelEn="Vision points" testid="vision-points"
+              sectionKey="mission" fieldKey="vision_points" />
           </div>
 
           <div className="mt-6 max-w-[420px]">
@@ -906,12 +952,14 @@ export default function HomeAdmin() {
           <div className="mt-5">
             <BiInput form={form} keyAr="pull_band_text_ar" keyEn="pull_band_text_en"
               labelAr="نص الاقتباس" labelEn="Pull-quote text"
-              multiline rows={4} testid="pullband-text" />
+              multiline rows={4} testid="pullband-text"
+              sectionKey="pull_band" fieldKey="text" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="pull_band_attribution_ar" keyEn="pull_band_attribution_en"
               labelAr="التعريف (تحت النص)" labelEn="Attribution (below)"
-              testid="pullband-attribution" />
+              testid="pullband-attribution"
+              sectionKey="pull_band" fieldKey="attribution" />
           </div>
           <div className="mt-5 max-w-[420px]">
             <FontScaleSlider form={form} sectionKey="pull_band" styleKey="title_scale"
@@ -926,19 +974,15 @@ export default function HomeAdmin() {
         <SectionCard id="objectives" title={tr("الأهداف", "Objectives")}
           eyebrow={tr("٤", "4")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("objectives")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.objectives_eyebrow_ar || ""} onChange={(v) => form.patch("objectives_eyebrow_ar", v)} dir="rtl" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.objectives_eyebrow_en || ""} onChange={(v) => form.patch("objectives_eyebrow_en", v)} />
-            </Field>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="objectives_eyebrow_ar" keyEn="objectives_eyebrow_en" sectionKey="objectives" testid="objectives" />
           </div>
           <div className="mt-4 max-w-[420px]">
             <FontScaleSlider form={form} sectionKey="objectives" styleKey="title_scale"
-              labelAr="حجم خط عناوين الأهداف" labelEn="Objective titles font size"
+              labelAr="حجم خط عناوين الأهداف (شامل)" labelEn="Objective titles font scale (overall)"
               sample={tr("النهوض بالدراسات القانونية", "Advancing legal research")} sampleSize={22} />
           </div>
+          <ListItemTypoBlock form={form} sectionKey="objectives" testid="objectives" />
 
           <div className="mt-6 space-y-4" data-testid="home-objectives-editor">
             {objectives.map((obj, idx) => (
@@ -987,23 +1031,20 @@ export default function HomeAdmin() {
         <SectionCard id="fields_of_work" title={tr("مجالات العمل", "Fields of Work")}
           eyebrow={tr("٥", "5")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("fields_of_work")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.fields_eyebrow_ar || ""} onChange={(v) => form.patch("fields_eyebrow_ar", v)} dir="rtl" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.fields_eyebrow_en || ""} onChange={(v) => form.patch("fields_eyebrow_en", v)} />
-            </Field>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="fields_eyebrow_ar" keyEn="fields_eyebrow_en" sectionKey="fields_of_work" testid="fields" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="fields_title_ar" keyEn="fields_title_en"
-              labelAr="عنوان القسم" labelEn="Section title" testid="fields-title" />
+              labelAr="عنوان القسم" labelEn="Section title" testid="fields-title"
+              sectionKey="fields_of_work" fieldKey="section_title" />
           </div>
           <div className="mt-3 max-w-[420px]">
             <FontScaleSlider form={form} sectionKey="fields_of_work" styleKey="title_scale"
-              labelAr="حجم خط عناوين المجالات" labelEn="Field card titles size"
+              labelAr="حجم خط عناوين المجالات (شامل)" labelEn="Field card titles scale (overall)"
               sample={tr("التشريع والسياسات", "Legislation & policy")} sampleSize={20} />
           </div>
+          <ListItemTypoBlock form={form} sectionKey="fields_of_work" testid="fields" />
 
           <div className="mt-6 space-y-4">
             {fields.map((f, idx) => (
@@ -1046,7 +1087,8 @@ export default function HomeAdmin() {
           <div className="mt-6">
             <BiInput form={form} keyAr="fields_body_ar" keyEn="fields_body_en"
               labelAr="نص توضيحي للقسم (يظهر بجانب العنوان)" labelEn="Section body (next to the heading)"
-              multiline rows={3} testid="fields-body" />
+              multiline rows={3} testid="fields-body"
+              sectionKey="fields_of_work" fieldKey="section_body" />
           </div>
           <div className="mt-5">
             <BgImageBlock form={form} sectionKey="fields_of_work" defaultOverlay={0.12}
@@ -1060,22 +1102,19 @@ export default function HomeAdmin() {
         <SectionCard id="featured_publications" title={tr("الإصدارات المميزة", "Featured Publications")}
           eyebrow={tr("٦", "6")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("featured_publications")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.featured_eyebrow_ar || ""} onChange={(v) => form.patch("featured_eyebrow_ar", v)} dir="rtl" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.featured_eyebrow_en || ""} onChange={(v) => form.patch("featured_eyebrow_en", v)} />
-            </Field>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="featured_eyebrow_ar" keyEn="featured_eyebrow_en" sectionKey="featured_publications" testid="featured" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="featured_title_ar" keyEn="featured_title_en"
-              labelAr="عنوان القسم" labelEn="Section title" testid="featured-title" />
+              labelAr="عنوان القسم" labelEn="Section title" testid="featured-title"
+              sectionKey="featured_publications" fieldKey="title" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="featured_blurb_ar" keyEn="featured_blurb_en"
               labelAr="نص توضيحي قصير" labelEn="Short blurb"
-              multiline rows={2} testid="featured-blurb" />
+              multiline rows={2} testid="featured-blurb"
+              sectionKey="featured_publications" fieldKey="blurb" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4 max-w-[680px]">
             <Field label={tr("عدد الكروت المعروضة", "Cards to show")}>
@@ -1114,22 +1153,19 @@ export default function HomeAdmin() {
         <SectionCard id="contact" title={tr("التواصل", "Contact")}
           eyebrow={tr("٧", "7")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("contact")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.contact_eyebrow_ar || ""} onChange={(v) => form.patch("contact_eyebrow_ar", v)} dir="rtl" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.contact_eyebrow_en || ""} onChange={(v) => form.patch("contact_eyebrow_en", v)} />
-            </Field>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="contact_eyebrow_ar" keyEn="contact_eyebrow_en" sectionKey="contact" testid="contact" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="contact_title_ar" keyEn="contact_title_en"
-              labelAr="عنوان القسم" labelEn="Section title" testid="contact-title" />
+              labelAr="عنوان القسم" labelEn="Section title" testid="contact-title"
+              sectionKey="contact" fieldKey="title" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="contact_blurb_ar" keyEn="contact_blurb_en"
               labelAr="نص تعريفي" labelEn="Intro blurb"
-              multiline rows={3} testid="contact-blurb" />
+              multiline rows={3} testid="contact-blurb"
+              sectionKey="contact" fieldKey="blurb" />
           </div>
           <div className="mt-5 px-4 py-3 bg-paper border border-rule text-[12.5px] text-mute leading-[1.85]">
             ℹ️ {tr(
@@ -1147,12 +1183,14 @@ export default function HomeAdmin() {
           {...orderInfo("newsletter")} onMove={moveSection}>
           <div className="mt-4">
             <BiInput form={form} keyAr="newsletter_title_ar" keyEn="newsletter_title_en"
-              labelAr="العنوان" labelEn="Title" testid="news-title" />
+              labelAr="العنوان" labelEn="Title" testid="news-title"
+              sectionKey="newsletter" fieldKey="title" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="newsletter_blurb_ar" keyEn="newsletter_blurb_en"
               labelAr="النص" labelEn="Body copy"
-              multiline rows={3} testid="news-blurb" />
+              multiline rows={3} testid="news-blurb"
+              sectionKey="newsletter" fieldKey="blurb" />
           </div>
         </SectionCard>
 

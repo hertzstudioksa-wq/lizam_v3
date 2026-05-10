@@ -1,6 +1,7 @@
 import { Quote } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Institutional Pull Band.
@@ -23,6 +24,8 @@ export default function PullBandB() {
     ? "ركيزة عمل المركز"
     : "The Center's working principle");
   const titleScale = home?.section_styles?.pull_band?.title_scale ?? 1;
+  const tsText = getTextStyles(home, "pull_band", "text");
+  const tsAttr = getTextStyles(home, "pull_band", "attribution");
 
   return (
     <section
@@ -40,10 +43,10 @@ export default function PullBandB() {
         <blockquote
           className="tb-display mt-8 max-w-[44ch] mx-auto"
           style={{
-            fontSize: `calc(clamp(1.5rem, 2.4vw, 2.05rem) * ${titleScale})`,
+            fontSize: `calc(clamp(1.5rem, 2.4vw, 2.05rem) * ${titleScale} * ${tsText.sizeMul})`,
             lineHeight: 1.45,
-            fontWeight: 500,
-            color: "var(--tb-navy-900)",
+            fontWeight: tsText.fontWeight ?? 500,
+            color: tsText.color || "var(--tb-navy-900)",
           }}
           data-testid="pull-band-text"
         >
@@ -51,7 +54,14 @@ export default function PullBandB() {
         </blockquote>
         <div className="mt-9 flex items-center justify-center gap-3">
           <span style={{ height: 1, width: 36, background: "var(--tb-gold)" }} />
-          <span className="tb-overline" style={{ color: "var(--tb-gold-deep)" }}>
+          <span
+            className="tb-overline"
+            style={{
+              color: tsAttr.color || "var(--tb-gold-deep)",
+              fontSize: tsAttr.sizeMul !== 1 ? `calc(0.78rem * ${tsAttr.sizeMul})` : undefined,
+              fontWeight: tsAttr.fontWeight,
+            }}
+          >
             {attribution}
           </span>
           <span style={{ height: 1, width: 36, background: "var(--tb-gold)" }} />

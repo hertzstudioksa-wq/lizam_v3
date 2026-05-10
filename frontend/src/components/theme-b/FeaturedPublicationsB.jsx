@@ -5,6 +5,7 @@ import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 import { usePublications } from "@/hooks/usePublications";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Featured Publications (Nadeem-inspired refinement).
@@ -42,6 +43,9 @@ export default function FeaturedPublicationsB() {
   }
   const items = merged;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
+  const tsEyebrow = getTextStyles(home, "featured_publications", "eyebrow");
+  const tsTitle = getTextStyles(home, "featured_publications", "title");
+  const tsBlurb = getTextStyles(home, "featured_publications", "blurb");
 
   // Visibility — placed AFTER all hooks (hook rules). Defaults to TRUE.
   const vs = home?.visible_sections;
@@ -80,16 +84,24 @@ export default function FeaturedPublicationsB() {
       <div className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-32 md:py-40">
         {/* Centered heading block — Nadeem rhythm */}
         <header className="text-center mx-auto max-w-[720px]">
-          <div className="tb-overline" style={{ color: "var(--tb-gold-deep)", letterSpacing: "0.22em" }}>
+          <div
+            className="tb-overline"
+            style={{
+              color: tsEyebrow.color || "var(--tb-gold-deep)",
+              letterSpacing: "0.22em",
+              fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+              fontWeight: tsEyebrow.fontWeight,
+            }}
+          >
             {home?.[`featured_eyebrow_${lang}`] || (lang === "ar" ? "المكتبة البحثية" : "Research Library")}
           </div>
           <h2
             className="tb-display mt-6 mx-auto"
             style={{
-              fontSize: "clamp(2.2rem, 4vw, 3.2rem)",
+              fontSize: `calc(clamp(2.2rem, 4vw, 3.2rem) * ${tsTitle.sizeMul})`,
               lineHeight: 1.25,
-              fontWeight: 500,
-              color: "var(--tb-navy-900)",
+              fontWeight: tsTitle.fontWeight ?? 500,
+              color: tsTitle.color || "var(--tb-navy-900)",
               maxWidth: "22ch",
             }}
             data-testid="featured-title"
@@ -101,9 +113,10 @@ export default function FeaturedPublicationsB() {
             className="mt-7 mx-auto"
             style={{
               fontFamily: '"Thmanyah Serif Text", serif',
-              fontSize: 16,
+              fontSize: tsBlurb.sizeMul !== 1 ? `calc(16px * ${tsBlurb.sizeMul})` : 16,
               lineHeight: 1.95,
-              color: "var(--tb-text-muted)",
+              color: tsBlurb.color || "var(--tb-text-muted)",
+              fontWeight: tsBlurb.fontWeight,
               maxWidth: "58ch",
             }}
             data-testid="featured-blurb"

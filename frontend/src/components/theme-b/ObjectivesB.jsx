@@ -1,6 +1,7 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Objectives (refined). Soft navy band, generous numerals, refined edges.
@@ -22,6 +23,9 @@ export default function ObjectivesB() {
   const bg = useSec ? sec : legacy;
   const useBg = (useSec && sec.url) || (legacy?.active && legacy?.url);
   const titleScale = home?.section_styles?.objectives?.title_scale ?? 1;
+  const tsEyebrow = getTextStyles(home, "objectives", "eyebrow");
+  const tsItemTitle = getTextStyles(home, "objectives", "item_title");
+  const tsItemDesc = getTextStyles(home, "objectives", "item_desc");
 
   return (
     <section
@@ -40,7 +44,14 @@ export default function ObjectivesB() {
         <div className="max-w-[800px]">
           <div className="tb-section-eyebrow">
             <span className="rule" />
-            <span className="tb-overline" style={{ color: "var(--tb-gold-soft)" }}>
+            <span
+              className="tb-overline"
+              style={{
+                color: tsEyebrow.color || "var(--tb-gold-soft)",
+                fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                fontWeight: tsEyebrow.fontWeight,
+              }}
+            >
               {home[`objectives_eyebrow_${lang}`] || (lang === "ar" ? "الأهداف" : "Objectives")}
             </span>
           </div>
@@ -78,10 +89,10 @@ export default function ObjectivesB() {
                     className="text-[22px] md:text-[24px]"
                     style={{
                       fontFamily: '"Thmanyah Serif Display", serif',
-                      color: "var(--tb-paper-base)",
-                      fontWeight: 500,
+                      color: tsItemTitle.color || "var(--tb-paper-base)",
+                      fontWeight: tsItemTitle.fontWeight ?? 500,
                       lineHeight: 1.32,
-                      fontSize: `calc(24px * ${titleScale})`,
+                      fontSize: `calc(24px * ${titleScale} * ${tsItemTitle.sizeMul})`,
                     }}
                   >
                     {o[`title_${lang}`]}
@@ -90,9 +101,10 @@ export default function ObjectivesB() {
                     className="mt-4 max-w-[50ch]"
                     style={{
                       fontFamily: '"Thmanyah Serif Text", serif',
-                      fontSize: 16,
+                      fontSize: tsItemDesc.sizeMul !== 1 ? `calc(16px * ${tsItemDesc.sizeMul})` : 16,
                       lineHeight: 1.95,
-                      color: "rgba(251, 250, 247, 0.78)",
+                      color: tsItemDesc.color || "rgba(251, 250, 247, 0.78)",
+                      fontWeight: tsItemDesc.fontWeight,
                     }}
                   >
                     {o[`description_${lang}`]}

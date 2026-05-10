@@ -2,6 +2,7 @@ import { Mail, ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings, useHomeContent } from "@/hooks/useSiteSettings";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /** Theme B — Contact Block: editorial pairing + premium email lockup. */
 export default function ContactBlockB() {
@@ -13,6 +14,9 @@ export default function ContactBlockB() {
   if (Array.isArray(vs) && vs.length > 0 && !vs.includes("contact")) return null;
   const email = site?.contact_email || "info@lizam.sa";
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
+  const tsEyebrow = getTextStyles(home, "contact", "eyebrow");
+  const tsTitle = getTextStyles(home, "contact", "title");
+  const tsBlurb = getTextStyles(home, "contact", "blurb");
 
   return (
     <section
@@ -26,11 +30,23 @@ export default function ContactBlockB() {
           <div className="md:col-span-5">
             <div className="tb-section-eyebrow">
               <span className="rule" />
-              <span className="tb-overline">{home?.[`contact_eyebrow_${lang}`] || (lang === "ar" ? "تواصل" : "Contact")}</span>
+              <span
+                className="tb-overline"
+                style={{
+                  color: tsEyebrow.color,
+                  fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                  fontWeight: tsEyebrow.fontWeight,
+                }}
+              >{home?.[`contact_eyebrow_${lang}`] || (lang === "ar" ? "تواصل" : "Contact")}</span>
             </div>
             <h2
               className="tb-display mt-8 max-w-[22ch]"
-              style={{ fontSize: "clamp(1.85rem, 3.2vw, 2.6rem)", lineHeight: 1.3, fontWeight: 500 }}
+              style={{
+                fontSize: `calc(clamp(1.85rem, 3.2vw, 2.6rem) * ${tsTitle.sizeMul})`,
+                lineHeight: 1.3,
+                fontWeight: tsTitle.fontWeight ?? 500,
+                color: tsTitle.color,
+              }}
               data-testid="contact-headline"
             >
               {home?.[`contact_title_${lang}`] || (lang === "ar"
@@ -41,7 +57,13 @@ export default function ContactBlockB() {
           <div className="md:col-span-7 space-y-10">
             <p
               className="max-w-[60ch]"
-              style={{ fontFamily: '"Thmanyah Serif Text", serif', fontSize: 16.5, lineHeight: 1.95, color: "var(--tb-text)" }}
+              style={{
+                fontFamily: '"Thmanyah Serif Text", serif',
+                fontSize: tsBlurb.sizeMul !== 1 ? `calc(16.5px * ${tsBlurb.sizeMul})` : 16.5,
+                lineHeight: 1.95,
+                color: tsBlurb.color || "var(--tb-text)",
+                fontWeight: tsBlurb.fontWeight,
+              }}
               data-testid="contact-body"
             >
               {home?.[`contact_blurb_${lang}`] || (lang === "ar"

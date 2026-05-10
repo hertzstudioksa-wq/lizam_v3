@@ -1,5 +1,6 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Mission & Vision (v2: balanced, restrained).
@@ -30,8 +31,13 @@ export default function MissionVisionB() {
   const mp = home[`mission_points_${lang}`] || [];
   const vp = home[`vision_points_${lang}`] || [];
   const titleScale = home?.section_styles?.mission?.title_scale ?? 1;
+  const tsEyebrow = getTextStyles(home, "mission", "eyebrow");
+  const tsMissionText = getTextStyles(home, "mission", "mission_text");
+  const tsVisionText = getTextStyles(home, "mission", "vision_text");
+  const tsMissionPts = getTextStyles(home, "mission", "mission_points");
+  const tsVisionPts = getTextStyles(home, "mission", "vision_points");
 
-  const Card = ({ index, kicker, title, body, points, testid }) => (
+  const Card = ({ index, kicker, title, body, points, testid, tsBody, tsPts }) => (
     <article
       data-testid={testid}
       className="tb-card lz-mv-card flex flex-col h-full"
@@ -94,9 +100,10 @@ export default function MissionVisionB() {
         className="mt-4"
         style={{
           fontFamily: '"Thmanyah Sans", sans-serif',
-          fontSize: 15,
+          fontSize: tsBody.sizeMul !== 1 ? `calc(15px * ${tsBody.sizeMul})` : 15,
           lineHeight: 1.9,
-          color: "var(--tb-text-muted)",
+          color: tsBody.color || "var(--tb-text-muted)",
+          fontWeight: tsBody.fontWeight,
           maxWidth: "60ch",
         }}
       >
@@ -124,9 +131,10 @@ export default function MissionVisionB() {
               <span
                 style={{
                   fontFamily: '"Thmanyah Sans", sans-serif',
-                  fontSize: 14.5,
+                  fontSize: tsPts.sizeMul !== 1 ? `calc(14.5px * ${tsPts.sizeMul})` : 14.5,
                   lineHeight: 1.85,
-                  color: "var(--tb-text)",
+                  color: tsPts.color || "var(--tb-text)",
+                  fontWeight: tsPts.fontWeight,
                 }}
               >
                 {p}
@@ -173,7 +181,14 @@ export default function MissionVisionB() {
         <div className="max-w-[680px]">
           <div className="flex items-center gap-3">
             <span style={{ height: 1, width: 24, background: "var(--tb-gold)" }} />
-            <span className="tb-overline">
+            <span
+              className="tb-overline"
+              style={{
+                color: tsEyebrow.color,
+                fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                fontWeight: tsEyebrow.fontWeight,
+              }}
+            >
               {home[`mission_eyebrow_${lang}`] || (lang === "ar" ? "المنطلقات" : "Foundations")}
             </span>
           </div>
@@ -218,6 +233,8 @@ export default function MissionVisionB() {
             body={mission}
             points={mp}
             testid="block-mission"
+            tsBody={tsMissionText}
+            tsPts={tsMissionPts}
           />
           <Card
             index="02"
@@ -230,6 +247,8 @@ export default function MissionVisionB() {
             body={vision}
             points={vp}
             testid="block-vision"
+            tsBody={tsVisionText}
+            tsPts={tsVisionPts}
           />
         </div>
       </div>

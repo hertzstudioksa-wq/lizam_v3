@@ -3,6 +3,7 @@ import { Mail, Check } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { api, formatApiError } from "@/lib/api";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Newsletter signup (Nadeem-inspired).
@@ -21,6 +22,9 @@ export default function NewsletterB() {
   const vs = home?.visible_sections;
   if (Array.isArray(vs) && vs.length > 0 && !vs.includes("newsletter")) return null;
   if (home?.newsletter_enabled === false) return null;
+
+  const tsTitle = getTextStyles(home, "newsletter", "title");
+  const tsBlurb = getTextStyles(home, "newsletter", "blurb");
 
   async function submit(e) {
     e.preventDefault();
@@ -56,10 +60,10 @@ export default function NewsletterB() {
         <h2
           className="tb-display mt-10 mx-auto"
           style={{
-            fontSize: "clamp(2rem, 3.8vw, 3rem)",
+            fontSize: `calc(clamp(2rem, 3.8vw, 3rem) * ${tsTitle.sizeMul})`,
             lineHeight: 1.3,
-            fontWeight: 500,
-            color: "var(--tb-paper-base)",
+            fontWeight: tsTitle.fontWeight ?? 500,
+            color: tsTitle.color || "var(--tb-paper-base)",
             maxWidth: "22ch",
           }}
           data-testid="newsletter-title"
@@ -73,9 +77,10 @@ export default function NewsletterB() {
           className="mt-7 mx-auto"
           style={{
             fontFamily: '"Thmanyah Serif Text", serif',
-            fontSize: 16,
+            fontSize: tsBlurb.sizeMul !== 1 ? `calc(16px * ${tsBlurb.sizeMul})` : 16,
             lineHeight: 1.95,
-            color: "rgba(251, 250, 247, 0.72)",
+            color: tsBlurb.color || "rgba(251, 250, 247, 0.72)",
+            fontWeight: tsBlurb.fontWeight,
             maxWidth: "54ch",
           }}
           data-testid="newsletter-blurb"

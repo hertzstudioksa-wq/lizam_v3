@@ -2,6 +2,7 @@ import { ScrollText, Scale, Landmark, BookOpen, Compass } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 const ICONS = {
   "scroll-text": ScrollText,
@@ -28,6 +29,11 @@ export default function FieldsOfWorkB() {
   if (Array.isArray(vs) && vs.length > 0 && !vs.includes("fields_of_work")) return null;
   const items = home.fields_of_work || [];
   const titleScale = home?.section_styles?.fields_of_work?.title_scale ?? 1;
+  const tsEyebrow = getTextStyles(home, "fields_of_work", "eyebrow");
+  const tsSectionTitle = getTextStyles(home, "fields_of_work", "section_title");
+  const tsSectionBody = getTextStyles(home, "fields_of_work", "section_body");
+  const tsItemTitle = getTextStyles(home, "fields_of_work", "item_title");
+  const tsItemDesc = getTextStyles(home, "fields_of_work", "item_desc");
 
   return (
     <section
@@ -62,11 +68,23 @@ export default function FieldsOfWorkB() {
           <div className="md:col-span-5">
             <div className="tb-section-eyebrow">
               <span className="rule" />
-              <span className="tb-overline">{home[`fields_eyebrow_${lang}`] || (lang === "ar" ? "مجالات العمل" : "Fields of Work")}</span>
+              <span
+                className="tb-overline"
+                style={{
+                  color: tsEyebrow.color,
+                  fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                  fontWeight: tsEyebrow.fontWeight,
+                }}
+              >{home[`fields_eyebrow_${lang}`] || (lang === "ar" ? "مجالات العمل" : "Fields of Work")}</span>
             </div>
             <h2
               className="tb-display mt-7 max-w-[20ch]"
-              style={{ fontSize: `calc(clamp(2rem, 3.4vw, 2.85rem) * ${titleScale})`, lineHeight: 1.25, fontWeight: 500 }}
+              style={{
+                fontSize: `calc(clamp(2rem, 3.4vw, 2.85rem) * ${titleScale} * ${tsSectionTitle.sizeMul})`,
+                lineHeight: 1.25,
+                fontWeight: tsSectionTitle.fontWeight ?? 500,
+                color: tsSectionTitle.color,
+              }}
               data-testid="fields-title"
             >
               {home?.[`fields_title_${lang}`] || (lang === "ar" ? "حقول بحثية متكاملة." : "Five research fields, in dialogue.")}
@@ -74,7 +92,11 @@ export default function FieldsOfWorkB() {
           </div>
           <p
             className="md:col-span-7 max-w-[60ch] md:pe-16 tb-body-lg"
-            style={{ color: "var(--tb-text)" }}
+            style={{
+              color: tsSectionBody.color || "var(--tb-text)",
+              fontSize: tsSectionBody.sizeMul !== 1 ? `calc(1.1875rem * ${tsSectionBody.sizeMul})` : undefined,
+              fontWeight: tsSectionBody.fontWeight,
+            }}
             data-testid="fields-body"
           >
             {home?.[`fields_body_${lang}`] || (lang === "ar"
@@ -122,9 +144,10 @@ export default function FieldsOfWorkB() {
                   className="mt-8 text-[19px] md:text-[21px]"
                   style={{
                     fontFamily: '"Thmanyah Serif Display", serif',
-                    color: "var(--tb-navy-900)",
-                    fontWeight: 500,
+                    color: tsItemTitle.color || "var(--tb-navy-900)",
+                    fontWeight: tsItemTitle.fontWeight ?? 500,
                     lineHeight: 1.35,
+                    fontSize: tsItemTitle.sizeMul !== 1 ? `calc(21px * ${titleScale} * ${tsItemTitle.sizeMul})` : undefined,
                   }}
                 >
                   {f[`title_${lang}`]}
@@ -133,9 +156,10 @@ export default function FieldsOfWorkB() {
                   className="mt-4"
                   style={{
                     fontFamily: '"Thmanyah Sans", sans-serif',
-                    fontSize: 15,
+                    fontSize: tsItemDesc.sizeMul !== 1 ? `calc(15px * ${tsItemDesc.sizeMul})` : 15,
                     lineHeight: 1.9,
-                    color: "var(--tb-text-muted)",
+                    color: tsItemDesc.color || "var(--tb-text-muted)",
+                    fontWeight: tsItemDesc.fontWeight,
                   }}
                 >
                   {f[`description_${lang}`]}

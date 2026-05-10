@@ -1,6 +1,7 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
+import { getTextStyles } from "@/lib/sectionTypo";
 
 /** Theme B — About (refined): editorial layout paired with curated portrait image. */
 export default function AboutB() {
@@ -25,6 +26,11 @@ export default function AboutB() {
   const imgFy = img?.focal_y ?? 50;
   const altText = img?.[`alt_${lang}`] || img?.alt_en || "";
   const titleScale = home?.section_styles?.about?.title_scale ?? 1;
+
+  // Per-field typography overrides
+  const tsEyebrow = getTextStyles(home, "about", "eyebrow");
+  const tsMain = getTextStyles(home, "about", "main");
+  const tsExtended = getTextStyles(home, "about", "extended");
 
   return (
     <section
@@ -65,7 +71,14 @@ export default function AboutB() {
           <div className={`order-1 lg:order-2 ${showImg ? "lg:col-span-7" : "lg:col-span-12"}`}>
             <div className="tb-section-eyebrow">
               <span className="rule" />
-              <span className="tb-overline">{home[`about_eyebrow_${lang}`] || (lang === "ar" ? "عن المركز" : "About")}</span>
+              <span
+                className="tb-overline"
+                style={{
+                  color: tsEyebrow.color,
+                  fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                  fontWeight: tsEyebrow.fontWeight,
+                }}
+              >{home[`about_eyebrow_${lang}`] || (lang === "ar" ? "عن المركز" : "About")}</span>
             </div>
             <h2
               className="tb-display mt-8 max-w-[28ch]"
@@ -80,8 +93,24 @@ export default function AboutB() {
                 : "A Saudi research center for legal studies and public policy."}
             </h2>
             <div className="mt-10 space-y-7 max-w-[64ch]">
-              <p className="tb-body-lg">{body}</p>
-              {extended && <p className="tb-body-lg">{extended}</p>}
+              <p
+                className="tb-body-lg"
+                style={{
+                  fontSize: tsMain.sizeMul !== 1 ? `calc(1.1875rem * ${tsMain.sizeMul})` : undefined,
+                  fontWeight: tsMain.fontWeight,
+                  color: tsMain.color,
+                }}
+              >{body}</p>
+              {extended && (
+                <p
+                  className="tb-body-lg"
+                  style={{
+                    fontSize: tsExtended.sizeMul !== 1 ? `calc(1.1875rem * ${tsExtended.sizeMul})` : undefined,
+                    fontWeight: tsExtended.fontWeight,
+                    color: tsExtended.color,
+                  }}
+                >{extended}</p>
+              )}
             </div>
           </div>
         </div>

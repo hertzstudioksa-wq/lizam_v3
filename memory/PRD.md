@@ -654,6 +654,61 @@ multiplier that respects existing responsive `clamp()` values:
 
 ---
 
+## Update — Feb 10, 2026 (later 4) · Per-field typography rolled out to ALL sections
+
+After Hero POC was approved, generalized the per-field typography controls
+(size · weight · color) to **every** section in `/admin/home`.
+
+**Frontend admin (`HomeAdmin.jsx`):**
+- New helpers: `<EyebrowRow>` (typo strip + AR/EN eyebrow inputs) and
+  `<ListItemTypoBlock>` (single shared typo for `item_title` + `item_desc`
+  applied to all repeating list items in a section).
+- Wired `FieldTypoControls` into:
+  - About: eyebrow, main copy, extended copy
+  - Mission/Vision: eyebrow, mission_text, mission_points, vision_text, vision_points
+  - Pull Band: text, attribution
+  - Objectives: eyebrow + shared item_title / item_desc
+  - Fields of Work: eyebrow, section_title, section_body + shared item_title / item_desc
+  - Featured Publications: eyebrow, title, blurb
+  - Contact: eyebrow, title, blurb
+  - Newsletter: title, blurb
+
+**Frontend public (Theme B):**
+- New shared helper `/lib/sectionTypo.js` → `getTextStyles(home, sectionKey, fieldKey)`
+  returns `{ sizeMul, fontWeight, color }` with safe defaults.
+- Updated components to read & apply per-field overrides as inline styles
+  (multiplying existing `clamp()` sizes by `sizeMul`, falling back to
+  defaults when fields are unset):
+  AboutB, MissionVisionB, PullBandB, ObjectivesB, FieldsOfWorkB,
+  FeaturedPublicationsB, ContactBlockB, NewsletterB.
+- Existing `title_scale` (section-level coarse) continues to multiply with
+  the new `item_title.sizeMul` (per-field fine) so admins keep both knobs.
+
+**Backend:** No model change. `HomeContentIn.section_styles: Dict[str, Dict[str, Any]]`
+already accepts the nested shape `section_styles.{section}.text_styles.{field}.{size,weight,color}`.
+
+### Tests
+- 195/195 backend pytest PASS (verified the previous run; no backend changes
+  in this update).
+- Live e2e Playwright: applied vivid color overrides on all 8 sections —
+  every selector returns the expected `rgb(...)`:
+  - About eyebrow → `rgb(204,0,0)` · About body → `rgb(0,102,204)`
+  - Mission eyebrow → `rgb(170,0,170)` · Mission body → `rgb(0,136,68)` · Vision body → `rgb(221,102,0)`
+  - Pull-band → `rgb(153,34,17)`
+  - Objective h3 → `rgb(0,204,204)` · p → `rgb(204,170,0)`
+  - Fields h2 → `rgb(0,51,102)` · field h3 → `rgb(204,51,0)`
+  - Featured title → `rgb(102,0,153)` · Contact h2 → `rgb(0,85,119)` · Newsletter title → `rgb(255,170,68)`
+- Defaults restored (all `text_styles = {}`); public design renders identically
+  to baseline when no overrides are set.
+
+### Outstanding (non-blocking)
+- DnD reorder upgrade (`@dnd-kit/sortable`) replacing ↑/↓.
+- Resend API key wiring.
+- `HomeAdmin.jsx` is now ~1240 lines — extract `SectionCard`/`BiInput`/etc. into
+  `src/admin/components/` modules.
+
+---
+
 ## Update — Feb 10, 2026 (later 3) · Per-field typography controls (Hero — POC)
 
 ### What changed
