@@ -496,6 +496,53 @@ confirm button stays disabled until "حذف" typed, and lists show
 
 ---
 
+## Update — Feb 10, 2026 (later) · Hero parity, publication_detail hero, section background slots
+
+### What changed
+**1. Hero size unified across pages** — `/about`, `/contact`, `/publications`,
+and the new publication detail masthead now all share the exact same hero
+dimensions: `pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh]`.
+Verified at 1920×900 viewport: all four heroes measure **540px tall** (was 58vh
+on /about, 44vh on /contact, no min-height on /publications — visibly
+inconsistent).
+
+**2. Publication detail page now has a cinematic header** — `PublicationDetailPage.jsx`
+top section converted from a flat ivory band to a navy cinematic band that
+hosts `<HeroMediaLayer pageKey="publication_detail" extendBehindHeader />` with
+breadcrumb + type chip + serif title. The summary, meta line, and action
+toolbar moved into a second light-band section directly below. Falls back to
+`_default` automatically if the admin hasn't customized the publication_detail key.
+
+**3. New `publication_detail` page key** added to `BUILTIN_PAGE_KEYS` in
+`models_hero.py` and seeded with a default editorial backdrop in `seed.py`.
+The Hero Media admin (`/admin/images` → "Page hero backgrounds" tab) shows it
+automatically as a configurable row.
+
+**4. Three new section background slots** added to `seed.py` image_assets seeds:
+- `foundations_background` — backs the Mission/Vision/Foundations band
+- `fields_of_work_background` — backs the Fields of Work band
+- `library_background` — backs the Featured/Latest Publications band
+
+All three default to `active=False, url=""`, so until an admin enables them
+the sections render with their existing solid colors (no visual change).
+When activated, an `<img>` is overlaid behind a paper veil so section content
+stays fully readable.
+
+**5. Component wiring** — `MissionVisionB`, `FieldsOfWorkB`, and
+`FeaturedPublicationsB` each now consume `useImageAssets()` and conditionally
+render their assigned slot when `slot.active && slot.url`, otherwise fall back
+to the current solid background.
+
+### Tests
+- 195/195 backend pytest PASS (no regressions).
+- Frontend lint clean across all five edited components.
+- Live verification: hero heights identical at 540px on all four masthead
+  pages; publication detail renders cinematic backdrop with HeroMediaLayer;
+  admin shows all 5 section image slots and the new publication_detail hero row.
+
+
+---
+
 ## Update — Feb 10, 2026 · Backend test stability fix
 
 ### Two pre-existing data-drift test failures resolved

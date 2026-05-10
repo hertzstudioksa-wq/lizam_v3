@@ -56,7 +56,7 @@ export default function PublicationsPage() {
     <PublicLayout>
       {/* Masthead — cinematic hero band (image background + dark overlay) */}
       <section
-        className="relative isolate pt-[130px] md:pt-[150px] pb-12 md:pb-16 overflow-hidden"
+        className="relative isolate pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh] overflow-hidden"
         data-testid="publications-masthead"
         style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
       >

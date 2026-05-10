@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
+import { useImageAssets } from "@/hooks/useImageAssets";
 import { usePublications } from "@/hooks/usePublications";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
 
@@ -14,6 +15,9 @@ import PublicationCardB from "@/components/theme-b/PublicationCardB";
 export default function FeaturedPublicationsB() {
   const { lang } = useLang();
   const { data: home } = useHomeContent();
+  const { bySlot } = useImageAssets();
+  const bg = bySlot.library_background;
+  const hasBg = bg && bg.active && bg.url;
   // Prefer admin-curated featured publications, then fill with latest until we
   // have up to 3 unique items. Ensures the home section reflects ALL recent
   // published items even if fewer than 3 are flagged "featured".
@@ -39,9 +43,30 @@ export default function FeaturedPublicationsB() {
       id="publications"
       data-testid="section-featured"
       data-theme-component="theme-b-featured"
+      className="relative isolate overflow-hidden"
       style={{ background: "var(--tb-paper-base)" }}
     >
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-32 md:py-40">
+      {hasBg && (
+        <>
+          <img
+            src={bg.url}
+            alt={bg.alt_ar || bg.alt_en || ""}
+            aria-hidden
+            className="absolute inset-0 w-full h-full"
+            style={{
+              objectFit: "cover",
+              objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
+              zIndex: 0,
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "rgba(251, 250, 247, 0.88)", zIndex: 0 }}
+          />
+        </>
+      )}
+      <div className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-32 md:py-40">
         {/* Centered heading block — Nadeem rhythm */}
         <header className="text-center mx-auto max-w-[720px]">
           <div className="tb-overline" style={{ color: "var(--tb-gold-deep)", letterSpacing: "0.22em" }}>

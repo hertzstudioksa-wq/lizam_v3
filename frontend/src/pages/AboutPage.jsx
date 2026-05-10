@@ -38,7 +38,7 @@ export default function AboutPage() {
     <PublicLayout>
       {/* ---------- Cinematic masthead ---------- */}
       <section
-        className="relative isolate pt-[130px] md:pt-[150px] pb-16 md:pb-20 min-h-[58vh] overflow-hidden"
+        className="relative isolate pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh] overflow-hidden"
         style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
         data-testid="about-masthead"
       >

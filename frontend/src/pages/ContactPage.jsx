@@ -39,7 +39,7 @@ export default function ContactPage() {
     <PublicLayout>
       {/* ---------- Cinematic masthead ---------- */}
       <section
-        className="relative isolate pt-[130px] md:pt-[150px] pb-14 min-h-[44vh] overflow-hidden"
+        className="relative isolate pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh] overflow-hidden"
         style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
         data-testid="contact-masthead"
       >

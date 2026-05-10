@@ -1,5 +1,6 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
+import { useImageAssets } from "@/hooks/useImageAssets";
 
 /**
  * Theme B — Mission & Vision (v2: balanced, restrained).
@@ -15,6 +16,9 @@ import { useHomeContent } from "@/hooks/useSiteSettings";
 export default function MissionVisionB() {
   const { lang, pick } = useLang();
   const { data: home } = useHomeContent();
+  const { bySlot } = useImageAssets();
+  const bg = bySlot.foundations_background;
+  const hasBg = bg && bg.active && bg.url;
   if (!home) return null;
 
   const mission = pick(home, "mission");
@@ -133,9 +137,30 @@ export default function MissionVisionB() {
       id="mission-vision"
       data-testid="section-mission-vision"
       data-theme-component="theme-b-mission"
+      className="relative isolate overflow-hidden"
       style={{ background: "var(--tb-paper-deep)" }}
     >
-      <div className="mx-auto max-w-[1180px] px-6 md:px-10 lg:px-12 py-20 md:py-24">
+      {hasBg && (
+        <>
+          <img
+            src={bg.url}
+            alt={bg.alt_ar || bg.alt_en || ""}
+            aria-hidden
+            className="absolute inset-0 w-full h-full"
+            style={{
+              objectFit: "cover",
+              objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
+              zIndex: 0,
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "rgba(249, 247, 243, 0.86)", zIndex: 0 }}
+          />
+        </>
+      )}
+      <div className="relative z-10 mx-auto max-w-[1180px] px-6 md:px-10 lg:px-12 py-20 md:py-24">
         {/* Compact section intro */}
         <div className="max-w-[680px]">
           <div className="flex items-center gap-3">

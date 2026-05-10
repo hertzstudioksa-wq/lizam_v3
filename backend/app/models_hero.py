@@ -12,6 +12,7 @@ BUILTIN_PAGE_KEYS = {
     "_default",
     "home",
     "publications",
+    "publication_detail",
     "about",
     "contact",
 }

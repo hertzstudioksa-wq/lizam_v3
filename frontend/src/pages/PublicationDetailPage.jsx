@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import PublicationCard from "@/components/publications/PublicationCard";
+import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 import { useLang } from "@/i18n/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
 import { usePublication } from "@/hooks/usePublications";
@@ -136,34 +137,49 @@ export default function PublicationDetailPage() {
 
   return (
     <PublicLayout>
-      {/* Masthead */}
-      <section className="pt-[130px] md:pt-[150px] pb-10 md:pb-14 bg-ivory" data-testid="publication-masthead">
-        <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14">
-          <nav className="flex items-center gap-2 text-[12.5px] text-mute">
-            <Link to="/" className="hover:text-navy transition-colors">{lang === "ar" ? "الرئيسية" : "Home"}</Link>
-            <Chevron size={12} />
-            <Link to="/publications" className="hover:text-navy transition-colors">{lang === "ar" ? "الإصدارات" : "Publications"}</Link>
+      {/* Cinematic masthead — matches /publications, /about, /contact heights */}
+      <section
+        className="relative isolate pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh] overflow-hidden"
+        style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
+        data-testid="publication-hero"
+      >
+        <HeroMediaLayer pageKey="publication_detail" extendBehindHeader />
+        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full">
+          <nav className="flex items-center gap-2 text-[12px] uppercase tracking-[0.18em]" style={{ color: "rgba(251,250,247,0.78)" }}>
+            <Link to="/" className="hover:text-white transition-colors">{lang === "ar" ? "الرئيسية" : "Home"}</Link>
+            <Chevron size={11} />
+            <Link to="/publications" className="hover:text-white transition-colors">{lang === "ar" ? "الإصدارات" : "Publications"}</Link>
             {category && (<>
-              <Chevron size={12} />
-              <span className="text-navy/70">{category[`title_${lang}`]}</span>
+              <Chevron size={11} />
+              <span style={{ color: "var(--tb-gold)" }}>{category[`title_${lang}`]}</span>
             </>)}
           </nav>
 
-          <div className="mt-8 flex items-center gap-3 text-[11.5px] uppercase tracking-[0.22em] text-brass font-semibold">
-            <span className="h-px w-10 bg-brass" />
+          <div className="mt-6 flex items-center gap-3 text-[11.5px] uppercase tracking-[0.22em] font-semibold" style={{ color: "var(--tb-gold)" }}>
+            <span className="h-px w-10" style={{ background: "var(--tb-gold)" }} />
             <span>{type}</span>
           </div>
 
           <h1
-            className="lz-display mt-5 max-w-[30ch]"
-            style={{ color: "#121A2A", fontWeight: 500 }}
+            className="tb-display mt-5 max-w-[30ch]"
+            style={{
+              color: "var(--tb-paper-base)",
+              fontWeight: 500,
+              fontSize: "clamp(1.85rem, 3.4vw, 2.85rem)",
+              lineHeight: 1.22,
+            }}
             data-testid="pub-title"
           >
             {title}
           </h1>
+        </div>
+      </section>
 
+      {/* Summary + meta + actions on light band */}
+      <section className="pb-10 md:pb-14 bg-ivory" data-testid="publication-masthead">
+        <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 pt-12 md:pt-14">
           {summary && (
-            <p className="mt-7 text-[17px] md:text-[19px] leading-[1.9] text-ink/80 max-w-[66ch]" data-testid="pub-summary">
+            <p className="text-[17px] md:text-[19px] leading-[1.9] text-ink/80 max-w-[66ch]" data-testid="pub-summary">
               {summary}
             </p>
           )}

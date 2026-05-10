@@ -1,6 +1,7 @@
 import { ScrollText, Scale, Landmark, BookOpen, Compass } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
+import { useImageAssets } from "@/hooks/useImageAssets";
 
 const ICONS = {
   "scroll-text": ScrollText,
@@ -14,6 +15,9 @@ const ICONS = {
 export default function FieldsOfWorkB() {
   const { lang } = useLang();
   const { data: home } = useHomeContent();
+  const { bySlot } = useImageAssets();
+  const bg = bySlot.fields_of_work_background;
+  const hasBg = bg && bg.active && bg.url;
   if (!home) return null;
   const items = home.fields_of_work || [];
 
@@ -22,9 +26,30 @@ export default function FieldsOfWorkB() {
       id="fields"
       data-testid="section-fields"
       data-theme-component="theme-b-fields"
+      className="relative isolate overflow-hidden"
       style={{ background: "var(--tb-paper-base)" }}
     >
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
+      {hasBg && (
+        <>
+          <img
+            src={bg.url}
+            alt={bg.alt_ar || bg.alt_en || ""}
+            aria-hidden
+            className="absolute inset-0 w-full h-full"
+            style={{
+              objectFit: "cover",
+              objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
+              zIndex: 0,
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{ background: "rgba(251, 250, 247, 0.88)", zIndex: 0 }}
+          />
+        </>
+      )}
+      <div className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-end">
           <div className="md:col-span-5">
             <div className="tb-section-eyebrow">
