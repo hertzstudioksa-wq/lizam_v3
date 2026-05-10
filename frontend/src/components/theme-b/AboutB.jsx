@@ -8,6 +8,9 @@ export default function AboutB() {
   const { data: home } = useHomeContent();
   const { bySlot } = useImageAssets();
   if (!home) return null;
+  // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("about")) return null;
   const body = pick(home, "about");
   const extended = pick(home, "about_extended");
   const img = bySlot.about_image;

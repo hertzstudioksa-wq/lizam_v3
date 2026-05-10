@@ -20,6 +20,10 @@ export default function MissionVisionB() {
   const bg = bySlot.foundations_background;
   const hasBg = bg && bg.active && bg.url;
   if (!home) return null;
+  // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
+  // Treat both "mission" and legacy "vision" keys as gates for this combined band.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("mission") && !vs.includes("vision")) return null;
 
   const mission = pick(home, "mission");
   const vision = pick(home, "vision");

@@ -14,6 +14,10 @@ export default function HeroB() {
   const { data: home } = useHomeContent();
   useSiteSettings();
 
+  // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("hero")) return null;
+
   const title = pick(home, "hero_title", "");
   const subtitle = pick(home, "hero_subtitle", "");
   const ctaPrimary = pick(home, "hero_cta_primary", "") || t("hero.explore");
@@ -22,9 +26,10 @@ export default function HeroB() {
   const ctaSecondaryLink = home?.hero_cta_secondary_link || "";
   const titleScale = home?.section_styles?.hero?.title_scale ?? 1;
 
-  const eyebrow = lang === "ar"
+  // Eyebrow — admin override first, then sensible default
+  const eyebrow = home?.[`hero_eyebrow_${lang}`] || (lang === "ar"
     ? "مركز بحثي مستقل · المملكة العربية السعودية"
-    : "Independent Research Center · Kingdom of Saudi Arabia";
+    : "Independent Research Center · Kingdom of Saudi Arabia");
 
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const [line1, line2] = (title || "").split("\n");

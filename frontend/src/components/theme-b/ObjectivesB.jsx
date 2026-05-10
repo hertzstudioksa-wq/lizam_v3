@@ -11,6 +11,9 @@ export default function ObjectivesB() {
   const { data: home } = useHomeContent();
   const { bySlot } = useImageAssets();
   if (!home) return null;
+  // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("objectives")) return null;
   const items = home.objectives || [];
   const bg = bySlot.objectives_background;
   const useBg = bg?.active && bg?.url;

@@ -39,6 +39,10 @@ export default function FeaturedPublicationsB() {
   const items = merged;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
+  // Visibility — placed AFTER all hooks (hook rules). Defaults to TRUE.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("featured_publications")) return null;
+
   if (!items.length) return null;
 
   return (
@@ -84,8 +88,9 @@ export default function FeaturedPublicationsB() {
               color: "var(--tb-navy-900)",
               maxWidth: "22ch",
             }}
+            data-testid="featured-title"
           >
-            {lang === "ar" ? "أحدث الإصدارات" : "Latest Publications"}
+            {home?.[`featured_title_${lang}`] || (lang === "ar" ? "أحدث الإصدارات" : "Latest Publications")}
           </h2>
           <div className="mt-7 mx-auto" style={{ height: 1, width: 56, background: "var(--tb-gold)" }} />
           <p
@@ -97,10 +102,11 @@ export default function FeaturedPublicationsB() {
               color: "var(--tb-text-muted)",
               maxWidth: "58ch",
             }}
+            data-testid="featured-blurb"
           >
-            {lang === "ar"
+            {home?.[`featured_blurb_${lang}`] || (lang === "ar"
               ? "مختارات من أحدث الدراسات والأوراق التحليلية التي يصدرها المركز للقطاعين العام والخاص."
-              : "A selection of the most recent studies and analytical papers from the Center, serving public and private institutions."}
+              : "A selection of the most recent studies and analytical papers from the Center, serving public and private institutions.")}
           </p>
         </header>
 
