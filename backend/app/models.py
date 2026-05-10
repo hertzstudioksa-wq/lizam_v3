@@ -150,6 +150,16 @@ class HomeContentIn(BaseModel):
     newsletter_title_en: Optional[str] = None
     newsletter_blurb_ar: Optional[str] = None
     newsletter_blurb_en: Optional[str] = None
+    newsletter_eyebrow_ar: Optional[str] = None
+    newsletter_eyebrow_en: Optional[str] = None
+    # Pull-band ("ركيزة عمل المركز")
+    pull_band_text_ar: Optional[str] = None
+    pull_band_text_en: Optional[str] = None
+    pull_band_attribution_ar: Optional[str] = None
+    pull_band_attribution_en: Optional[str] = None
+    # Fields of work — body paragraph
+    fields_body_ar: Optional[str] = None
+    fields_body_en: Optional[str] = None
 
 
 class PublicationIn(BaseModel):

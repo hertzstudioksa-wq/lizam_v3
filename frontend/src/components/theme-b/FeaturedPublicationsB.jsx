@@ -16,8 +16,12 @@ export default function FeaturedPublicationsB() {
   const { lang } = useLang();
   const { data: home } = useHomeContent();
   const { bySlot } = useImageAssets();
-  const bg = bySlot.library_background;
-  const hasBg = bg && bg.active && bg.url;
+  // Prefer admin-controlled bg from /admin/home → Featured Publications card.
+  const sec = home?.section_styles?.featured_publications?.bg;
+  const useSec = sec?.enabled !== false && sec?.url;
+  const legacy = bySlot.library_background;
+  const bg = useSec ? sec : legacy;
+  const hasBg = (useSec && sec.url) || (legacy && legacy.active && legacy.url);
   // Admin-controlled count + sort (saved in /admin/home → "Featured Publications" card).
   const cardCount = [3, 6, 9].includes(home?.featured_count) ? home.featured_count : 3;
   const sortMode = home?.featured_sort === "most_viewed" ? "most_viewed" : "latest";

@@ -13,13 +13,18 @@ export default function AboutB() {
   if (Array.isArray(vs) && vs.length > 0 && !vs.includes("about")) return null;
   const body = pick(home, "about");
   const extended = pick(home, "about_extended");
-  const img = bySlot.about_image;
-  const showImg = img?.active && img?.url;
+  // Prefer admin-controlled image from /admin/home → About card.
+  // Fallback to legacy /admin/images "about_image" slot for backward compat.
+  const sectionBg = home?.section_styles?.about?.bg;
+  const useSection = sectionBg?.enabled !== false && sectionBg?.url;
+  const legacy = bySlot.about_image;
+  const showImg = useSection || (legacy?.active && legacy?.url);
+  const img = useSection ? sectionBg : legacy;
+  const imgUrl = img?.url || "";
+  const imgFx = img?.focal_x ?? 50;
+  const imgFy = img?.focal_y ?? 50;
   const altText = img?.[`alt_${lang}`] || img?.alt_en || "";
   const titleScale = home?.section_styles?.about?.title_scale ?? 1;
-  // Focal point in % (0–100). Defaults to centre.
-  const fx = Math.max(0, Math.min(100, Number(img?.focal_x ?? 50)));
-  const fy = Math.max(0, Math.min(100, Number(img?.focal_y ?? 50)));
 
   return (
     <section
@@ -45,12 +50,12 @@ export default function AboutB() {
                 aria-label={altText}
               >
                 <img
-                  src={img.url}
+                  src={imgUrl}
                   alt={altText}
                   loading="lazy"
                   decoding="async"
                   className="absolute inset-0 w-full h-full"
-                  style={{ objectFit: "cover", objectPosition: `${fx}% ${fy}%` }}
+                  style={{ objectFit: "cover", objectPosition: `${imgFx}% ${imgFy}%` }}
                 />
               </div>
             </div>

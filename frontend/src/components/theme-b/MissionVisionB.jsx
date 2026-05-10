@@ -17,8 +17,12 @@ export default function MissionVisionB() {
   const { lang, pick } = useLang();
   const { data: home } = useHomeContent();
   const { bySlot } = useImageAssets();
-  const bg = bySlot.foundations_background;
-  const hasBg = bg && bg.active && bg.url;
+  // Prefer admin-controlled bg from /admin/home → Mission card; fall back to legacy slot.
+  const sec = home?.section_styles?.mission?.bg;
+  const useSec = sec?.enabled !== false && sec?.url;
+  const legacy = bySlot.foundations_background;
+  const bg = useSec ? sec : legacy;
+  const hasBg = (useSec && sec.url) || (legacy && legacy.active && legacy.url);
   if (!home) return null;
   // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
   // Treat both "mission" and legacy "vision" keys as gates for this combined band.

@@ -1,19 +1,28 @@
 import { Quote } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
+import { useHomeContent } from "@/hooks/useSiteSettings";
 
 /**
  * Theme B — Institutional Pull Band.
  * Sits between Mission/Vision and Objectives to break the section monotony.
  * Centered editorial pull-quote on warm paper background, refined gold accents.
+ * Editable from /admin/home → "ركيزة عمل المركز" card.
  */
 export default function PullBandB() {
   const { lang } = useLang();
+  const { data: home } = useHomeContent();
+  // Visibility — defaults to TRUE when admin hasn't explicitly hidden the section.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("pull_band")) return null;
 
-  const text = lang === "ar"
+  const text = home?.[`pull_band_text_${lang}`] || (lang === "ar"
     ? "نقدّم بحثاً قانونياً مستقلاً ومنهجياً، يخدم صناعة القرار في المؤسسات الحكومية والخاصة، وفق المعايير الأكاديمية الدولية وخصوصيات النظام السعودي."
-    : "We deliver independent, methodologically grounded legal research that serves decision-making in public and private institutions — calibrated to international academic standards and the specificities of the Saudi system.";
+    : "We deliver independent, methodologically grounded legal research that serves decision-making in public and private institutions — calibrated to international academic standards and the specificities of the Saudi system.");
 
-  const attribution = lang === "ar" ? "ركيزة عمل المركز" : "The Center's working principle";
+  const attribution = home?.[`pull_band_attribution_${lang}`] || (lang === "ar"
+    ? "ركيزة عمل المركز"
+    : "The Center's working principle");
+  const titleScale = home?.section_styles?.pull_band?.title_scale ?? 1;
 
   return (
     <section
@@ -31,11 +40,12 @@ export default function PullBandB() {
         <blockquote
           className="tb-display mt-8 max-w-[44ch] mx-auto"
           style={{
-            fontSize: "clamp(1.5rem, 2.4vw, 2.05rem)",
+            fontSize: `calc(clamp(1.5rem, 2.4vw, 2.05rem) * ${titleScale})`,
             lineHeight: 1.45,
             fontWeight: 500,
             color: "var(--tb-navy-900)",
           }}
+          data-testid="pull-band-text"
         >
           {text}
         </blockquote>

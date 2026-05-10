@@ -15,8 +15,12 @@ export default function ObjectivesB() {
   const vs = home?.visible_sections;
   if (Array.isArray(vs) && vs.length > 0 && !vs.includes("objectives")) return null;
   const items = home.objectives || [];
-  const bg = bySlot.objectives_background;
-  const useBg = bg?.active && bg?.url;
+  // Prefer admin-controlled bg from /admin/home; fallback to /admin/images legacy slot.
+  const sec = home?.section_styles?.objectives?.bg;
+  const useSec = sec?.enabled !== false && sec?.url;
+  const legacy = bySlot.objectives_background;
+  const bg = useSec ? sec : legacy;
+  const useBg = (useSec && sec.url) || (legacy?.active && legacy?.url);
   const titleScale = home?.section_styles?.objectives?.title_scale ?? 1;
 
   return (

@@ -8,6 +8,9 @@ export default function ContactBlockB() {
   const { lang } = useLang();
   const { data: site } = useSiteSettings();
   const { data: home } = useHomeContent();
+  // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("contact")) return null;
   const email = site?.contact_email || "info@lizam.sa";
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
@@ -28,20 +31,22 @@ export default function ContactBlockB() {
             <h2
               className="tb-display mt-8 max-w-[22ch]"
               style={{ fontSize: "clamp(1.85rem, 3.2vw, 2.6rem)", lineHeight: 1.3, fontWeight: 500 }}
+              data-testid="contact-headline"
             >
-              {lang === "ar"
+              {home?.[`contact_title_${lang}`] || (lang === "ar"
                 ? "للتعاون البحثي والاستفسارات المؤسسية."
-                : "For research collaboration and institutional enquiries."}
+                : "For research collaboration and institutional enquiries.")}
             </h2>
           </div>
           <div className="md:col-span-7 space-y-10">
             <p
               className="max-w-[60ch]"
               style={{ fontFamily: '"Thmanyah Serif Text", serif', fontSize: 16.5, lineHeight: 1.95, color: "var(--tb-text)" }}
+              data-testid="contact-body"
             >
-              {lang === "ar"
+              {home?.[`contact_blurb_${lang}`] || (lang === "ar"
                 ? "يرحّب المركز بالتواصل من المؤسسات الحكومية والخاصة وجمعيات القطاع غير الربحي، ومن الباحثين المهتمين بالتعاون البحثي أو الاستشاري."
-                : "We welcome enquiries from government, private, and non-profit institutions, and from researchers interested in collaboration or advisory engagements."}
+                : "We welcome enquiries from government, private, and non-profit institutions, and from researchers interested in collaboration or advisory engagements.")}
             </p>
 
             <div className="pt-8" style={{ borderTop: "1px solid var(--tb-hairline)" }}>

@@ -10,7 +10,7 @@ import { api, formatApiError } from "@/lib/api";
 
 // ---------------- Constants ----------------
 const SECTIONS = [
-  "hero", "about", "mission", "vision", "objectives",
+  "hero", "about", "mission", "vision", "pull_band", "objectives",
   "fields_of_work", "featured_publications", "contact", "newsletter",
 ];
 
@@ -221,6 +221,183 @@ function ImageUploader({ value, onChange, label, testid, hint }) {
   );
 }
 
+/**
+ * <BgImageBlock> — full per-section background editor.
+ * Reads/writes `home_content.section_styles[sectionKey].bg = {url, focal_x,
+ * focal_y, overlay_opacity, alt_ar, alt_en, enabled}`.
+ *
+ * Includes: enable toggle, image upload + URL paste, focal-point picker
+ * (click on preview to set), overlay opacity slider, AR/EN alt text.
+ */
+function BgImageBlock({ form, sectionKey, defaultOverlay = 0.5, label }) {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
+  const fileRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const styles = form.value.section_styles || {};
+  const sectionObj = styles[sectionKey] || {};
+  const bg = sectionObj.bg || {};
+  const enabled = bg.enabled !== false;
+  const url = bg.url || "";
+  const fx = typeof bg.focal_x === "number" ? bg.focal_x : 50;
+  const fy = typeof bg.focal_y === "number" ? bg.focal_y : 50;
+  const opacity = typeof bg.overlay_opacity === "number" ? bg.overlay_opacity : defaultOverlay;
+  const altAr = bg.alt_ar || "";
+  const altEn = bg.alt_en || "";
+
+  const writeBg = (patch) => {
+    const next = {
+      ...styles,
+      [sectionKey]: {
+        ...sectionObj,
+        bg: { ...bg, ...patch },
+      },
+    };
+    form.patch("section_styles", next);
+  };
+
+  async function upload(file) {
+    if (!file) return;
+    setBusy(true);
+    setErr("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await api.post("/uploads/image", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      writeBg({ url: data.url });
+    } catch (e) {
+      setErr(formatApiError(e.response?.data?.detail) || e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function onPreviewClick(e) {
+    if (!url) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = Math.round(((e.clientX - r.left) / r.width) * 100);
+    const y = Math.round(((e.clientY - r.top) / r.height) * 100);
+    writeBg({ focal_x: Math.max(0, Math.min(100, x)), focal_y: Math.max(0, Math.min(100, y)) });
+  }
+
+  return (
+    <div className="border border-rule bg-white p-5" data-testid={`bg-block-${sectionKey}`}>
+      <div className="flex items-baseline justify-between gap-3 mb-4">
+        <span className="text-[13.5px] font-medium text-navy-deep">{label || tr("صورة الخلفية", "Background image")}</span>
+        <label className="inline-flex items-center gap-2 cursor-pointer">
+          <span className="text-[12px] text-mute">{enabled ? tr("مفعّل", "Enabled") : tr("معطّل", "Disabled")}</span>
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={() => writeBg({ enabled: !enabled })}
+            className="sr-only"
+            data-testid={`bg-${sectionKey}-toggle`}
+          />
+          <span className={`relative inline-block w-10 h-5 transition-colors ${enabled ? "bg-navy" : "bg-rule"}`}>
+            <span className={`block w-4 h-4 bg-white m-0.5 transition-transform ${enabled ? "translate-x-5" : ""}`} />
+          </span>
+        </label>
+      </div>
+
+      {/* Preview / focal-picker */}
+      {url ? (
+        <button
+          type="button"
+          onClick={onPreviewClick}
+          className="relative block w-full aspect-[16/9] bg-paper border border-rule overflow-hidden cursor-crosshair"
+          title={tr("اضغط لتحديد نقطة التركيز", "Click to set focal point")}
+          data-testid={`bg-${sectionKey}-preview`}
+        >
+          <img src={url} alt="" className="absolute inset-0 w-full h-full" style={{ objectFit: "cover", objectPosition: `${fx}% ${fy}%` }} />
+          {/* Overlay preview */}
+          <span aria-hidden className="absolute inset-0" style={{ background: `rgba(10,17,28,${opacity})` }} />
+          {/* Focal crosshair */}
+          <span aria-hidden className="absolute" style={{
+            left: `${fx}%`, top: `${fy}%`, width: 22, height: 22, marginLeft: -11, marginTop: -11,
+            border: "2px solid #fff", borderRadius: "50%", boxShadow: "0 0 0 1px rgba(0,0,0,0.5)",
+            pointerEvents: "none",
+          }} />
+        </button>
+      ) : (
+        <div className="aspect-[16/9] bg-paper border border-dashed border-rule flex items-center justify-center text-mute">
+          <ImageIcon size={32} strokeWidth={1.4} />
+        </div>
+      )}
+
+      {/* Upload + URL */}
+      <div className="mt-3 flex items-center gap-2">
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          onChange={(e) => upload(e.target.files?.[0])}
+          className="sr-only"
+          data-testid={`bg-${sectionKey}-input`}
+        />
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={busy} className="lz-btn-ghost inline-flex items-center gap-1.5 disabled:opacity-50">
+          <Upload size={13} />
+          <span>{busy ? tr("جارٍ الرفع…", "Uploading…") : tr("رفع", "Upload")}</span>
+        </button>
+        <TextInput
+          value={url}
+          onChange={(v) => writeBg({ url: v })}
+          placeholder={tr("أو ألصق رابط مباشر", "Or paste a direct URL")}
+          testid={`bg-${sectionKey}-url`}
+        />
+        {url && (
+          <button type="button" onClick={() => writeBg({ url: "" })} className="text-[11.5px] text-red-700 hover:text-red-900 inline-flex items-center gap-1">
+            <Trash2 size={11} /> {tr("إزالة", "Remove")}
+          </button>
+        )}
+      </div>
+
+      {err && <p className="mt-2 text-[12px] text-red-700">{err}</p>}
+
+      {/* Focal X/Y + overlay opacity sliders */}
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-1">
+          <div className="flex items-baseline justify-between mb-1.5">
+            <label className="text-[12px] text-navy-deep">{tr("تركيز أفقي (X)", "Focal X")}</label>
+            <span className="text-[11px] text-mute tabular-nums">{fx}%</span>
+          </div>
+          <input type="range" min={0} max={100} value={fx} onChange={(e) => writeBg({ focal_x: parseInt(e.target.value, 10) })}
+            className="w-full accent-brass" data-testid={`bg-${sectionKey}-fx`} />
+        </div>
+        <div className="md:col-span-1">
+          <div className="flex items-baseline justify-between mb-1.5">
+            <label className="text-[12px] text-navy-deep">{tr("تركيز عمودي (Y)", "Focal Y")}</label>
+            <span className="text-[11px] text-mute tabular-nums">{fy}%</span>
+          </div>
+          <input type="range" min={0} max={100} value={fy} onChange={(e) => writeBg({ focal_y: parseInt(e.target.value, 10) })}
+            className="w-full accent-brass" data-testid={`bg-${sectionKey}-fy`} />
+        </div>
+        <div className="md:col-span-1">
+          <div className="flex items-baseline justify-between mb-1.5">
+            <label className="text-[12px] text-navy-deep">{tr("تعتيم الخلفية", "Overlay opacity")}</label>
+            <span className="text-[11px] text-mute tabular-nums">{Math.round(opacity * 100)}%</span>
+          </div>
+          <input type="range" min={0} max={1} step="0.05" value={opacity} onChange={(e) => writeBg({ overlay_opacity: parseFloat(e.target.value) })}
+            className="w-full accent-brass" data-testid={`bg-${sectionKey}-opacity`} />
+        </div>
+      </div>
+
+      {/* Alt text */}
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+        <Field label={tr("النص البديل (عربي)", "Alt text (AR)")}>
+          <TextInput value={altAr} onChange={(v) => writeBg({ alt_ar: v })} dir="rtl" testid={`bg-${sectionKey}-alt-ar`} />
+        </Field>
+        <Field label={tr("النص البديل (إنجليزي)", "Alt text (EN)")}>
+          <TextInput value={altEn} onChange={(v) => writeBg({ alt_en: v })} testid={`bg-${sectionKey}-alt-en`} />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 /** Pair of AR/EN inputs in a 2-col grid. */
 function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows = 3, testid }) {
   const { lang } = useLang();
@@ -324,6 +501,7 @@ export default function HomeAdmin() {
     about: "عن المركز",
     mission: "الرسالة",
     vision: "الرؤية",
+    pull_band: "ركيزة عمل المركز",
     objectives: "الأهداف",
     fields_of_work: "مجالات العمل",
     featured_publications: "الإصدارات المميزة",
@@ -335,6 +513,7 @@ export default function HomeAdmin() {
     about: "About",
     mission: "Mission",
     vision: "Vision",
+    pull_band: "Working principle",
     objectives: "Objectives",
     fields_of_work: "Fields of work",
     featured_publications: "Featured publications",
@@ -495,26 +674,8 @@ export default function HomeAdmin() {
           <h4 className="mt-6 mb-3 text-[12.5px] uppercase tracking-[0.16em] text-mute">{tr("الخلفية وحجم الخط", "Background & typography")}</h4>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
             <div className="lg:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <Field label={tr("نوع الخلفية", "Background media type")}>
-                  <Select
-                    value={form.value.hero_background_type || "image"}
-                    onChange={(v) => form.patch("hero_background_type", v)}
-                    options={[
-                      { value: "image", label: tr("صورة", "Image") },
-                      { value: "video", label: tr("فيديو", "Video") },
-                    ]}
-                    testid="hero-bg-type"
-                  />
-                </Field>
-              </div>
-              <ImageUploader
-                value={form.value.hero_background_url || ""}
-                onChange={(v) => form.patch("hero_background_url", v)}
-                label={tr("ملف الخلفية (صورة أو فيديو mp4)", "Background asset (image or .mp4)")}
-                hint={tr("ملاحظة: مدير الخلفيات الأساسي يبقى /admin/images. هذا الحقل اختياري ويتفوق على الإعداد العام.", "Note: the main hero background manager lives at /admin/images. This optional override takes precedence.")}
-                testid="hero-bg-upload"
-              />
+              <BgImageBlock form={form} sectionKey="hero" defaultOverlay={0.65}
+                label={tr("صورة خلفية البطل", "Hero background image")} />
             </div>
             <div className="space-y-3">
               <FontScaleSlider form={form} sectionKey="hero" styleKey="title_scale"
@@ -549,13 +710,8 @@ export default function HomeAdmin() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5">
             <div className="lg:col-span-2">
-              <ImageUploader
-                value={form.value.about_image_url || ""}
-                onChange={(v) => form.patch("about_image_url", v)}
-                label={tr("صورة جانبية اختيارية", "Optional side image")}
-                hint={tr("لو فعّلت صورة \"about_image\" من /admin/images فهذا الحقل لا يستخدم. ضعه فقط لو تريد override موضعي.", "If you've enabled \"about_image\" via /admin/images, this field is unused. Use only for a local override.")}
-                testid="about-img"
-              />
+              <BgImageBlock form={form} sectionKey="about" defaultOverlay={0}
+                label={tr("صورة جانبية للقسم", "Section side image")} />
             </div>
             <div className="space-y-3">
               <FontScaleSlider form={form} sectionKey="about" styleKey="title_scale"
@@ -601,6 +757,38 @@ export default function HomeAdmin() {
             <FontScaleSlider form={form} sectionKey="mission" styleKey="title_scale"
               labelAr="حجم خط عناوين الرسالة والرؤية" labelEn="Mission/Vision heading scale"
               sample={tr("الرسالة", "Mission")} sampleSize={24} />
+          </div>
+          <div className="mt-5">
+            <BgImageBlock form={form} sectionKey="mission" defaultOverlay={0.86}
+              label={tr("صورة خلفية القسم (اختيارية)", "Section background (optional)")} />
+          </div>
+        </SectionCard>
+
+        {/* ============================================================ */}
+        {/* 3.5 PULL BAND ("ركيزة عمل المركز")                              */}
+        {/* ============================================================ */}
+        <SectionCard id="pull_band" title={tr("ركيزة عمل المركز", "Working principle (Pull band)")}
+          eyebrow={tr("٣.٥", "3.5")} visibleSections={visible} onToggleVisibility={toggleVisibility}>
+          <p className="text-[12.5px] text-mute mt-2 max-w-[64ch]">
+            {tr(
+              "اقتباس مؤسسي يفصل بين قسم المنطلقات وقسم الأهداف. يُعرض على خلفية ورقية دافئة ويتوسطه نص تحريري قصير.",
+              "An institutional pull-quote band that separates Foundations from Objectives. Renders centered on a warm paper background.",
+            )}
+          </p>
+          <div className="mt-5">
+            <BiInput form={form} keyAr="pull_band_text_ar" keyEn="pull_band_text_en"
+              labelAr="نص الاقتباس" labelEn="Pull-quote text"
+              multiline rows={4} testid="pullband-text" />
+          </div>
+          <div className="mt-4">
+            <BiInput form={form} keyAr="pull_band_attribution_ar" keyEn="pull_band_attribution_en"
+              labelAr="التعريف (تحت النص)" labelEn="Attribution (below)"
+              testid="pullband-attribution" />
+          </div>
+          <div className="mt-5 max-w-[420px]">
+            <FontScaleSlider form={form} sectionKey="pull_band" styleKey="title_scale"
+              labelAr="حجم خط الاقتباس" labelEn="Quote font size"
+              sample={tr("نقدّم بحثاً قانونياً مستقلاً", "Independent legal research")} sampleSize={28} />
           </div>
         </SectionCard>
 
@@ -657,6 +845,10 @@ export default function HomeAdmin() {
               data-testid="objective-add">
               <Plus size={14} /> {tr("إضافة هدف جديد", "Add a new objective")}
             </button>
+          </div>
+          <div className="mt-6">
+            <BgImageBlock form={form} sectionKey="objectives" defaultOverlay={0.78}
+              label={tr("خلفية قسم الأهداف (اختيارية)", "Objectives background (optional)")} />
           </div>
         </SectionCard>
 
@@ -721,6 +913,15 @@ export default function HomeAdmin() {
               <Plus size={14} /> {tr("إضافة مجال جديد", "Add a new field")}
             </button>
           </div>
+          <div className="mt-6">
+            <BiInput form={form} keyAr="fields_body_ar" keyEn="fields_body_en"
+              labelAr="نص توضيحي للقسم (يظهر بجانب العنوان)" labelEn="Section body (next to the heading)"
+              multiline rows={3} testid="fields-body" />
+          </div>
+          <div className="mt-5">
+            <BgImageBlock form={form} sectionKey="fields_of_work" defaultOverlay={0.12}
+              label={tr("خلفية قسم مجالات العمل (اختيارية)", "Fields of Work background (optional)")} />
+          </div>
         </SectionCard>
 
         {/* ============================================================ */}
@@ -769,6 +970,10 @@ export default function HomeAdmin() {
                 testid="featured-sort"
               />
             </Field>
+          </div>
+          <div className="mt-6">
+            <BgImageBlock form={form} sectionKey="featured_publications" defaultOverlay={0.12}
+              label={tr("خلفية قسم الإصدارات (اختيارية)", "Featured Publications background (optional)")} />
           </div>
         </SectionCard>
 

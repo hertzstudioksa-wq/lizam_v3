@@ -15,6 +15,25 @@ const TABS = [
     helpEn: "Curated images used inside content sections (e.g. About). Each slot has a recommended size and an editable focal point." },
 ];
 
+/**
+ * Slots that are now managed in /admin/home (per-section image controls).
+ * Hidden from this page to avoid duplication and confusion. The data still
+ * exists in the DB (image_assets collection) for backward compatibility.
+ */
+const HOME_MANAGED_SLOTS = new Set([
+  "about_image",
+  "objectives_background",
+  "foundations_background",
+  "fields_of_work_background",
+  "library_background",
+]);
+
+/**
+ * Hero page_keys that are now managed elsewhere.
+ *  - "home" → managed in /admin/home (Hero card)
+ */
+const HOME_MANAGED_PAGE_KEYS = new Set(["home"]);
+
 export default function ImagesAdmin() {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
@@ -88,7 +107,7 @@ function SectionAssetsPanel() {
   async function load() {
     setLoading(true);
     const r = await apiCall("get", "/admin/image-assets");
-    if (r.ok) setSlots(r.data?.items || []);
+    if (r.ok) setSlots((r.data?.items || []).filter((it) => !HOME_MANAGED_SLOTS.has(it.slot_key)));
     setLoading(false);
   }
   useEffect(() => { load(); }, []);

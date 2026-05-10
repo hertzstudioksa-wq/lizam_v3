@@ -11,12 +11,15 @@ import { invalidateHeroCache } from "@/hooks/useHeroMedia";
  */
 const BUILTIN_PAGES = [
   { key: "_default", labelAr: "افتراضي عام", labelEn: "Global default", helpAr: "يستخدم لأي صفحة لا يوجد لها صورة مخصصة (أو حُذفت صورتها).", helpEn: "Used by any page that doesn't have a dedicated record." },
-  { key: "home", labelAr: "الصفحة الرئيسية", labelEn: "Home page" },
+  // "home" intentionally removed — managed in /admin/home → Hero card.
   { key: "publications", labelAr: "صفحة الإصدارات", labelEn: "Publications page" },
   { key: "about", labelAr: "صفحة عن المركز", labelEn: "About page" },
   { key: "contact", labelAr: "صفحة التواصل", labelEn: "Contact page" },
 ];
 const BUILTIN_KEYS = new Set(BUILTIN_PAGES.map((p) => p.key));
+/** Page keys hidden from the Hero Media section because they're managed
+ *  elsewhere. Records stay in the DB (read by their respective public pages). */
+const HIDDEN_PAGE_KEYS = new Set(["home"]);
 
 /* Recommended dimensions per page (built-in only; custom pages get a sensible default). */
 const RECO_BY_KEY = {
@@ -154,7 +157,7 @@ export function HeroMediaSection() {
   // Compose the list of rows: built-in pages first (in defined order), then any
   // custom pages the admin has created via "Add page".
   const customPages = Object.values(items)
-    .filter((it) => !BUILTIN_KEYS.has(it.page_key))
+    .filter((it) => !BUILTIN_KEYS.has(it.page_key) && !HIDDEN_PAGE_KEYS.has(it.page_key))
     .sort((a, b) => (a.page_key || "").localeCompare(b.page_key || ""))
     .map((it) => ({
       key: it.page_key,

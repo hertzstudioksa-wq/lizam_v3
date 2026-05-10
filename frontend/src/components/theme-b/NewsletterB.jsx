@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mail, Check } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
+import { useHomeContent } from "@/hooks/useSiteSettings";
 import { api, formatApiError } from "@/lib/api";
 
 /**
@@ -11,9 +12,15 @@ import { api, formatApiError } from "@/lib/api";
  */
 export default function NewsletterB() {
   const { lang } = useLang();
+  const { data: home } = useHomeContent();
   const [email, setEmail] = useState("");
   const [state, setState] = useState("idle"); // idle | submitting | done | error
   const [errMsg, setErrMsg] = useState("");
+
+  // Visibility — placed AFTER all hooks. Defaults to TRUE.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("newsletter")) return null;
+  if (home?.newsletter_enabled === false) return null;
 
   async function submit(e) {
     e.preventDefault();
@@ -41,7 +48,7 @@ export default function NewsletterB() {
         <div className="inline-flex items-center justify-center gap-3">
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
           <span className="tb-overline" style={{ color: "var(--tb-gold-soft)", letterSpacing: "0.22em" }}>
-            {lang === "ar" ? "النشرة البحثية" : "Research Newsletter"}
+            {home?.[`newsletter_eyebrow_${lang}`] || (lang === "ar" ? "النشرة البحثية" : "Research Newsletter")}
           </span>
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
         </div>
@@ -55,10 +62,11 @@ export default function NewsletterB() {
             color: "var(--tb-paper-base)",
             maxWidth: "22ch",
           }}
+          data-testid="newsletter-title"
         >
-          {lang === "ar"
+          {home?.[`newsletter_title_${lang}`] || (lang === "ar"
             ? "اشترك في نشرة المركز البحثية."
-            : "Subscribe to the Center's research bulletin."}
+            : "Subscribe to the Center's research bulletin.")}
         </h2>
 
         <p
@@ -70,10 +78,11 @@ export default function NewsletterB() {
             color: "rgba(251, 250, 247, 0.72)",
             maxWidth: "54ch",
           }}
+          data-testid="newsletter-blurb"
         >
-          {lang === "ar"
+          {home?.[`newsletter_blurb_${lang}`] || (lang === "ar"
             ? "تصلك أحدث الدراسات والأوراق التحليلية والتغطيات الصادرة عن المركز مباشرة إلى بريدك."
-            : "Receive the most recent studies, analytical papers and coverage from the Center, delivered straight to your inbox."}
+            : "Receive the most recent studies, analytical papers and coverage from the Center, delivered straight to your inbox.")}
         </p>
 
         {state === "done" ? (

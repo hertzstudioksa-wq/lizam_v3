@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent, useSiteSettings } from "@/hooks/useSiteSettings";
-import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 
 /**
  * Theme B — Premium Editorial Hero (Nadeem-inspired refinement).
@@ -46,8 +45,34 @@ export default function HeroB() {
       data-testid="hero-section"
       data-theme-component="theme-b-hero"
     >
-      {/* Configurable hero media — extends behind the fixed header */}
-      <HeroMediaLayer pageKey="home" extendBehindHeader />
+      {/* Configurable hero media — read directly from home_content.section_styles.hero.bg */}
+      {(() => {
+        const bg = home?.section_styles?.hero?.bg;
+        if (!bg || bg.enabled === false || !bg.url) return null;
+        return (
+          <>
+            <img
+              src={bg.url}
+              alt={bg[`alt_${lang}`] || bg.alt_en || bg.alt_ar || ""}
+              aria-hidden
+              className="absolute inset-0 w-full h-full"
+              style={{
+                objectFit: "cover",
+                objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
+                zIndex: 0,
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background: `rgba(10, 17, 28, ${bg.overlay_opacity ?? 0.65})`,
+                zIndex: 0,
+              }}
+            />
+          </>
+        );
+      })()}
 
       {/* Subtle gold rule at very top under header */}
       <div

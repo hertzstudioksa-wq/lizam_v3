@@ -16,10 +16,18 @@ export default function FieldsOfWorkB() {
   const { lang } = useLang();
   const { data: home } = useHomeContent();
   const { bySlot } = useImageAssets();
-  const bg = bySlot.fields_of_work_background;
-  const hasBg = bg && bg.active && bg.url;
+  // Prefer admin-controlled bg from /admin/home → Fields of Work card.
+  const sec = home?.section_styles?.fields_of_work?.bg;
+  const useSec = sec?.enabled !== false && sec?.url;
+  const legacy = bySlot.fields_of_work_background;
+  const bg = useSec ? sec : legacy;
+  const hasBg = (useSec && sec.url) || (legacy && legacy.active && legacy.url);
   if (!home) return null;
+  // Visibility — defaults to TRUE when admin hasn't explicitly hidden the section.
+  const vs = home?.visible_sections;
+  if (Array.isArray(vs) && vs.length > 0 && !vs.includes("fields_of_work")) return null;
   const items = home.fields_of_work || [];
+  const titleScale = home?.section_styles?.fields_of_work?.title_scale ?? 1;
 
   return (
     <section
@@ -58,18 +66,20 @@ export default function FieldsOfWorkB() {
             </div>
             <h2
               className="tb-display mt-7 max-w-[20ch]"
-              style={{ fontSize: "clamp(2rem, 3.4vw, 2.85rem)", lineHeight: 1.25, fontWeight: 500 }}
+              style={{ fontSize: `calc(clamp(2rem, 3.4vw, 2.85rem) * ${titleScale})`, lineHeight: 1.25, fontWeight: 500 }}
+              data-testid="fields-title"
             >
-              {lang === "ar" ? "حقول بحثية متكاملة." : "Five research fields, in dialogue."}
+              {home?.[`fields_title_${lang}`] || (lang === "ar" ? "حقول بحثية متكاملة." : "Five research fields, in dialogue.")}
             </h2>
           </div>
           <p
             className="md:col-span-7 max-w-[60ch] md:pe-16 tb-body-lg"
             style={{ color: "var(--tb-text)" }}
+            data-testid="fields-body"
           >
-            {lang === "ar"
+            {home?.[`fields_body_${lang}`] || (lang === "ar"
               ? "تتوزع أعمال المركز على حقول قانونية متكاملة، تمتد من الدراسات التشريعية والممارسات القضائية إلى السياسات العامة والشريعة الإسلامية والمجالات الناشئة."
-              : "Our work spans complementary legal fields — from legislative studies and judicial practice to public policy, Islamic jurisprudence, and emerging domains."}
+              : "Our work spans complementary legal fields — from legislative studies and judicial practice to public policy, Islamic jurisprudence, and emerging domains.")}
           </p>
         </div>
 
