@@ -730,29 +730,41 @@ export default function HomeAdmin() {
         <SectionCard id="hero" title={tr("قسم البطل (Hero)", "Hero")}
           eyebrow={tr("١", "1")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("hero")} onMove={moveSection}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-4">
-            <Field label={tr("التسمية الصغيرة (eyebrow) — عربية", "Eyebrow AR")}>
-              <TextInput value={form.value.hero_eyebrow_ar || ""} onChange={(v) => form.patch("hero_eyebrow_ar", v)} dir="rtl" testid="hero-eyebrow-ar" />
-            </Field>
-            <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-              <TextInput value={form.value.hero_eyebrow_en || ""} onChange={(v) => form.patch("hero_eyebrow_en", v)} testid="hero-eyebrow-en" />
-            </Field>
+          <div className="mt-4 mb-3 px-3 py-2 bg-amber-50/50 border-s-2 border-brass text-[12px] text-navy-deep" data-testid="hero-typo-hint">
+            {tr(
+              "تحكم دقيق بكل صندوق نص: حجم الخط، السماكة، واللون — متاح الآن لقسم البطل. لو النتيجة تعجبك سأعمّمها على باقي الأقسام.",
+              "Per-field typography control (size · weight · color) — now live for the Hero section. If you approve, I'll roll it out to the rest."
+            )}
+          </div>
+          <div>
+            <FieldTypoControls form={form} sectionKey="hero" fieldKey="eyebrow" testid="typo-hero-eyebrow" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <Field label={tr("التسمية الصغيرة (eyebrow) — عربية", "Eyebrow AR")}>
+                <TextInput value={form.value.hero_eyebrow_ar || ""} onChange={(v) => form.patch("hero_eyebrow_ar", v)} dir="rtl" testid="hero-eyebrow-ar" />
+              </Field>
+              <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
+                <TextInput value={form.value.hero_eyebrow_en || ""} onChange={(v) => form.patch("hero_eyebrow_en", v)} testid="hero-eyebrow-en" />
+              </Field>
+            </div>
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="hero_title_ar" keyEn="hero_title_en"
               labelAr="العنوان الرئيسي (استخدم \\n لفاصل سطر)" labelEn="Main title (use \\n for line break)"
-              multiline rows={2} testid="hero-title" />
+              multiline rows={2} testid="hero-title"
+              sectionKey="hero" fieldKey="title" />
           </div>
           <div className="mt-4">
             <BiInput form={form} keyAr="hero_subtitle_ar" keyEn="hero_subtitle_en"
               labelAr="النص التعريفي / الفرعي" labelEn="Subtitle / lede"
-              multiline rows={3} testid="hero-subtitle" />
+              multiline rows={3} testid="hero-subtitle"
+              sectionKey="hero" fieldKey="subtitle" />
           </div>
           {/* Buttons */}
           <h4 className="mt-6 mb-3 text-[12.5px] uppercase tracking-[0.16em] text-mute">{tr("الأزرار", "Buttons")}</h4>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="border border-rule bg-paper p-4">
               <div className="text-[12px] font-medium text-navy-deep mb-2">{tr("الزر الرئيسي", "Primary button")}</div>
+              <FieldTypoControls form={form} sectionKey="hero" fieldKey="cta_primary" testid="typo-hero-cta-primary" />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <Field label={tr("نص الزر — عربية", "Label AR")}>
                   <TextInput value={form.value.hero_cta_primary_ar || ""} onChange={(v) => form.patch("hero_cta_primary_ar", v)} dir="rtl" testid="hero-cta1-ar" />
@@ -768,6 +780,7 @@ export default function HomeAdmin() {
             </div>
             <div className="border border-rule bg-paper p-4">
               <div className="text-[12px] font-medium text-navy-deep mb-2">{tr("الزر الثانوي", "Secondary button")}</div>
+              <FieldTypoControls form={form} sectionKey="hero" fieldKey="cta_secondary" testid="typo-hero-cta-secondary" />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <Field label={tr("نص الزر — عربية", "Label AR")}>
                   <TextInput value={form.value.hero_cta_secondary_ar || ""} onChange={(v) => form.patch("hero_cta_secondary_ar", v)} dir="rtl" testid="hero-cta2-ar" />

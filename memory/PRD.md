@@ -654,6 +654,43 @@ multiplier that respects existing responsive `clamp()` values:
 
 ---
 
+## Update — Feb 10, 2026 (later 3) · Per-field typography controls (Hero — POC)
+
+### What changed
+Per user request, added **fine-grained typography controls (size · weight · color)
+for each individual text box** in the Hero section of `/admin/home` as a
+proof-of-concept before generalizing to other sections.
+
+**Frontend (`HomeAdmin.jsx`):**
+- New `<FieldTypoControls>` component (compact inline strip with size slider
+  0.8×–2.0×, weight dropdown 300–700, color picker, "clear color", "reset all").
+- Extended `<BiInput>` to optionally render `FieldTypoControls` above the AR/EN
+  pair when `sectionKey` + `fieldKey` props are passed.
+- Wired into Hero card for: `eyebrow`, `title`, `subtitle`,
+  `cta_primary` label, `cta_secondary` label.
+- Help banner at top of Hero card explaining the new POC controls.
+
+**Backend (no model change required):** `HomeContentIn.section_styles` already
+declared as `Optional[Dict[str, Dict[str, Any]]]` — accepts the new nested
+`section_styles.hero.text_styles.{fieldKey}.{size,weight,color}` shape as-is.
+
+**Public render (`HeroB.jsx`):** Reads `section_styles.hero.text_styles.{key}`
+and applies size as `calc(... × sizeMul)`, weight as `fontWeight`, and color
+as `color` (and border-color for primary CTA outline). Falls back to existing
+defaults when a field is unset, preserving zero visual change at baseline.
+
+### Tests
+- Backend pytest: 195/195 PASS (1 transient network flake on second run only).
+- Live curl PATCH/GET round-trip preserves the structure unchanged.
+- Live Playwright check: all five fields respond to admin overrides
+  (title pink + bold, eyebrow green, subtitle cream, primary CTA cyan).
+
+### Outstanding
+- Pending user review/approval. If approved → roll out the same `FieldTypoControls`
+  to About, Mission, Objectives, Fields-of-Work, Featured, Contact, Newsletter.
+
+---
+
 ## Update — Feb 10, 2026 · Backend test stability fix
 
 ### Two pre-existing data-drift test failures resolved
