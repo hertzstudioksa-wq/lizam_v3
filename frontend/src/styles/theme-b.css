@@ -15,6 +15,7 @@ html[data-theme="b"] {
   --tb-fs-hero: 1;
   --tb-fs-heading: 1;
   --tb-fs-body: 1;
+  --tb-fs-eyebrow: 1;
 
   /* Palette — cleaner off-white base, warmth preserved in accent panels only */
   --tb-paper-base: #FBFAF7;       /* near-white with whisper of warmth */
@@ -93,6 +94,12 @@ html[data-theme="b"] .tb-body-lg,
 html[data-theme="b"] section p:not([data-fs-skip]),
 html[data-theme="b"] section li:not([data-fs-skip]) {
   font-size: calc(1em * var(--tb-fs-body));
+}
+/* Eyebrow / kicker labels — the small uppercase tags above each section
+ * (e.g. «المنطلقات»، «الأهداف»). Scaled independently from headings. */
+html[data-theme="b"] .tb-overline:not([data-fs-skip]),
+html[data-theme="b"] .lz-eyebrow:not([data-fs-skip]) {
+  font-size: calc(1em * var(--tb-fs-eyebrow));
 }
 html[dir="rtl"] .tb-display {
   font-family: "Thmanyah Serif Display", "IBM Plex Sans Arabic", sans-serif;

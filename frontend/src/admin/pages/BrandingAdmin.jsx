@@ -189,24 +189,27 @@ export default function BrandingAdmin() {
       <section className="mb-12" data-testid="font-scale-section">
         <div className="flex items-baseline gap-3 mb-2">
           <h3 className="text-[18px] font-medium text-navy-deep">{tr("حجم الخط على الموقع العام", "Public-site type scale")}</h3>
-          <span className="text-[12.5px] text-mute">— {tr("85% – 125% لكل محور", "85% – 125% per axis")}</span>
+          <span className="text-[12.5px] text-mute">— {tr("85% – 150% حسب المحور", "85% – 150% per axis")}</span>
         </div>
         <p className="text-[13px] text-mute max-w-[64ch] mb-4">
           {tr(
-            "تحكم في حجم الخط العام للموقع على ثلاثة محاور: الهيرو (الصفحة الرئيسية الكبيرة)، عناوين الأقسام، ونصوص الفقرات. التغييرات تنعكس على الموقع العام بعد الحفظ.",
-            "Control the public-site font size on three axes: Hero (large home headline), section headings, and body copy. Changes apply after saving.",
+            "تحكم في حجم الخط العام للموقع على أربعة محاور: الهيرو (الصفحة الرئيسية الكبيرة)، عناوين الأقسام، نصوص الفقرات، وتسميات الأقسام (مثل «المنطلقات» و«الأهداف»). التغييرات تنعكس على الموقع العام بعد الحفظ.",
+            "Control the public-site font size on four axes: Hero, section headings, body copy, and section labels (eyebrows like «Foundations», «Objectives»). Changes apply after saving.",
           )}
         </p>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1100px] p-6 border border-rule bg-white">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-[1200px] p-6 border border-rule bg-white">
           {[
-            { key: "hero",    labelAr: "الهيرو", labelEn: "Hero",    sample: tr("بحث قانوني رصين", "Rigorous legal research"), sz: 36 },
-            { key: "heading", labelAr: "العناوين", labelEn: "Headings", sample: tr("عنوان قسم", "Section heading"), sz: 24 },
-            { key: "body",    labelAr: "النصوص",  labelEn: "Body",    sample: tr("نموذج لنص فقرة في الموقع.", "Sample body paragraph text."), sz: 15 },
+            { key: "hero",    labelAr: "الهيرو",            labelEn: "Hero",     sample: tr("بحث قانوني رصين", "Rigorous legal research"), sz: 36, max: 1.25 },
+            { key: "heading", labelAr: "العناوين",          labelEn: "Headings", sample: tr("عنوان قسم", "Section heading"),               sz: 24, max: 1.25 },
+            { key: "body",    labelAr: "النصوص",            labelEn: "Body",     sample: tr("نموذج لنص فقرة في الموقع.", "Sample body paragraph text."), sz: 15, max: 1.25 },
+            { key: "eyebrow", labelAr: "تسميات الأقسام",    labelEn: "Section labels", sample: tr("المنطلقات", "Foundations"),             sz: 12, max: 1.5,  eyebrow: true },
           ].map((axis) => {
             const v = (siteForm.font_scale || {})[axis.key] ?? 1;
             const pct = Math.round(v * 100);
+            const minRange = 0.85;
+            const maxRange = axis.max ?? 1.25;
             const setVal = (n) => {
-              const nv = Math.max(0.85, Math.min(1.25, n));
+              const nv = Math.max(minRange, Math.min(maxRange, n));
               setSiteForm((s) => ({ ...s, font_scale: { ...(s.font_scale || {}), [axis.key]: Math.round(nv * 100) / 100 } }));
               setSiteDirty(true);
             };
@@ -218,8 +221,8 @@ export default function BrandingAdmin() {
                 </div>
                 <input
                   type="range"
-                  min="0.85"
-                  max="1.25"
+                  min={minRange}
+                  max={maxRange}
                   step="0.05"
                   value={v}
                   onChange={(e) => setVal(parseFloat(e.target.value))}
@@ -232,18 +235,30 @@ export default function BrandingAdmin() {
                   </button>
                 </div>
                 <div className="mt-2 p-3 border border-rule bg-paper" dir={lang === "ar" ? "rtl" : "ltr"}>
-                  <span style={{ fontSize: axis.sz * v, fontFamily: axis.key === "hero" || axis.key === "heading" ? '"Thmanyah Serif Display", serif' : '"Thmanyah Sans", sans-serif', color: "#0A111C", lineHeight: 1.3 }}>
+                  <span style={{
+                    fontSize: axis.sz * v,
+                    fontFamily: axis.eyebrow
+                      ? '"Thmanyah Sans", sans-serif'
+                      : (axis.key === "hero" || axis.key === "heading"
+                          ? '"Thmanyah Serif Display", serif'
+                          : '"Thmanyah Sans", sans-serif'),
+                    color: axis.eyebrow ? "#B4914A" : "#0A111C",
+                    lineHeight: 1.3,
+                    letterSpacing: axis.eyebrow ? "0.22em" : "normal",
+                    textTransform: axis.eyebrow ? "uppercase" : "none",
+                    fontWeight: axis.eyebrow ? 600 : 400,
+                  }}>
                     {axis.sample}
                   </span>
                 </div>
               </div>
             );
           })}
-          <div className="lg:col-span-3 flex items-center gap-4">
+          <div className="lg:col-span-4 flex items-center gap-4">
             <button
               type="button"
               onClick={() => {
-                setSiteForm((s) => ({ ...s, font_scale: { hero: 1, heading: 1, body: 1 } }));
+                setSiteForm((s) => ({ ...s, font_scale: { hero: 1, heading: 1, body: 1, eyebrow: 1 } }));
                 setSiteDirty(true);
               }}
               className="text-[13px] text-mute hover:text-navy underline underline-offset-4"

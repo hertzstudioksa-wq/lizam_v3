@@ -123,8 +123,8 @@ async def seed_all() -> None:
             "featured_publications": True, "policy_pages": False,
             "pdf_download": True, "social_icons": True,
         },
-        # Public-site typography scale (1.0 = baseline). Range 0.85–1.25 each.
-        "font_scale": {"hero": 1.0, "heading": 1.0, "body": 1.0},
+        # Public-site typography scale (1.0 = baseline). Range 0.85–1.5 each.
+        "font_scale": {"hero": 1.0, "heading": 1.0, "body": 1.0, "eyebrow": 1.0},
         "updated_at": utc_iso(),
     }
     await _upsert_if_seed(db.site_settings, {"id": "site"}, site_defaults)
@@ -137,7 +137,12 @@ async def seed_all() -> None:
     # One-time backfill: ensure font_scale exists on existing admin-edited site_settings docs
     await db.site_settings.update_one(
         {"id": "site", "font_scale": {"$exists": False}},
-        {"$set": {"font_scale": {"hero": 1.0, "heading": 1.0, "body": 1.0}}},
+        {"$set": {"font_scale": {"hero": 1.0, "heading": 1.0, "body": 1.0, "eyebrow": 1.0}}},
+    )
+    # One-time backfill: ensure eyebrow axis exists on older font_scale docs
+    await db.site_settings.update_one(
+        {"id": "site", "font_scale.eyebrow": {"$exists": False}},
+        {"$set": {"font_scale.eyebrow": 1.0}},
     )
 
     # Home content — seeded once, refreshed on seed-only restarts
