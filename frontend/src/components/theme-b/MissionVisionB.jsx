@@ -1,6 +1,5 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
-import { useImageAssets } from "@/hooks/useImageAssets";
 
 /**
  * Theme B — Mission & Vision (v2: balanced, restrained).
@@ -16,13 +15,11 @@ import { useImageAssets } from "@/hooks/useImageAssets";
 export default function MissionVisionB() {
   const { lang, pick } = useLang();
   const { data: home } = useHomeContent();
-  const { bySlot } = useImageAssets();
-  // Prefer admin-controlled bg from /admin/home → Mission card; fall back to legacy slot.
-  const sec = home?.section_styles?.mission?.bg;
-  const useSec = sec?.enabled !== false && sec?.url;
-  const legacy = bySlot.foundations_background;
-  const bg = useSec ? sec : legacy;
-  const hasBg = (useSec && sec.url) || (legacy && legacy.active && legacy.url);
+  // Admin-controlled bg from /admin/home → Mission card.
+  // No legacy fallback — section uses solid color when no image is set.
+  const bg = home?.section_styles?.mission?.bg;
+  const hasBg = bg?.enabled !== false && !!bg?.url;
+  const overlayOpacity = typeof bg?.overlay_opacity === "number" ? bg.overlay_opacity : 0;
   if (!home) return null;
   // Visibility — defaults to TRUE when the admin hasn't explicitly hidden the section.
   // Treat both "mission" and legacy "vision" keys as gates for this combined band.
@@ -163,11 +160,13 @@ export default function MissionVisionB() {
               zIndex: 0,
             }}
           />
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{ background: "rgba(249, 247, 243, 0.86)", zIndex: 0 }}
-          />
+          {overlayOpacity > 0 && (
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{ background: `rgba(249, 247, 243, ${overlayOpacity})`, zIndex: 0 }}
+            />
+          )}
         </>
       )}
       <div className="relative z-10 mx-auto max-w-[1180px] px-6 md:px-10 lg:px-12 py-20 md:py-24">

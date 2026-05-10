@@ -759,7 +759,7 @@ export default function HomeAdmin() {
               sample={tr("الرسالة", "Mission")} sampleSize={24} />
           </div>
           <div className="mt-5">
-            <BgImageBlock form={form} sectionKey="mission" defaultOverlay={0.86}
+            <BgImageBlock form={form} sectionKey="mission" defaultOverlay={0}
               label={tr("صورة خلفية القسم (اختيارية)", "Section background (optional)")} />
           </div>
         </SectionCard>
