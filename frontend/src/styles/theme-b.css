@@ -293,6 +293,8 @@ html[dir="rtl"] .tb-card::before { transform-origin: right; }
 .tb-card .tb-card-arrow { transition: transform 400ms var(--tb-ease); }
 .tb-card:hover .tb-card-arrow { transform: translateX(4px); }
 html[dir="rtl"] .tb-card:hover .tb-card-arrow { transform: translateX(-4px); }
+.tb-card img { transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1); }
+.tb-card:hover img { transform: scale(1.04); }
 
 /* ---------- Filter chip (pill, refined) ---------- */
 .tb-chip {

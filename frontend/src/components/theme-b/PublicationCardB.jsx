@@ -55,6 +55,43 @@ export default function PublicationCardB({ pub, testid = "pub-card" }) {
         className="tb-card flex flex-col h-full"
         style={{ minHeight: 320 }}
       >
+        {/* Cover image (edge-to-edge, breaks out of card padding) */}
+        {pub.cover_image_url && (
+          <div
+            className="relative overflow-hidden"
+            style={{
+              marginInline: "-1.75rem",
+              marginTop: "-1.75rem",
+              marginBottom: "1.5rem",
+              aspectRatio: "16 / 10",
+              background: "var(--tb-paper-deep)",
+            }}
+          >
+            <img
+              src={pub.cover_image_url}
+              alt={title}
+              loading="lazy"
+              className="w-full h-full"
+              style={{
+                objectFit: "cover",
+                objectPosition: "center",
+                transition: "transform 700ms cubic-bezier(0.22, 1, 0.36, 1)",
+              }}
+              data-testid={`${testid}-cover`}
+            />
+            {/* Subtle bottom fade for text breathing room */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 bottom-0 h-16"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(255,255,255,0.55), rgba(255,255,255,0))",
+                pointerEvents: "none",
+              }}
+            />
+          </div>
+        )}
+
         {/* Top row: type · date eyebrow + access badge */}
         <div className="flex items-start justify-between gap-3">
           <div
