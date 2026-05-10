@@ -13,6 +13,9 @@ export default function AboutB() {
   const img = bySlot.about_image;
   const showImg = img?.active && img?.url;
   const altText = img?.[`alt_${lang}`] || img?.alt_en || "";
+  // Focal point in % (0–100). Defaults to centre.
+  const fx = Math.max(0, Math.min(100, Number(img?.focal_x ?? 50)));
+  const fy = Math.max(0, Math.min(100, Number(img?.focal_y ?? 50)));
 
   return (
     <section
@@ -27,16 +30,25 @@ export default function AboutB() {
           {showImg && (
             <div className="lg:col-span-5 order-2 lg:order-1">
               <div
-                className="overflow-hidden"
+                className="overflow-hidden relative"
                 style={{
                   borderRadius: "var(--tb-radius-lg)",
                   aspectRatio: "4/5",
-                  background: `url(${img.url}) center/cover no-repeat`,
+                  background: "#0A111C",
                   boxShadow: "var(--tb-shadow-rest)",
                 }}
                 role="img"
                 aria-label={altText}
-              />
+              >
+                <img
+                  src={img.url}
+                  alt={altText}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full"
+                  style={{ objectFit: "cover", objectPosition: `${fx}% ${fy}%` }}
+                />
+              </div>
             </div>
           )}
 

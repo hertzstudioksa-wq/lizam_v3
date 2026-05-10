@@ -1,6 +1,6 @@
 """Image asset slot management for the public site (Theme B and beyond)."""
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from fastapi import APIRouter, Depends, HTTPException
 from app.config import db
 from app.security import require_permission, utc_iso
@@ -14,8 +14,9 @@ class ImageAssetIn(BaseModel):
     alt_ar: Optional[str] = None
     alt_en: Optional[str] = None
     active: Optional[bool] = None
-    focal_x: Optional[float] = None  # 0..1
-    focal_y: Optional[float] = None  # 0..1
+    # Focal point in PERCENT (0–100), matching the hero_media convention.
+    focal_x: Optional[int] = Field(default=None, ge=0, le=100)
+    focal_y: Optional[int] = Field(default=None, ge=0, le=100)
 
 
 @router.get("")

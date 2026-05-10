@@ -41,6 +41,21 @@ const DEFAULTS = {
 export default function HeroMediaAdmin() {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
+  return (
+    <AdminPage
+      title={tr("صور رؤوس الصفحات", "Hero Media")}
+      subtitle={tr("صور خلفية سينمائية لكل صفحة", "Cinematic page hero images")}
+    >
+      <HeroMediaSection />
+    </AdminPage>
+  );
+}
+
+/* Reusable inner section (no AdminPage wrapper) — used by the unified
+ * /admin/images page so Hero Media + Section Assets live in one place. */
+export function HeroMediaSection() {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
   const [items, setItems] = useState({});
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
@@ -107,12 +122,13 @@ export default function HeroMediaAdmin() {
   if (loading) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
 
   return (
-    <AdminPage
-      title={tr("صور رؤوس الصفحات", "Hero Media")}
-      subtitle={tr("صور خلفية سينمائية لكل صفحة", "Cinematic page hero images")}
-      helpAr={'لكل صفحة صورة خلفية يمكن تخصيصها — أبعاد موصى بها 2400×1100، أقل من 1600×700 ستظهر منخفضة الجودة. تحكم في درجة التعتيم ونقطة التركيز عبر الأدوات أدناه. الصور تمتد خلف الهيدر وتتقصّ تلقائياً مع الحفاظ على نقطة التركيز.'}
-      helpEn={'Each page has its own cinematic hero image. Recommended size 2400×1100; below 1600×700 may render soft. Use the controls below to set overlay opacity and focal point. Images extend behind the header and auto-crop responsively while keeping the focal point in frame.'}
-    >
+    <>
+      <p className="max-w-[760px] text-[13.5px] text-ink/75 leading-relaxed mb-6">
+        {tr(
+          "لكل صفحة صورة خلفية يمكن تخصيصها — أبعاد موصى بها 2400×1100، أقل من 1600×700 ستظهر منخفضة الجودة. تحكم في درجة التعتيم ونقطة التركيز عبر الأدوات أدناه. الصور تمتد خلف الهيدر وتتقصّ تلقائياً مع الحفاظ على نقطة التركيز.",
+          "Each page has its own cinematic hero image. Recommended size 2400×1100; below 1600×700 may render soft. Use the controls below to set overlay opacity and focal point. Images extend behind the header and auto-crop responsively while keeping the focal point in frame.",
+        )}
+      </p>
       {msg && <div className="mb-4 p-3 border border-rule bg-paper text-[13.5px]" data-testid="hero-media-msg">{msg}</div>}
       <div className="space-y-8 max-w-[1100px]">
         {PAGES.map((p) => (
@@ -130,7 +146,7 @@ export default function HeroMediaAdmin() {
           />
         ))}
       </div>
-    </AdminPage>
+    </>
   );
 }
 
