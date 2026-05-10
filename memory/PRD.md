@@ -447,6 +447,55 @@ Each public page now renders a configurable cinematic hero background (image or 
 
 ---
 
+## Update — Feb 10, 2026 · Permanent (hard) delete across the dashboard
+
+### Problem
+User reported the dashboard had only soft-archive options for publications,
+authors, categories, etc. — no way to fully remove a record from the database
+when truly desired.
+
+### Solution: Archive + Permanent Delete (two-tier UX)
+
+**Backend** — new `*/permanent` endpoints in `app/routers/admin.py`:
+- `DELETE /admin/publications/{id}/permanent` → cascades research_responses
+- `DELETE /admin/authors/{id}/permanent` → scrubs `author_ids` from publications
+- `DELETE /admin/categories/{id}/permanent` → nulls `category_id` on publications
+- `DELETE /admin/users/{id}/permanent` → safety: cannot delete self; cannot delete the last super_admin
+- `DELETE /admin/messages/{id}/permanent` → contact form submissions
+- `DELETE /admin/newsletter/{id}/permanent` → subscribers
+- All call `audit_log(user, "delete_permanent", target_type, id, …)` for forensic trail.
+- Permission gates: re-uses existing `*.archive` permissions for content entities;
+  `users.edit` for users; `messages.read` for messages/newsletter.
+
+**Frontend** — new reusable `<ConfirmDeleteDialog>` (`/admin/components/ConfirmDeleteDialog.jsx`):
+- Modal overlay with red AlertTriangle icon, entity name displayed in a chip,
+  and a text input requiring the user to type the literal word **"حذف"** (AR)
+  or **"DELETE"** (EN) before the destructive button enables.
+- Esc + backdrop click close the dialog (unless busy). Loading state on confirm.
+- Wired into:
+  - `PublicationsAdmin` list page (per-row "أرشفة" + "حذف نهائي" buttons)
+  - `PublicationsAdmin` edit page (red "حذف نهائي" toolbar button)
+  - `SimpleAdmins.SimpleCrudAdmin` (Authors + Categories rows)
+  - `SimpleAdmins.UsersAdmin` (per-user delete column with safety gating)
+  - `SimpleAdmins.MessagesAdmin` (per-row delete next to Mark read / Archive)
+
+### Tests
+**NEW** `backend/tests/test_hard_delete.py` — 9 tests covering:
+- 404 on unknown id, 401/403 without auth.
+- Publications: hard delete removes from DB and reports cascaded responses.
+- Authors: cascade scrubs `author_ids` from referencing publications.
+- Categories: cascade nulls `category_id` on referencing publications.
+- Users: cannot delete self (409), cannot delete last super_admin (covered via 404 path), works for regular registered user.
+- Messages: hard delete by id removes from inbox.
+
+**Result:** 195/195 backend pytest PASS (was 186 → +9 new). Zero regressions.
+Frontend lint clean. Smoke screenshots verify modal opens with proper RTL text,
+confirm button stays disabled until "حذف" typed, and lists show
+**أرشفة** (amber) + **حذف نهائي** (red) buttons side-by-side.
+
+
+---
+
 ## Update — Feb 10, 2026 · Backend test stability fix
 
 ### Two pre-existing data-drift test failures resolved

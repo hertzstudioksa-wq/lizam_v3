@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Trash2 } from "lucide-react";
 import { AdminPage, Field, TextInput, TextArea, Select, Toggle, SaveBar, useDirtyForm, apiCall } from "@/admin/components/AdminUI";
 import HelpTip from "@/admin/components/HelpTip";
+import ConfirmDeleteDialog from "@/admin/components/ConfirmDeleteDialog";
 import TiptapField from "@/admin/components/TiptapField";
 import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
@@ -18,6 +19,7 @@ export function PublicationsListAdmin() {
   const [items, setItems] = useState(null);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [permTarget, setPermTarget] = useState(null);
 
   async function load() {
     const params = new URLSearchParams();
@@ -27,6 +29,19 @@ export function PublicationsListAdmin() {
     if (r.ok) setItems(r.data.items || []);
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, status]);
+
+  async function archive(id) {
+    if (!window.confirm(tr("أرشفة هذا الإصدار؟ سيُخفى من الموقع العام مع الاحتفاظ بالبيانات.", "Archive this publication? It will be hidden from the public site but data is preserved."))) return;
+    await apiCall("delete", `/admin/publications/${id}`);
+    load();
+  }
+
+  async function permanentDelete() {
+    if (!permTarget) return;
+    const r = await apiCall("delete", `/admin/publications/${permTarget.id}/permanent`);
+    if (!r.ok) throw new Error(r.error);
+    load();
+  }
 
   return (
     <AdminPage title={tr("الإصدارات", "Publications")} subtitle={tr("إدارة المحتوى · المكتبة البحثية", "CMS · Research library")}
@@ -58,6 +73,7 @@ export function PublicationsListAdmin() {
                 <th className="text-start p-4">{tr("الحالة", "Status")}</th>
                 <th className="text-start p-4 tabular-nums">{tr("المشاهدات", "Views")}</th>
                 <th className="text-start p-4">{tr("آخر تحديث", "Updated")}</th>
+                <th className="text-start p-4">{tr("إجراءات", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -72,12 +88,41 @@ export function PublicationsListAdmin() {
                   <td className="p-4"><StatusPill s={p.status} tr={tr} /></td>
                   <td className="p-4 tabular-nums text-mute">{p.view_count || 0}</td>
                   <td className="p-4 text-mute text-[12.5px]">{(p.updated_at || "").slice(0, 10)}</td>
+                  <td className="p-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.status !== "archived" && (
+                        <button
+                          onClick={() => archive(p.id)}
+                          className="text-[11px] px-2 py-1 border border-rule hover:border-amber-600 text-amber-700"
+                          data-testid={`pub-archive-${p.id}`}
+                        >
+                          {tr("أرشفة", "Archive")}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setPermTarget(p)}
+                        className="text-[11px] px-2 py-1 border border-red-300 hover:border-red-600 text-red-700"
+                        data-testid={`pub-delete-${p.id}`}
+                      >
+                        {tr("حذف نهائي", "Delete")}
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+      <ConfirmDeleteDialog
+        open={!!permTarget}
+        onClose={() => setPermTarget(null)}
+        onConfirm={permanentDelete}
+        entityName={permTarget ? (permTarget.title_ar || permTarget.title_en) : ""}
+        warningAr="سيتم حذف الإصدار وجميع الردود البحثية المرتبطة به نهائياً. لا يمكن التراجع."
+        warningEn="The publication and all its research responses will be permanently deleted. This cannot be undone."
+        testid="pub-confirm-delete"
+      />
     </AdminPage>
   );
 }
@@ -105,6 +150,7 @@ export function PublicationEditAdmin() {
   const [msg, setMsg] = useState("");
   const [categories, setCategories] = useState([]);
   const [authors, setAuthors] = useState([]);
+  const [permOpen, setPermOpen] = useState(false);
   const form = useDirtyForm(isNew ? {
     title_ar: "", title_en: "", summary_ar: "", summary_en: "",
     content_html_ar: "", content_html_en: "", preview_html_ar: "", preview_html_en: "",
@@ -156,6 +202,13 @@ export function PublicationEditAdmin() {
     } catch (e) { setMsg(`${tr("رفع", "Upload")}: ${formatApiError(e.response?.data?.detail) || e.message}`); }
   }
 
+  async function permanentDelete() {
+    if (isNew) return;
+    const r = await apiCall("delete", `/admin/publications/${id}/permanent`);
+    if (!r.ok) throw new Error(r.error);
+    nav("/admin/publications", { replace: true });
+  }
+
   if (!loaded) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
 
   const toggleAuthor = (aid) => {
@@ -169,7 +222,22 @@ export function PublicationEditAdmin() {
       subtitle={tr("إدارة المحتوى · المحرر", "CMS · Editor")}
       helpAr="حرّر بيانات الإصدار. الحقول التقنية في العمود الجانبي (الحالة، مستوى الوصول، وصول PDF) لها أيقونات معلومات ⓘ - مرّر عليها للشرح."
       helpEn="Edit the publication's content and metadata. Technical fields in the side panel (status, access level, PDF access) have ⓘ icons — hover for explanations."
-      actions={<Link to="/admin/publications" className="lz-btn-ghost"><ArrowLeft size={15} /> {tr("رجوع", "Back")}</Link>}
+      actions={
+        <div className="flex items-center gap-2">
+          {!isNew && (
+            <button
+              type="button"
+              onClick={() => setPermOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-[13px] border border-red-300 text-red-700 hover:border-red-600 hover:bg-red-50 transition-colors"
+              data-testid="pub-edit-delete-btn"
+            >
+              <Trash2 size={14} />
+              <span>{tr("حذف نهائي", "Delete permanently")}</span>
+            </button>
+          )}
+          <Link to="/admin/publications" className="lz-btn-ghost"><ArrowLeft size={15} /> {tr("رجوع", "Back")}</Link>
+        </div>
+      }
     >
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Main column */}
@@ -284,6 +352,15 @@ export function PublicationEditAdmin() {
           <SaveBar dirty={form.dirty || isNew} saving={saving} onSave={save} onReset={form.reset} savedMessage={msg} />
         </aside>
       </div>
+      <ConfirmDeleteDialog
+        open={permOpen}
+        onClose={() => setPermOpen(false)}
+        onConfirm={permanentDelete}
+        entityName={form.value.title_ar || form.value.title_en}
+        warningAr="سيتم حذف الإصدار وجميع الردود البحثية المرتبطة به نهائياً. لا يمكن التراجع."
+        warningEn="The publication and all its research responses will be permanently deleted. This cannot be undone."
+        testid="pub-edit-confirm-delete"
+      />
     </AdminPage>
   );
 }

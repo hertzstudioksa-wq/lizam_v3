@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import { AdminPage, Field, TextInput, TextArea, Toggle, apiCall } from "@/admin/components/AdminUI";
 import HelpTip from "@/admin/components/HelpTip";
+import ConfirmDeleteDialog from "@/admin/components/ConfirmDeleteDialog";
 import { ReorderControls, moveItem } from "@/admin/components/ReorderControls";
 import { useLang } from "@/i18n/LanguageContext";
 import { invalidateSiteCache } from "@/hooks/useSiteSettings";
@@ -16,6 +17,7 @@ function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testid
   const tr = useTr();
   const [items, setItems] = useState(null);
   const [editing, setEditing] = useState(null);
+  const [permTarget, setPermTarget] = useState(null);
 
   async function load() {
     const r = await apiCall("get", `/admin/${resource}`);
@@ -34,6 +36,13 @@ function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testid
   async function archive(id) {
     if (!window.confirm(tr("هل تريد أرشفة هذا العنصر؟", "Archive this item?"))) return;
     await apiCall("delete", `/admin/${resource}/${id}`);
+    load();
+  }
+
+  async function permanentDelete() {
+    if (!permTarget) return;
+    const r = await apiCall("delete", `/admin/${resource}/${permTarget.id}/permanent`);
+    if (!r.ok) throw new Error(r.error);
     load();
   }
 
@@ -91,7 +100,8 @@ function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testid
                   <td className="p-4 text-[12.5px]">{it.active === false ? <span className="text-mute">{tr("غير نشط", "Inactive")}</span> : <span className="text-green-700">{tr("نشط", "Active")}</span>}</td>
                   <td className="p-4 text-end">
                     <button onClick={() => setEditing({ ...it })} className="text-navy hover:text-brass lz-linkline text-[13px]" data-testid={`${testidBase}-edit-${it.id}`}>{tr("تعديل", "Edit")}</button>
-                    <button onClick={() => archive(it.id)} className="ms-4 text-red-700 hover:text-red-900 lz-linkline text-[13px]">{tr("أرشفة", "Archive")}</button>
+                    <button onClick={() => archive(it.id)} className="ms-4 text-amber-700 hover:text-amber-900 lz-linkline text-[13px]">{tr("أرشفة", "Archive")}</button>
+                    <button onClick={() => setPermTarget(it)} className="ms-4 text-red-700 hover:text-red-900 lz-linkline text-[13px]" data-testid={`${testidBase}-delete-${it.id}`}>{tr("حذف نهائي", "Delete")}</button>
                   </td>
                 </tr>
               ))}
@@ -99,6 +109,14 @@ function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testid
           </table>
         )}
       </div>
+
+      <ConfirmDeleteDialog
+        open={!!permTarget}
+        onClose={() => setPermTarget(null)}
+        onConfirm={permanentDelete}
+        entityName={permTarget?.title_ar || permTarget?.name_ar || permTarget?.title_en || permTarget?.name_en}
+        testid={`${testidBase}-confirm-delete`}
+      />
     </AdminPage>
   );
 }
@@ -244,6 +262,7 @@ export function UsersAdmin() {
   const tr = useTr();
   const [items, setItems] = useState(null);
   const [q, setQ] = useState("");
+  const [permTarget, setPermTarget] = useState(null);
 
   async function load() {
     const params = new URLSearchParams();
@@ -259,6 +278,12 @@ export function UsersAdmin() {
   }
   async function toggleActive(userId, active) {
     await apiCall("patch", `/admin/users/${userId}`, { status: active ? "active" : "deactivated" });
+    load();
+  }
+  async function permanentDelete() {
+    if (!permTarget) return;
+    const r = await apiCall("delete", `/admin/users/${permTarget.id}/permanent`);
+    if (!r.ok) throw new Error(r.error);
     load();
   }
 
@@ -289,6 +314,7 @@ export function UsersAdmin() {
                   <th className="text-start p-4">{tr("الدور", "Role")}</th>
                   <th className="text-start p-4">{tr("الحالة", "Status")}</th>
                   <th className="text-start p-4">{tr("تاريخ الانضمام", "Joined")}</th>
+                  <th className="text-start p-4">{tr("إجراءات", "Actions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,12 +335,30 @@ export function UsersAdmin() {
                       </button>
                     </td>
                     <td className="p-4 text-mute text-[12.5px]">{(u.created_at || "").slice(0,10)}</td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => setPermTarget(u)}
+                        className="text-[12.5px] text-red-700 hover:text-red-900 lz-linkline"
+                        data-testid={`user-delete-${u.id}`}
+                      >
+                        {tr("حذف نهائي", "Delete")}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
       </div>
+      <ConfirmDeleteDialog
+        open={!!permTarget}
+        onClose={() => setPermTarget(null)}
+        onConfirm={permanentDelete}
+        entityName={permTarget ? `${permTarget.name} · ${permTarget.email}` : ""}
+        warningAr="سيتم حذف هذا الحساب وكل بياناته نهائياً. لا يمكن حذف حسابك الحالي أو آخر مدير عام."
+        warningEn="This account and all its data will be permanently removed. You cannot delete your own account or the last Super Admin."
+        testid="user-confirm-delete"
+      />
     </AdminPage>
   );
 }
@@ -462,6 +506,7 @@ export function MessagesAdmin() {
   const [items, setItems] = useState(null);
   const [filter, setFilter] = useState("");
   const [msg, setMsg] = useState("");
+  const [permTarget, setPermTarget] = useState(null);
 
   async function load() {
     const r = await apiCall("get", "/admin/messages");
@@ -473,6 +518,13 @@ export function MessagesAdmin() {
     const r = await apiCall("patch", `/admin/messages/${id}`, { status });
     if (r.ok) { setMsg(tr(`تم التحديث إلى ${status} ✓`, `Marked ${status} ✓`)); setTimeout(() => setMsg(""), 2000); load(); }
     else setMsg(`${tr("ملاحظة", "Note")}: ${r.error}`);
+  }
+
+  async function permanentDelete() {
+    if (!permTarget) return;
+    const r = await apiCall("delete", `/admin/messages/${permTarget.id}/permanent`);
+    if (!r.ok) throw new Error(r.error);
+    load();
   }
 
   const filtered = items?.filter((m) => !filter || (m.status || "new") === filter) || [];
@@ -530,6 +582,8 @@ export function MessagesAdmin() {
                                 onClick={() => setStatus(m.id, "read")} data-testid={`message-action-read-${m.id}`}>{tr("تحديد كمقروء", "Mark read")}</button>
                         <button className="text-[11px] px-2 py-1 border border-rule hover:border-navy text-mute"
                                 onClick={() => setStatus(m.id, "archived")} data-testid={`message-action-archive-${m.id}`}>{tr("أرشفة", "Archive")}</button>
+                        <button className="text-[11px] px-2 py-1 border border-red-300 hover:border-red-600 text-red-700"
+                                onClick={() => setPermTarget(m)} data-testid={`message-action-delete-${m.id}`}>{tr("حذف نهائي", "Delete")}</button>
                       </div>
                     </td>
                   </tr>
@@ -538,6 +592,13 @@ export function MessagesAdmin() {
             </table>
           )}
       </div>
+      <ConfirmDeleteDialog
+        open={!!permTarget}
+        onClose={() => setPermTarget(null)}
+        onConfirm={permanentDelete}
+        entityName={permTarget ? `${permTarget.name || "—"} · ${permTarget.email || "—"} · ${permTarget.subject || tr("(بدون موضوع)", "(no subject)")}` : ""}
+        testid="message-confirm-delete"
+      />
     </AdminPage>
   );
 }

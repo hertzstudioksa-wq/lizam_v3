@@ -241,6 +241,24 @@ async def admin_archive_publication(pub_id: str,
     return {"ok": True}
 
 
+@router.delete("/publications/{pub_id}/permanent")
+async def admin_delete_publication_permanent(
+    pub_id: str,
+    user: dict = Depends(require_permission("publications.archive")),
+):
+    """Hard-delete a publication AND its related research responses."""
+    pub = await db.publications.find_one({"id": pub_id}, {"_id": 0, "title_ar": 1, "title_en": 1})
+    if not pub:
+        raise HTTPException(status_code=404, detail="Publication not found")
+    await db.publications.delete_one({"id": pub_id})
+    # Cascade: delete dependent research responses
+    resp_res = await db.research_responses.delete_many({"publication_id": pub_id})
+    await audit_log(user, "delete_permanent", "publication", pub_id,
+                    {"title": pub.get("title_ar") or pub.get("title_en"),
+                     "responses_deleted": resp_res.deleted_count})
+    return {"ok": True, "responses_deleted": resp_res.deleted_count}
+
+
 # ---------------------------------------------------------------------------
 # Authors
 # ---------------------------------------------------------------------------
@@ -303,6 +321,27 @@ async def admin_archive_author(author_id: str,
         raise HTTPException(status_code=404, detail="Author not found")
     await audit_log(user, "archive", "author", author_id)
     return {"ok": True}
+
+
+@router.delete("/authors/{author_id}/permanent")
+async def admin_delete_author_permanent(
+    author_id: str,
+    user: dict = Depends(require_permission("authors.archive")),
+):
+    """Hard-delete an author. Removes their id from all publications.author_ids."""
+    author = await db.authors.find_one({"id": author_id}, {"_id": 0, "name_ar": 1, "name_en": 1})
+    if not author:
+        raise HTTPException(status_code=404, detail="Author not found")
+    await db.authors.delete_one({"id": author_id})
+    # Cascade: scrub from publications
+    pub_res = await db.publications.update_many(
+        {"author_ids": author_id},
+        {"$pull": {"author_ids": author_id}},
+    )
+    await audit_log(user, "delete_permanent", "author", author_id,
+                    {"name": author.get("name_ar") or author.get("name_en"),
+                     "publications_updated": pub_res.modified_count})
+    return {"ok": True, "publications_updated": pub_res.modified_count}
 
 
 # ---------------------------------------------------------------------------
@@ -372,6 +411,27 @@ async def admin_archive_category(cat_id: str,
     return {"ok": True}
 
 
+@router.delete("/categories/{cat_id}/permanent")
+async def admin_delete_category_permanent(
+    cat_id: str,
+    user: dict = Depends(require_permission("categories.archive")),
+):
+    """Hard-delete a category. Clears category_id from any publication referencing it."""
+    cat = await db.categories.find_one({"id": cat_id}, {"_id": 0, "title_ar": 1, "title_en": 1})
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    await db.categories.delete_one({"id": cat_id})
+    # Cascade: detach from publications
+    pub_res = await db.publications.update_many(
+        {"category_id": cat_id},
+        {"$set": {"category_id": None}},
+    )
+    await audit_log(user, "delete_permanent", "category", cat_id,
+                    {"title": cat.get("title_ar") or cat.get("title_en"),
+                     "publications_updated": pub_res.modified_count})
+    return {"ok": True, "publications_updated": pub_res.modified_count}
+
+
 # ---------------------------------------------------------------------------
 # Users + Roles
 # ---------------------------------------------------------------------------
@@ -403,6 +463,27 @@ async def admin_update_user(user_id: str, body: UserUpdateIn,
     await audit_log(user, "update", "user", user_id, {"fields": list(update.keys())})
     out = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
     return out
+
+
+@router.delete("/users/{user_id}/permanent")
+async def admin_delete_user_permanent(
+    user_id: str,
+    user: dict = Depends(require_permission("users.edit")),
+):
+    """Hard-delete a user account. Safety: cannot delete self or last active super_admin."""
+    target = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.get("id") == user.get("id") or target.get("email") == user.get("email"):
+        raise HTTPException(status_code=409, detail="Cannot delete your own account")
+    if target.get("role") == "super_admin":
+        super_count = await db.users.count_documents({"role": "super_admin", "status": "active"})
+        if super_count <= 1:
+            raise HTTPException(status_code=409, detail="Cannot delete the last Super Admin")
+    await db.users.delete_one({"id": user_id})
+    await audit_log(user, "delete_permanent", "user", user_id,
+                    {"email": target.get("email"), "role": target.get("role")})
+    return {"ok": True}
 
 
 @router.get("/roles")
@@ -456,6 +537,21 @@ async def admin_patch_message(mid: str, body: dict,
     return {"ok": True, "status": status}
 
 
+@router.delete("/messages/{mid}/permanent")
+async def admin_delete_message_permanent(
+    mid: str,
+    user: dict = Depends(require_permission("messages.read")),
+):
+    """Hard-delete a contact message."""
+    msg = await db.contact_messages.find_one({"id": mid}, {"_id": 0, "email": 1, "subject": 1})
+    if not msg:
+        raise HTTPException(status_code=404, detail="Message not found")
+    await db.contact_messages.delete_one({"id": mid})
+    await audit_log(user, "delete_permanent", "message", mid,
+                    {"email": msg.get("email"), "subject": msg.get("subject")})
+    return {"ok": True}
+
+
 # ---------------- Newsletter subscribers ---------------------------------
 @router.get("/newsletter")
 async def admin_list_newsletter(user: dict = Depends(require_permission("messages.read"))):
@@ -473,4 +569,18 @@ async def admin_unsubscribe_newsletter(sub_id: str,
     if r.matched_count == 0:
         raise HTTPException(status_code=404, detail="Subscriber not found")
     await audit_log(user, "update", "newsletter", sub_id, {"status": "unsubscribed"})
+    return {"ok": True}
+
+
+@router.delete("/newsletter/{sub_id}/permanent")
+async def admin_delete_newsletter_permanent(
+    sub_id: str,
+    user: dict = Depends(require_permission("messages.read")),
+):
+    """Hard-delete a newsletter subscriber record."""
+    sub = await db.newsletter_subscribers.find_one({"id": sub_id}, {"_id": 0, "email": 1})
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscriber not found")
+    await db.newsletter_subscribers.delete_one({"id": sub_id})
+    await audit_log(user, "delete_permanent", "newsletter", sub_id, {"email": sub.get("email")})
     return {"ok": True}
