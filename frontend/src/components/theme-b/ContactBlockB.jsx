@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings, useHomeContent } from "@/hooks/useSiteSettings";
 import { getTextStyles } from "@/lib/sectionTypo";
+import Reveal from "@/components/theme-b/Reveal";
 
 /** Theme B — Contact Block: editorial pairing + premium email lockup. */
 export default function ContactBlockB() {
@@ -27,7 +28,7 @@ export default function ContactBlockB() {
     >
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-20 py-24 md:py-28">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 items-start">
-          <div className="md:col-span-5">
+          <Reveal variant="right" className="md:col-span-5" style={{ transitionDuration: "0.7s" }}>
             <div className="tb-section-eyebrow">
               <span className="rule" />
               <span
@@ -53,8 +54,8 @@ export default function ContactBlockB() {
                 ? "للتعاون البحثي والاستفسارات المؤسسية."
                 : "For research collaboration and institutional enquiries.")}
             </h2>
-          </div>
-          <div className="md:col-span-7 space-y-10">
+          </Reveal>
+          <Reveal variant="left" className="md:col-span-7 space-y-10" style={{ transitionDuration: "0.7s" }}>
             <p
               className="max-w-[60ch]"
               style={{
@@ -94,7 +95,7 @@ export default function ContactBlockB() {
                 <Arrow size={16} strokeWidth={1.6} />
               </Link>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

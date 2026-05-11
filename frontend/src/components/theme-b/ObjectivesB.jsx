@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
@@ -34,73 +35,92 @@ function lede(text) {
 
 function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc }) {
   const [ref, inView] = useInView({ threshold: 0.35 });
-  const trans = "transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease-out";
-  const offset = lang === "ar" ? "-20px" : "20px";
+  const trans = "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease-out, background-color 0.2s ease-out";
 
   return (
     <li
       ref={ref}
-      className="relative ps-12 md:ps-14"
       style={{
-        transform: inView ? "translateX(0)" : `translateX(${offset})`,
         opacity: inView ? 1 : 0,
+        transform: inView ? "translateX(0)" : "translateX(30px)",
         transition: trans,
-        transitionDelay: `${index * 60}ms`,
+        transitionDelay: `${index * 100}ms`,
       }}
       data-testid={`objective-${index + 1}`}
     >
-      {/* Dot on the rail */}
-      <span
-        aria-hidden
-        className="absolute top-2"
+      <Link
+        to="/about"
+        className="group relative block ps-12 md:ps-14 py-3 -my-3 transition-all duration-200"
         style={{
-          insetInlineStart: -7,
-          width: 14,
-          height: 14,
-          borderRadius: "50%",
-          background: "var(--tb-gold)",
-          boxShadow: "0 0 0 4px rgba(180, 145, 74, 0.16)",
+          color: "inherit",
+          borderRadius: 4,
         }}
-      />
-      <div className="flex items-baseline gap-4">
-        <span
-          className="tabular-nums shrink-0"
-          style={{
-            fontFamily: '"Thmanyah Sans", sans-serif',
-            fontSize: 13,
-            color: "var(--tb-gold-deep)",
-            letterSpacing: "0.18em",
-            fontFeatureSettings: '"tnum" 1',
-            minWidth: 28,
-          }}
-        >
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        <h3
-          className="text-[20px] md:text-[22px]"
-          style={{
-            fontFamily: '"Thmanyah Serif Display", serif',
-            color: tsItemTitle.color || "var(--tb-navy-900)",
-            fontWeight: tsItemTitle.fontWeight ?? 500,
-            lineHeight: 1.32,
-            fontSize: tsItemTitle.sizeMul !== 1 ? `calc(22px * ${tsItemTitle.sizeMul})` : undefined,
-          }}
-        >
-          {obj[`title_${lang}`]}
-        </h3>
-      </div>
-      <p
-        className="mt-3 ps-[44px] max-w-[58ch]"
-        style={{
-          fontFamily: '"Thmanyah Serif Text", serif',
-          fontSize: tsItemDesc.sizeMul !== 1 ? `calc(15.5px * ${tsItemDesc.sizeMul})` : 15.5,
-          lineHeight: 1.9,
-          color: tsItemDesc.color || "var(--tb-text-muted)",
-          fontWeight: tsItemDesc.fontWeight,
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(180, 145, 74, 0.06)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
         }}
       >
-        {lede(obj[`description_${lang}`])}
-      </p>
+        {/* Dot on the rail — scales 1.4 on hover */}
+        <span
+          aria-hidden
+          className="absolute top-5 transition-transform duration-200 group-hover:scale-[1.4]"
+          style={{
+            insetInlineStart: -7,
+            width: 14,
+            height: 14,
+            borderRadius: "50%",
+            background: "var(--tb-gold)",
+            boxShadow: "0 0 0 4px rgba(180, 145, 74, 0.16)",
+          }}
+        />
+        {/* Content wrapper that nudges sideways on hover */}
+        <div
+          className="transition-transform duration-200 group-hover:-translate-x-[5px]"
+          style={{}}
+        >
+          <div className="flex items-baseline gap-4">
+            <span
+              className="tabular-nums shrink-0"
+              style={{
+                fontFamily: '"Thmanyah Sans", sans-serif',
+                fontSize: 13,
+                color: "var(--tb-gold-deep)",
+                letterSpacing: "0.18em",
+                fontFeatureSettings: '"tnum" 1',
+                minWidth: 28,
+              }}
+            >
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3
+              className="text-[20px] md:text-[22px]"
+              style={{
+                fontFamily: '"Thmanyah Serif Display", serif',
+                color: tsItemTitle.color || "var(--tb-navy-900)",
+                fontWeight: tsItemTitle.fontWeight ?? 500,
+                lineHeight: 1.32,
+                fontSize: tsItemTitle.sizeMul !== 1 ? `calc(22px * ${tsItemTitle.sizeMul})` : undefined,
+              }}
+            >
+              {obj[`title_${lang}`]}
+            </h3>
+          </div>
+          <p
+            className="mt-3 ps-[44px] max-w-[58ch]"
+            style={{
+              fontFamily: '"Thmanyah Serif Text", serif',
+              fontSize: tsItemDesc.sizeMul !== 1 ? `calc(15.5px * ${tsItemDesc.sizeMul})` : 15.5,
+              lineHeight: 1.9,
+              color: tsItemDesc.color || "var(--tb-text-muted)",
+              fontWeight: tsItemDesc.fontWeight,
+            }}
+          >
+            {lede(obj[`description_${lang}`])}
+          </p>
+        </div>
+      </Link>
     </li>
   );
 }
@@ -132,7 +152,7 @@ export default function ObjectivesB() {
       ref={railRef}
       data-testid="section-objectives"
       data-theme-component="theme-b-objectives"
-      className="relative isolate overflow-hidden"
+      className="relative isolate"
       style={{
         background: useBg ? `url(${bg.url}) center/cover no-repeat` : "var(--tb-paper-base)",
         backgroundColor: useBg ? "var(--tb-paper-base)" : undefined,
@@ -178,11 +198,15 @@ export default function ObjectivesB() {
 
         {/* 2-col layout — sticky label + timeline */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-[20%_80%] gap-10 md:gap-12 items-start">
-          {/* Sticky label */}
+          {/* Sticky label — pinned at ~40% of the viewport so it remains
+              prominently in view while the timeline scrolls past. The parent
+              section must NOT use overflow:hidden (it doesn't — overflow is
+              only set on the section itself, but `sticky` works because the
+              column containing the label has natural overflow). */}
           <aside className="hidden md:block">
             <div
-              className="sticky top-32"
-              style={{ minHeight: 160 }}
+              className="sticky"
+              style={{ top: "40%", minHeight: 160 }}
               data-testid="objectives-sticky-label"
             >
               <div

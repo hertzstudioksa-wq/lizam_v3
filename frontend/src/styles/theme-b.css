@@ -433,6 +433,103 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
 .tb-rise-d3 { animation-delay: 300ms; }
 .tb-rise-d4 { animation-delay: 400ms; }
 
+/* ---------- Hero staggered entrance (top → out) ----------
+ * Eyebrow falls in from above (-15px), the rest slide up (+20px). All start
+ * invisible; opacity & transform animate together. Delays match the spec. */
+@keyframes tb-fall {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes tb-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tb-fall { animation: tb-fall 700ms ease-out both; }
+.tb-up   { animation: tb-up   700ms ease-out both; }
+.tb-delay-0   { animation-delay: 0s; }
+.tb-delay-150 { animation-delay: 0.15s; }
+.tb-delay-300 { animation-delay: 0.30s; }
+.tb-delay-450 { animation-delay: 0.45s; }
+
+/* ---------- Ken Burns on hero background ----------
+ * 12s alternating zoom — gives the still photo a slow breathing motion. */
+@keyframes tb-ken-burns {
+  0%   { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.06) translate(-0.6%, -0.6%); }
+}
+.tb-ken-burns {
+  animation: tb-ken-burns 12s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* ---------- Reusable in-view reveal utilities ----------
+ * Components flip a data attribute on the element when it enters the viewport
+ * (via the useInView hook). The data-state="in" rule then plays the transition
+ * exactly once. transition is intentionally short — entrance only. */
+.tb-reveal {
+  opacity: 0;
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  will-change: opacity, transform;
+}
+.tb-reveal[data-state="in"] { opacity: 1; transform: none !important; }
+.tb-reveal-up           { transform: translateY(40px); }
+.tb-reveal-left         { transform: translateX(-60px); }   /* enters FROM left */
+.tb-reveal-right        { transform: translateX(60px);  }   /* enters FROM right */
+.tb-reveal-left-soft    { transform: translateX(-50px); }
+.tb-reveal-right-soft   { transform: translateX(50px); }
+.tb-reveal-zoom         { transform: scale(0.95); }
+.tb-reveal-scaleX       { transform: scaleX(0); transform-origin: center; }
+.tb-reveal-scaleX[data-state="in"] { transform: scaleX(1) !important; }
+
+/* Stagger delays — used on lists (cards) when entering together */
+.tb-stagger-0   { transition-delay: 0s; }
+.tb-stagger-1   { transition-delay: 0.10s; }
+.tb-stagger-2   { transition-delay: 0.20s; }
+.tb-stagger-3   { transition-delay: 0.30s; }
+.tb-stagger-4   { transition-delay: 0.40s; }
+.tb-stagger-5   { transition-delay: 0.50s; }
+
+/* Card hover lift — used by Fields/Publication cards. */
+.tb-card-hover {
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+.tb-card-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 14px 36px rgba(10, 17, 28, 0.10);
+}
+
+/* "Read more" underline reveal — animates from start-edge to end-edge. */
+.tb-read-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tb-read-link::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: -3px;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: inline-start;
+  transition: transform 0.35s ease-out;
+}
+.tb-read-link:hover::after { transform: scaleX(1); }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .tb-fall, .tb-up, .tb-rise, .tb-ken-burns,
+  .tb-reveal, .tb-reveal[data-state="in"] {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
 /* ---------- Mobile menu ---------- */
 .tb-mobile-overlay { background: var(--tb-paper-base); }
 .tb-mobile-link {

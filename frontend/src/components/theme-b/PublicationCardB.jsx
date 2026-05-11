@@ -193,7 +193,7 @@ export default function PublicationCardB({ pub, testid = "pub-card" }) {
             </span>
           </div>
           <span
-            className="tb-card-arrow inline-flex items-center gap-1.5"
+            className="tb-card-arrow tb-read-link inline-flex items-center gap-1.5"
             style={{
               color: "var(--tb-navy-900)",
               fontSize: 12,

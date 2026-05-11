@@ -73,7 +73,7 @@ export default function HeroB() {
               src={bg.url}
               alt={bg[`alt_${lang}`] || bg.alt_en || bg.alt_ar || ""}
               aria-hidden
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full tb-ken-burns"
               style={{
                 objectFit: "cover",
                 objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
@@ -104,8 +104,8 @@ export default function HeroB() {
       />
 
       <div className="relative z-10 mx-auto max-w-[920px] px-6 md:px-10 text-center flex flex-col items-center justify-center" style={{ minHeight: "calc(82vh - 240px)" }}>
-        {/* Eyebrow */}
-        <div className="tb-rise inline-flex items-center gap-3" data-testid="hero-eyebrow">
+        {/* Eyebrow — falls in from above at t=0 */}
+        <div className="tb-fall tb-delay-0 inline-flex items-center gap-3" data-testid="hero-eyebrow">
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
           <span
             className="tb-overline"
@@ -121,9 +121,9 @@ export default function HeroB() {
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
         </div>
 
-        {/* Title */}
+        {/* Title — slides up at t=0.15s */}
         <h1
-          className="tb-display tb-rise tb-rise-d1 mt-12 mx-auto"
+          className="tb-display tb-up tb-delay-150 mt-12 mx-auto"
           style={{
             fontSize: `calc(clamp(2.8rem, 6.4vw, 5.4rem) * ${titleScale} * ${tsTitle.__sizeMul ?? 1})`,
             lineHeight: lang === "ar" ? 1.18 : 1.04,
@@ -140,11 +140,11 @@ export default function HeroB() {
           )}
         </h1>
 
-        {/* Subtitle */}
+        {/* Subtitle — slides up at t=0.3s */}
         {subtitle && (
           <p
             data-testid="hero-subtitle"
-            className="tb-rise tb-rise-d2 mt-12 mx-auto"
+            className="tb-up tb-delay-300 mt-12 mx-auto"
             style={{
               color: tsSubtitle.color || "rgba(251, 250, 247, 0.78)",
               fontFamily: '"Thmanyah Serif Text", serif',
@@ -158,8 +158,8 @@ export default function HeroB() {
           </p>
         )}
 
-        {/* CTAs — primary always shown; secondary appears only when admin sets a label */}
-        <div className="mt-16 tb-rise tb-rise-d3 flex flex-wrap items-center justify-center gap-4">
+        {/* CTAs — slide up at t=0.45s */}
+        <div className="mt-16 tb-up tb-delay-450 flex flex-wrap items-center justify-center gap-4">
           <Link
             to={ctaPrimaryLink}
             className="inline-flex items-center gap-3 px-9 py-4 transition-all duration-400"

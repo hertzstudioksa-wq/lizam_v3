@@ -3,6 +3,7 @@ import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 import { getTextStyles } from "@/lib/sectionTypo";
+import Reveal from "@/components/theme-b/Reveal";
 
 const ICONS = {
   "scroll-text": ScrollText,
@@ -106,14 +107,17 @@ export default function FieldsOfWorkB() {
         </div>
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((f) => {
+          {items.map((f, i) => {
             const Icon = ICONS[f.icon] || Compass;
             return (
-              <article
+              <Reveal
                 key={f.id}
-                className="tb-card flex flex-col"
+                variant="up"
+                delay={Math.min(5, i)}
+                as="article"
+                className="tb-card tb-card-hover flex flex-col"
+                style={{ minHeight: 240, transitionDuration: "0.5s" }}
                 data-testid={`field-${f.sort_order}`}
-                style={{ minHeight: 240 }}
               >
                 <div className="flex items-center justify-between">
                   <span
@@ -164,7 +168,7 @@ export default function FieldsOfWorkB() {
                 >
                   {f[`description_${lang}`]}
                 </p>
-              </article>
+              </Reveal>
             );
           })}
         </div>

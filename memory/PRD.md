@@ -654,6 +654,52 @@ multiplier that respects existing responsive `clamp()` values:
 
 ---
 
+## Update — Feb 11, 2026 · Homepage motion pass + Mission/Vision v4 + Objectives v4
+
+Full-page motion overhaul (no framer-motion — pure CSS keyframes + a tiny
+shared `<Reveal>` component bound to IntersectionObserver). All animations
+play **once** on first viewport entry and respect `prefers-reduced-motion`.
+
+### Animation library (`theme-b.css`)
+- `tb-fall` / `tb-up` keyframes + `tb-delay-0/150/300/450` for Hero stagger.
+- `tb-ken-burns` (12s ease-in-out alternate) for Hero background.
+- `.tb-reveal` family (up · left · right · left-soft · right-soft · zoom · scaleX)
+  with `data-state="in"` toggle — driven by the new `<Reveal>` component.
+- `.tb-stagger-0..5` (100ms steps) — used on lists/grids.
+- `.tb-card-hover` (scale 1.02 + lift shadow on hover).
+- `.tb-read-link` (underline reveal animation on hover, dir-aware).
+- `@media (prefers-reduced-motion: reduce)` opt-out for all the above.
+
+### Per-component changes (Theme B only — no admin/backend touched)
+
+| Component | Change |
+|---|---|
+| **HeaderB** | Scroll threshold raised to **80px**. On scroll-past: solid navy bg + 8px backdrop-blur + soft shadow + light text color. Smooth 0.3s transition. |
+| **HeroB** | Eyebrow `tb-fall` @ 0s, Title `tb-up` @ 0.15s, Subtitle `tb-up` @ 0.3s, CTAs `tb-up` @ 0.45s. Ken-Burns scale loop on bg image. |
+| **AboutB** | Image enters from physical right (`tb-reveal-right`, 0.8s) · text from physical left (0.8s) — both on first view. |
+| **PullBandB** | Quote fades + zoom from 0.95 → 1 (0.8s). Centered gold rule animates `scaleX(0→1)` from center, 0.6s, delay 0.3s. |
+| **FieldsOfWorkB** | 5 cards stagger up (40px → 0), 0.5s each, 100ms apart. Hover lifts the card (scale 1.02 + shadow). |
+| **FeaturedPublicationsB** | 3 cards stagger up, 600ms each, 120ms apart. Hover lifts. "اقرأ" link gets underline-grow on hover (RTL-aware). |
+| **ContactBlockB** | Headline column reveals from physical right · body column from physical left, both 0.7s. |
+| **MissionVisionB** | Already-split halves now **fully clickable** (`<Link to="/about">`), with a soft hover veil + "اقرأ أكثر ←" caption fade. Text alignment "pulls apart" toward the screen edges (RTL/LTR aware). Body lede grew to **130 chars**. Enter animations: ±50px (0.7s). |
+| **ObjectivesB** | Sticky label moved to `top: 40%` (removed `overflow-hidden` from section). Each item now wrapped in `<Link to="/about">` with hover: dot scales 1.4×, content nudges `-translate-x-[5px]`, light gold row background. Per-item enter: `translateX(30px → 0)` + fade, 0.5s, 100ms stagger. Rail still fills with scroll. |
+
+### Verified live (Playwright)
+- Header at top: `bg = rgba(0,0,0,0)` (transparent) · after scroll 150px: `bg = rgba(10,17,28,0.86)`, shadow visible · `data-scrolled="true"`.
+- Mission left @ x=0, Vision right @ x=960 — split correct in RTL.
+- Hover on a half: "اقرأ أكثر" caption visible at bottom.
+- Objectives rail scaleY = 0.785 mid-scroll → 1 at end.
+- Sticky "الأهداف" pinned at viewport top: 432px (≈40%).
+- 5 timeline items present, first row highlights on hover.
+- `/admin/home` opens, all 9 section cards intact, 0 JSX/runtime errors.
+
+### Outstanding (non-blocking)
+- 1 stale CMS image reference (`62290dc7…png`) returns 404 — pre-existing,
+  unrelated to this change; admin can replace via /admin/images.
+- DnD reorder upgrade · Resend wiring · `HomeAdmin.jsx` refactor · deploy prep.
+
+---
+
 ## Update — Feb 10, 2026 (later 4) · Per-field typography rolled out to ALL sections
 
 After Hero POC was approved, generalized the per-field typography controls

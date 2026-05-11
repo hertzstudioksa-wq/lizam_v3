@@ -2,6 +2,7 @@ import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 import { getTextStyles } from "@/lib/sectionTypo";
+import Reveal from "@/components/theme-b/Reveal";
 
 /** Theme B — About (refined): editorial layout paired with curated portrait image. */
 export default function AboutB() {
@@ -41,9 +42,9 @@ export default function AboutB() {
     >
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* Image column (LTR: left, RTL: right) */}
+          {/* Image column (LTR: left, RTL: right) — enters from physical right */}
           {showImg && (
-            <div className="lg:col-span-5 order-2 lg:order-1">
+            <Reveal variant="right" className="lg:col-span-5 order-2 lg:order-1" style={{ transitionDuration: "0.8s" }}>
               <div
                 className="overflow-hidden relative"
                 style={{
@@ -64,11 +65,16 @@ export default function AboutB() {
                   style={{ objectFit: "cover", objectPosition: `${imgFx}% ${imgFy}%` }}
                 />
               </div>
-            </div>
+            </Reveal>
           )}
 
-          {/* Text column */}
-          <div className={`order-1 lg:order-2 ${showImg ? "lg:col-span-7" : "lg:col-span-12"}`}>
+          {/* Text column — enters from physical left */}
+          <Reveal
+            variant="left"
+            as="div"
+            className={`order-1 lg:order-2 ${showImg ? "lg:col-span-7" : "lg:col-span-12"}`}
+            style={{ transitionDuration: "0.8s" }}
+          >
             <div className="tb-section-eyebrow">
               <span className="rule" />
               <span
@@ -112,7 +118,7 @@ export default function AboutB() {
                 >{extended}</p>
               )}
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

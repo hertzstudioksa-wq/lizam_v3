@@ -6,6 +6,7 @@ import { useImageAssets } from "@/hooks/useImageAssets";
 import { usePublications } from "@/hooks/usePublications";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
 import { getTextStyles } from "@/lib/sectionTypo";
+import Reveal from "@/components/theme-b/Reveal";
 
 /**
  * Theme B — Featured Publications (Nadeem-inspired refinement).
@@ -127,10 +128,18 @@ export default function FeaturedPublicationsB() {
           </p>
         </header>
 
-        {/* 3 horizontal cards */}
+        {/* 3 horizontal cards — staggered in, hover lifts */}
         <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
-          {items.map((pub) => (
-            <PublicationCardB key={pub.id} pub={pub} testid={`featured-pub-${pub.id}`} />
+          {items.map((pub, i) => (
+            <Reveal
+              key={pub.id}
+              variant="up"
+              delay={Math.min(5, i + 1)}
+              className="tb-card-hover"
+              style={{ transitionDuration: "0.6s" }}
+            >
+              <PublicationCardB pub={pub} testid={`featured-pub-${pub.id}`} />
+            </Reveal>
           ))}
         </div>
 

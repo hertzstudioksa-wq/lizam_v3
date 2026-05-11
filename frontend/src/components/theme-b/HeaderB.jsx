@@ -39,7 +39,9 @@ export default function HeaderB() {
   const solid = scrolled || !overDarkHero;
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    // Threshold raised to 80px per design spec — gives a clear "I've scrolled
+    // into content" beat before the header solidifies.
+    const onScroll = () => setScrolled(window.scrollY > 80);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -64,16 +66,27 @@ export default function HeaderB() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500`}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300`}
       style={{
-        background: solid ? "rgba(249, 247, 243, 0.92)" : "transparent",
-        backdropFilter: solid ? "blur(14px)" : "none",
-        borderBottom: solid ? "1px solid var(--tb-hairline)" : "1px solid transparent",
-        // When over the dark hero (not solid), text/links are paper-light.
-        // When solid (scrolled or on a non-hero route), header sits on paper bg with navy text.
-        ["--tb-header-fg"]: solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
-        ["--tb-header-fg-muted"]: solid ? "var(--tb-text-muted)" : "rgba(251, 250, 247, 0.78)",
-        color: solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
+        background: solid
+          ? (scrolled ? "rgba(10, 17, 28, 0.86)" : "rgba(249, 247, 243, 0.92)")
+          : "transparent",
+        backdropFilter: solid ? "blur(8px)" : "none",
+        WebkitBackdropFilter: solid ? "blur(8px)" : "none",
+        borderBottom: solid ? "1px solid var(--tb-hairline-soft)" : "1px solid transparent",
+        boxShadow: scrolled ? "0 6px 24px rgba(10, 17, 28, 0.18)" : "none",
+        // Foreground colors: when scrolled-past-80 (dark navy bg) use paper text,
+        // when solid-on-paper (non-hero routes) use navy text,
+        // when over dark hero use paper text.
+        ["--tb-header-fg"]: scrolled
+          ? "var(--tb-paper-base)"
+          : (solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)"),
+        ["--tb-header-fg-muted"]: scrolled
+          ? "rgba(251, 250, 247, 0.78)"
+          : (solid ? "var(--tb-text-muted)" : "rgba(251, 250, 247, 0.78)"),
+        color: scrolled
+          ? "var(--tb-paper-base)"
+          : (solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)"),
       }}
       data-testid="site-header"
       data-theme-component="theme-b-header"
@@ -82,7 +95,7 @@ export default function HeaderB() {
     >
       <div className="mx-auto max-w-[1360px] px-5 md:px-10 lg:px-14">
         <div className="flex items-center justify-between h-[72px] md:h-[82px]">
-          <Logo height={44} variant={solid ? "default" : "light"} data-testid="header-logo" />
+          <Logo height={44} variant={(solid && !scrolled) ? "default" : "light"} data-testid="header-logo" />
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-10" data-testid="desktop-nav">
