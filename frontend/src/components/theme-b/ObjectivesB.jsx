@@ -224,31 +224,57 @@ export default function ObjectivesB() {
 
         {/* 2-col layout — sticky label + timeline */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-[20%_80%] gap-10 md:gap-12 items-start">
-          {/* Sticky label — pinned at ~40% of the viewport so it remains
-              prominently in view while the timeline scrolls past. The parent
-              section must NOT use overflow:hidden (it doesn't — overflow is
-              only set on the section itself, but `sticky` works because the
-              column containing the label has natural overflow). */}
-          <aside className="hidden md:block">
+          {/* Vertical label — runs the FULL height of the timeline column
+              (no longer sticky). Implementation note: we deliberately avoid
+              `writing-mode: vertical-rl` because it breaks Arabic ligatures
+              (each letter renders in isolated form). Instead we lay out a
+              regular horizontal span and rotate it 90° around its center —
+              Arabic shaping stays intact and the letters connect naturally. */}
+          <aside className="hidden md:block self-stretch" style={{ position: "relative" }}>
             <div
-              className="sticky"
-              style={{ top: "40%", minHeight: 160 }}
               data-testid="objectives-sticky-label"
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
             >
+              {/* Inner rotation box. width=column height (rotated, so visually
+                  the rotated span occupies the *column* vertical axis). The
+                  rotated span's natural rendered width then becomes vertical. */}
               <div
-                className="inline-flex"
                 style={{
-                  writingMode: "vertical-rl",
-                  transform: "rotate(180deg)",
-                  fontFamily: '"Thmanyah Serif Display", serif',
-                  fontSize: "clamp(3rem, 5vw, 4.4rem)",
-                  fontWeight: 500,
-                  lineHeight: 1,
-                  color: "var(--tb-gold)",
-                  letterSpacing: lang === "ar" ? "0.04em" : "0.06em",
+                  // For both AR and EN we use the same rotation; the word reads
+                  // top → bottom which is the most graceful pairing with a
+                  // vertical timeline.
+                  transform: "rotate(-90deg)",
+                  transformOrigin: "center",
+                  whiteSpace: "nowrap",
+                  display: "inline-block",
+                  // Use a width that — when rotated — fills the column height.
+                  // The trick: an absolutely-positioned flex parent (above)
+                  // centers this block; we set a min-width via the font size
+                  // and letter-spacing so the rotated text reaches edge-to-edge.
                 }}
               >
-                {lang === "ar" ? "الأهداف" : "Objectives"}
+                <span
+                  style={{
+                    fontFamily: '"Thmanyah Serif Display", serif',
+                    // Larger size + generous letter-spacing fills the rail length.
+                    // Sized via vh so the label scales with the viewport too.
+                    fontSize: "clamp(4.5rem, 10vw, 8.5rem)",
+                    fontWeight: 500,
+                    lineHeight: 1,
+                    color: "var(--tb-gold)",
+                    letterSpacing: lang === "ar" ? "0.06em" : "0.18em",
+                    display: "inline-block",
+                  }}
+                >
+                  {lang === "ar" ? "الأهداف" : "Objectives"}
+                </span>
               </div>
             </div>
           </aside>
