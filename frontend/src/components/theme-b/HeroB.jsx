@@ -42,6 +42,13 @@ export default function HeroB() {
   const tsSubtitle = tsOf("subtitle");
   const tsCta1 = tsOf("cta_primary");
   const tsCta2 = tsOf("cta_secondary");
+  // Per-field text alignment overrides (right/center/left). Empty string ⇒
+  // keep the component's default.
+  const aligns = home?.section_styles?.hero?.text_aligns || {};
+  const alignOf = (k) => {
+    const v = aligns[k];
+    return v === "right" || v === "center" || v === "left" ? v : undefined;
+  };
 
   // Eyebrow — admin override first, then sensible default
   const eyebrow = home?.[`hero_eyebrow_${lang}`] || (lang === "ar"
@@ -52,13 +59,18 @@ export default function HeroB() {
   const [line1, line2] = (title || "").split("\n");
   // Admin-controlled background color override (falls back to theme navy).
   const bgColor = home?.section_styles?.hero?.bg_color || "var(--tb-navy-900)";
+  // Optional diagonal accent gradient overlay (bottom-left corner)
+  const gradAccent = home?.section_styles?.hero?.gradient_accent;
+  const gradientStyle = gradAccent
+    ? { backgroundImage: `linear-gradient(to bottom left, transparent 60%, ${gradAccent}40 100%)` }
+    : null;
 
   return (
     <section
       id="hero"
       className="relative isolate pt-[120px] md:pt-[140px] pb-24 md:pb-28 overflow-hidden"
       style={{
-        background: bgColor,
+        backgroundColor: bgColor,
         color: "var(--tb-paper-base)",
         minHeight: "82vh",
       }}
@@ -105,6 +117,15 @@ export default function HeroB() {
         }}
       />
 
+      {/* Optional admin-controlled diagonal accent overlay */}
+      {gradientStyle && (
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{ ...gradientStyle, zIndex: 3, pointerEvents: "none" }}
+        />
+      )}
+
       <div className="relative z-10 mx-auto max-w-[920px] px-6 md:px-10 text-center flex flex-col items-center justify-center" style={{ minHeight: "calc(82vh - 240px)" }}>
         {/* Eyebrow — falls in from above at t=0 */}
         <div className="tb-fall tb-delay-0 inline-flex items-center gap-3" data-testid="hero-eyebrow">
@@ -116,6 +137,7 @@ export default function HeroB() {
               letterSpacing: "0.22em",
               fontSize: tsEyebrow.__sizeMul ? `calc(0.78rem * ${tsEyebrow.__sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
+              textAlign: alignOf("eyebrow"),
             }}
           >
             {eyebrow}
@@ -133,6 +155,7 @@ export default function HeroB() {
             letterSpacing: lang === "ar" ? "0" : "-0.018em",
             maxWidth: "18ch",
             color: tsTitle.color || "var(--tb-paper-base)",
+            textAlign: alignOf("title"),
           }}
           data-testid="hero-title"
         >
@@ -154,6 +177,7 @@ export default function HeroB() {
               fontWeight: tsSubtitle.fontWeight,
               lineHeight: 1.95,
               maxWidth: "60ch",
+              textAlign: alignOf("subtitle"),
             }}
           >
             {subtitle}

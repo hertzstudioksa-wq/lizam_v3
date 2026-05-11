@@ -42,7 +42,7 @@ export function Field({ label, hint, children, dir }) {
   );
 }
 
-export function TextInput({ value, onChange, dir, placeholder, type = "text", testid }) {
+export function TextInput({ value, onChange, dir, placeholder, type = "text", testid, style }) {
   return (
     <input
       type={type}
@@ -51,12 +51,13 @@ export function TextInput({ value, onChange, dir, placeholder, type = "text", te
       dir={dir}
       placeholder={placeholder}
       className="w-full h-11 px-3 border border-rule focus:border-navy outline-none text-[14.5px] bg-white"
+      style={style}
       data-testid={testid}
     />
   );
 }
 
-export function TextArea({ value, onChange, dir, placeholder, rows = 4, testid }) {
+export function TextArea({ value, onChange, dir, placeholder, rows = 4, testid, style }) {
   return (
     <textarea
       value={value ?? ""}
@@ -65,6 +66,7 @@ export function TextArea({ value, onChange, dir, placeholder, rows = 4, testid }
       rows={rows}
       placeholder={placeholder}
       className="w-full px-3 py-2.5 border border-rule focus:border-navy outline-none text-[14.5px] leading-[1.85] resize-y bg-white"
+      style={style}
       data-testid={testid}
     />
   );

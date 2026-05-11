@@ -544,16 +544,101 @@ function FieldTypoControls({ form, sectionKey, fieldKey, testid }) {
   );
 }
 
+/**
+ * <AlignToggle> — 3 small toggle buttons (Right · Center · Left) writing/reading
+ * `section_styles[sectionKey].text_aligns[fieldKey]`.
+ *
+ * Values stored: "right" | "center" | "left" | "" (empty = use the component
+ * default, no override). Lives on its own row above the input.
+ */
+function AlignToggle({ form, sectionKey, fieldKey, testid }) {
+  const styles = form.value.section_styles || {};
+  const sectionObj = styles[sectionKey] || {};
+  const aligns = sectionObj.text_aligns || {};
+  const cur = aligns[fieldKey] || "";
+  const tid = testid || `align-${sectionKey}-${fieldKey}`;
+
+  const setVal = (v) => {
+    const nextAligns = { ...aligns };
+    if (v === "" || v === cur) {
+      delete nextAligns[fieldKey];
+    } else {
+      nextAligns[fieldKey] = v;
+    }
+    form.patch("section_styles", {
+      ...styles,
+      [sectionKey]: { ...sectionObj, text_aligns: nextAligns },
+    });
+  };
+
+  const Btn = ({ value, glyph, label }) => {
+    const active = cur === value;
+    return (
+      <button
+        type="button"
+        onClick={() => setVal(value)}
+        className={`px-2 h-7 text-[12px] border transition-colors ${
+          active
+            ? "bg-navy-deep text-paper border-navy-deep"
+            : "bg-white text-navy-deep border-rule hover:border-brass"
+        }`}
+        title={label}
+        aria-pressed={active}
+        data-testid={`${tid}-${value}`}
+      >
+        {glyph}
+      </button>
+    );
+  };
+
+  return (
+    <div className="flex items-center gap-2 mb-1.5" data-testid={tid}>
+      <span className="text-[10.5px] uppercase tracking-[0.14em] text-mute">محاذاة</span>
+      <div className="inline-flex">
+        <Btn value="right" glyph="⇥" label="يمين" />
+        <Btn value="center" glyph="≡" label="وسط" />
+        <Btn value="left" glyph="⇤" label="يسار" />
+      </div>
+      {cur && (
+        <button
+          type="button"
+          onClick={() => setVal("")}
+          className="text-[10.5px] text-mute hover:text-navy-deep underline underline-offset-2"
+          data-testid={`${tid}-reset`}
+        >
+          افتراضي
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Resolve a per-field alignment from the form state. */
+function alignOf(form, sectionKey, fieldKey) {
+  return form.value?.section_styles?.[sectionKey]?.text_aligns?.[fieldKey] || "";
+}
+
+
+
 /** Pair of AR/EN inputs in a 2-col grid. */
 function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows = 3, testid, sectionKey, fieldKey }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
   const Cmp = multiline ? TextArea : TextInput;
   const showTypo = sectionKey && fieldKey;
+  // Per-field alignment override (saved in section_styles.{section}.text_aligns)
+  // Applied as inline style on BOTH the AR and EN inputs so the admin sees the
+  // result live. Empty string falls back to the browser's natural dir-based
+  // alignment for each input.
+  const align = showTypo ? alignOf(form, sectionKey, fieldKey) : "";
+  const alignStyle = align ? { textAlign: align } : undefined;
   return (
     <div>
       {showTypo && (
         <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`typo-${testid}`} />
+      )}
+      {showTypo && (
+        <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`align-${testid}`} />
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية", "AR")}`}>
@@ -563,6 +648,7 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
             dir="rtl"
             rows={rows}
             testid={`${testid}-ar`}
+            style={alignStyle}
           />
         </Field>
         <Field label={`${tr(labelAr, labelEn)} — EN`}>
@@ -571,6 +657,7 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
             onChange={(v) => form.patch(keyEn, v)}
             rows={rows}
             testid={`${testid}-en`}
+            style={alignStyle}
           />
         </Field>
       </div>
@@ -578,21 +665,26 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
   );
 }
 
-/** Eyebrow AR/EN grid with optional typography controls strip above. */
+/** Eyebrow AR/EN grid with optional typography controls + alignment toggle above. */
 function EyebrowRow({ form, keyAr, keyEn, sectionKey, testid }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
+  const align = sectionKey ? alignOf(form, sectionKey, "eyebrow") : "";
+  const alignStyle = align ? { textAlign: align } : undefined;
   return (
     <div>
       {sectionKey && (
         <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey="eyebrow" testid={`typo-${testid || sectionKey}-eyebrow`} />
       )}
+      {sectionKey && (
+        <AlignToggle form={form} sectionKey={sectionKey} fieldKey="eyebrow" testid={`align-${testid || sectionKey}-eyebrow`} />
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <Field label={tr("التسمية الصغيرة (eyebrow) — عربية", "Eyebrow AR")}>
-          <TextInput value={form.value[keyAr] || ""} onChange={(v) => form.patch(keyAr, v)} dir="rtl" testid={`${testid}-eyebrow-ar`} />
+          <TextInput value={form.value[keyAr] || ""} onChange={(v) => form.patch(keyAr, v)} dir="rtl" testid={`${testid}-eyebrow-ar`} style={alignStyle} />
         </Field>
         <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-          <TextInput value={form.value[keyEn] || ""} onChange={(v) => form.patch(keyEn, v)} testid={`${testid}-eyebrow-en`} />
+          <TextInput value={form.value[keyEn] || ""} onChange={(v) => form.patch(keyEn, v)} testid={`${testid}-eyebrow-en`} style={alignStyle} />
         </Field>
       </div>
     </div>
@@ -696,6 +788,86 @@ function BgColorControl({ form, sectionKey, styleKey = "bg_color", labelAr, labe
   );
 }
 
+/**
+ * <GradientAccentControl> — picks an accent color used to draw a subtle
+ * diagonal gradient overlay in the bottom-left corner of the section.
+ *
+ * Storage: `section_styles[sectionKey].gradient_accent` (hex string).
+ * Empty = no gradient (section uses its flat bg_color only).
+ *
+ * Public components apply it as:
+ *   linear-gradient(to bottom left, transparent 60%, <accent>40 100%)
+ * over the existing background (transparent stops keep the bg visible).
+ */
+function GradientAccentControl({ form, sectionKey, labelAr, labelEn, testid }) {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
+  const current = form.value?.section_styles?.[sectionKey]?.gradient_accent || "";
+  const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  const swatchValue = HEX_RE.test(current) ? current : "#8B6914";
+  const setVal = (v) => {
+    const sectionStyles = { ...(form.value.section_styles || {}) };
+    const cur = { ...(sectionStyles[sectionKey] || {}) };
+    if (v === "" || v == null) {
+      delete cur.gradient_accent;
+    } else {
+      cur.gradient_accent = v;
+    }
+    sectionStyles[sectionKey] = cur;
+    form.patch("section_styles", sectionStyles);
+  };
+  const tid = testid || `gradient-${sectionKey}`;
+  return (
+    <div className="mt-2" data-testid={tid}>
+      <div className="flex items-center gap-3 px-3 py-2 bg-paper border border-rule">
+        <span className="text-[11.5px] uppercase tracking-[0.14em] text-brass shrink-0">
+          {tr(labelAr || "لون تدرج الخلفية", labelEn || "Gradient accent")}
+        </span>
+        <input
+          type="color"
+          value={swatchValue}
+          onChange={(e) => setVal(e.target.value)}
+          className="w-9 h-9 cursor-pointer rounded border border-rule"
+          style={{ padding: 2, background: "transparent" }}
+          data-testid={`${tid}-swatch`}
+          aria-label={tr("اختر لون", "Pick color")}
+        />
+        <input
+          type="text"
+          value={current}
+          onChange={(e) => setVal(e.target.value.trim())}
+          placeholder="#8B6914"
+          spellCheck={false}
+          className="font-mono text-[12.5px] px-2 py-1 border border-rule bg-paper focus:outline-none focus:border-brass uppercase"
+          style={{ width: 110 }}
+          data-testid={`${tid}-hex`}
+        />
+        <button
+          type="button"
+          onClick={() => setVal("")}
+          className="text-[11.5px] text-mute hover:text-navy-deep underline-offset-2 hover:underline"
+          data-testid={`${tid}-reset`}
+        >
+          {tr("إعادة الافتراضي", "Reset")}
+        </button>
+        {current === "" && (
+          <span className="text-[10.5px] text-mute italic ms-auto">
+            {tr("(بدون تدرج)", "(no gradient)")}
+          </span>
+        )}
+      </div>
+      <div className="text-[11px] text-mute mt-1.5 px-1">
+        {tr(
+          "يُطبَّق كلون ثانوي في زاوية الخلفية السفلى-اليسرى بشفافية خفيفة.",
+          "Applied as a soft accent in the bottom-left corner of the section.",
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
 
 
 
@@ -704,10 +876,15 @@ function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid, sectionKey, fiel
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
   const showTypo = sectionKey && fieldKey;
+  const align = showTypo ? alignOf(form, sectionKey, fieldKey) : "";
+  const alignStyle = align ? { textAlign: align } : undefined;
   return (
     <div>
       {showTypo && (
         <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`typo-${testid}`} />
+      )}
+      {showTypo && (
+        <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`align-${testid}`} />
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية (نقطة في كل سطر)", "AR (one per line)")}`}>
@@ -717,6 +894,7 @@ function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid, sectionKey, fiel
           dir="rtl"
           rows={5}
           testid={`${testid}-ar`}
+          style={alignStyle}
         />
       </Field>
       <Field label={`${tr(labelAr, labelEn)} — ${tr("إنجليزية (نقطة في كل سطر)", "EN (one per line)")}`}>
@@ -725,6 +903,7 @@ function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid, sectionKey, fiel
           onChange={(v) => form.patch(keyEn, textToArr(v))}
           rows={5}
           testid={`${testid}-en`}
+          style={alignStyle}
         />
       </Field>
       </div>
@@ -937,6 +1116,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="hero"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="hero" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -973,6 +1153,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="about"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="about" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1023,6 +1204,7 @@ export default function HomeAdmin() {
           <BgColorControl form={form} sectionKey="mission" styleKey="vision_bg"
             labelAr="لون خلفية الرؤية" labelEn="Vision half background"
             testid="bg-color-vision-half" />
+          <GradientAccentControl form={form} sectionKey="mission" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1056,6 +1238,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="pull_band"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="pull_band" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1115,6 +1298,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="objectives"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="objectives" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1188,6 +1372,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="fields_of_work"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="fields_of_work" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1241,6 +1426,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="featured_publications"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="featured_publications" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1271,6 +1457,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="contact"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="contact" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1292,6 +1479,7 @@ export default function HomeAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="newsletter"
             labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="newsletter" />
         </SectionCard>
 
       </div>

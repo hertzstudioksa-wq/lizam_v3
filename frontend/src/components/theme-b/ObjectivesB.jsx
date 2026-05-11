@@ -3,7 +3,7 @@ import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 import { useInView, useScrollProgress } from "@/hooks/useInView";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Objectives (vertical timeline v3).
@@ -33,7 +33,7 @@ function lede(text) {
   return first.length > 100 ? first.slice(0, 100).trimEnd() + "…" : first;
 }
 
-function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc }) {
+function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc, alignItemTitle, alignItemDesc }) {
   const [ref, inView] = useInView({ threshold: 0.35 });
   const trans = "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease-out, background-color 0.2s ease-out";
 
@@ -102,6 +102,7 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc }) {
                 fontWeight: tsItemTitle.fontWeight ?? 500,
                 lineHeight: 1.32,
                 fontSize: tsItemTitle.sizeMul !== 1 ? `calc(22px * ${tsItemTitle.sizeMul})` : undefined,
+                textAlign: alignItemTitle || undefined,
               }}
             >
               {obj[`title_${lang}`]}
@@ -115,6 +116,7 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc }) {
               lineHeight: 1.9,
               color: tsItemDesc.color || "var(--tb-text-muted)",
               fontWeight: tsItemDesc.fontWeight,
+              textAlign: alignItemDesc || undefined,
             }}
           >
             {lede(obj[`description_${lang}`])}
@@ -145,6 +147,18 @@ export default function ObjectivesB() {
   const tsEyebrow = getTextStyles(home, "objectives", "eyebrow");
   const tsItemTitle = getTextStyles(home, "objectives", "item_title");
   const tsItemDesc = getTextStyles(home, "objectives", "item_desc");
+  // Per-field alignment overrides
+  const alignEyebrow = getTextAlign(home, "objectives", "eyebrow");
+  const alignItemTitle = getTextAlign(home, "objectives", "item_title");
+  const alignItemDesc = getTextAlign(home, "objectives", "item_desc");
+  // Diagonal accent gradient — applied on the section by default to give
+  // Objectives a warmer, layered look. Admins can change the accent color
+  // via /admin/home → Objectives card. Empty/missing ⇒ default brass-gold.
+  const sectionBgColor = home?.section_styles?.objectives?.bg_color || "var(--tb-paper-base)";
+  const accentColor = home?.section_styles?.objectives?.gradient_accent || "#8B6914";
+  const gradientStyle = {
+    backgroundImage: `linear-gradient(to bottom left, transparent 60%, ${accentColor}40 100%)`,
+  };
 
   return (
     <section
@@ -154,13 +168,21 @@ export default function ObjectivesB() {
       data-theme-component="theme-b-objectives"
       className="relative isolate"
       style={{
-        backgroundColor: home?.section_styles?.objectives?.bg_color || "var(--tb-paper-base)",
+        backgroundColor: sectionBgColor,
         backgroundImage: useBg ? `url(${bg.url})` : "none",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
     >
+      {/* Diagonal gradient accent overlay — soft brass-gold in the
+          bottom-left corner. Sits above the bg color (and below the content). */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ ...gradientStyle, zIndex: 1 }}
+        data-testid="objectives-gradient-accent"
+      />
       {useBg && (
         <div
           aria-hidden
@@ -180,6 +202,7 @@ export default function ObjectivesB() {
                 letterSpacing: "0.22em",
                 fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
                 fontWeight: tsEyebrow.fontWeight,
+                textAlign: alignEyebrow || undefined,
               }}
             >
               {home[`objectives_eyebrow_${lang}`] || (lang === "ar" ? "الأهداف" : "Objectives")}
@@ -266,6 +289,8 @@ export default function ObjectivesB() {
                   lang={lang}
                   tsItemTitle={tsItemTitle}
                   tsItemDesc={tsItemDesc}
+                  alignItemTitle={alignItemTitle}
+                  alignItemDesc={alignItemDesc}
                 />
               ))}
             </ol>

@@ -1,7 +1,7 @@
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
 import Reveal from "@/components/theme-b/Reveal";
 
 /** Theme B — About (refined): editorial layout paired with curated portrait image. */
@@ -32,15 +32,25 @@ export default function AboutB() {
   const tsEyebrow = getTextStyles(home, "about", "eyebrow");
   const tsMain = getTextStyles(home, "about", "main");
   const tsExtended = getTextStyles(home, "about", "extended");
+  // Per-field text alignment overrides
+  const alignEyebrow = getTextAlign(home, "about", "eyebrow");
+  const alignMain = getTextAlign(home, "about", "main");
+  const alignExtended = getTextAlign(home, "about", "extended");
+  const gradStyle = getGradientOverlay(home, "about");
 
   return (
     <section
       id="about"
       data-testid="section-about"
       data-theme-component="theme-b-about"
-      style={{ background: home?.section_styles?.about?.bg_color || "var(--tb-paper-base)" }}
+      className="relative isolate"
+      style={{ backgroundColor: home?.section_styles?.about?.bg_color || "var(--tb-paper-base)" }}
     >
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
+      {/* Optional admin-controlled diagonal accent overlay */}
+      {gradStyle.backgroundImage && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={gradStyle} />
+      )}
+      <div className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Image column (LTR: left, RTL: right) — enters from physical right */}
           {showImg && (
@@ -73,7 +83,7 @@ export default function AboutB() {
             variant="left"
             as="div"
             className={`order-1 lg:order-2 ${showImg ? "lg:col-span-7" : "lg:col-span-12"}`}
-            style={{ transitionDuration: "0.8s" }}
+            style={{ transitionDuration: "0.8s", textAlign: alignEyebrow || undefined }}
           >
             <div className="tb-section-eyebrow">
               <span className="rule" />
@@ -105,6 +115,7 @@ export default function AboutB() {
                   fontSize: tsMain.sizeMul !== 1 ? `calc(1.1875rem * ${tsMain.sizeMul})` : undefined,
                   fontWeight: tsMain.fontWeight,
                   color: tsMain.color,
+                  textAlign: alignMain || undefined,
                 }}
               >{body}</p>
               {extended && (
@@ -114,6 +125,7 @@ export default function AboutB() {
                     fontSize: tsExtended.sizeMul !== 1 ? `calc(1.1875rem * ${tsExtended.sizeMul})` : undefined,
                     fontWeight: tsExtended.fontWeight,
                     color: tsExtended.color,
+                    textAlign: alignExtended || undefined,
                   }}
                 >{extended}</p>
               )}

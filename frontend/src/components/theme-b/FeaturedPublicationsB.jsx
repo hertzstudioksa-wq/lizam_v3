@@ -5,7 +5,7 @@ import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 import { usePublications } from "@/hooks/usePublications";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
 import Reveal from "@/components/theme-b/Reveal";
 
 /**
@@ -47,6 +47,10 @@ export default function FeaturedPublicationsB() {
   const tsEyebrow = getTextStyles(home, "featured_publications", "eyebrow");
   const tsTitle = getTextStyles(home, "featured_publications", "title");
   const tsBlurb = getTextStyles(home, "featured_publications", "blurb");
+  const alignEyebrow = getTextAlign(home, "featured_publications", "eyebrow");
+  const alignTitle = getTextAlign(home, "featured_publications", "title");
+  const alignBlurb = getTextAlign(home, "featured_publications", "blurb");
+  const gradStyle = getGradientOverlay(home, "featured_publications");
 
   // Visibility — placed AFTER all hooks (hook rules). Defaults to TRUE.
   const vs = home?.visible_sections;
@@ -60,8 +64,11 @@ export default function FeaturedPublicationsB() {
       data-testid="section-featured"
       data-theme-component="theme-b-featured"
       className="relative isolate overflow-hidden"
-      style={{ background: home?.section_styles?.featured_publications?.bg_color || "var(--tb-paper-base)" }}
+      style={{ backgroundColor: home?.section_styles?.featured_publications?.bg_color || "var(--tb-paper-base)" }}
     >
+      {gradStyle.backgroundImage && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ ...gradStyle, zIndex: 1 }} />
+      )}
       {hasBg && (
         <>
           <img
@@ -92,6 +99,7 @@ export default function FeaturedPublicationsB() {
               letterSpacing: "0.22em",
               fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
+              textAlign: alignEyebrow || undefined,
             }}
           >
             {home?.[`featured_eyebrow_${lang}`] || (lang === "ar" ? "المكتبة البحثية" : "Research Library")}
@@ -104,6 +112,7 @@ export default function FeaturedPublicationsB() {
               fontWeight: tsTitle.fontWeight ?? 500,
               color: tsTitle.color || "var(--tb-navy-900)",
               maxWidth: "22ch",
+              textAlign: alignTitle || undefined,
             }}
             data-testid="featured-title"
           >
@@ -119,6 +128,7 @@ export default function FeaturedPublicationsB() {
               color: tsBlurb.color || "var(--tb-text-muted)",
               fontWeight: tsBlurb.fontWeight,
               maxWidth: "58ch",
+              textAlign: alignBlurb || undefined,
             }}
             data-testid="featured-blurb"
           >

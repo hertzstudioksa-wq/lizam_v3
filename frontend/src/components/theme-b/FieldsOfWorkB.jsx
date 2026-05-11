@@ -2,7 +2,7 @@ import { ScrollText, Scale, Landmark, BookOpen, Compass } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
 import Reveal from "@/components/theme-b/Reveal";
 
 const ICONS = {
@@ -35,6 +35,13 @@ export default function FieldsOfWorkB() {
   const tsSectionBody = getTextStyles(home, "fields_of_work", "section_body");
   const tsItemTitle = getTextStyles(home, "fields_of_work", "item_title");
   const tsItemDesc = getTextStyles(home, "fields_of_work", "item_desc");
+  // Per-field alignment overrides
+  const alignEyebrow = getTextAlign(home, "fields_of_work", "eyebrow");
+  const alignSectionTitle = getTextAlign(home, "fields_of_work", "section_title");
+  const alignSectionBody = getTextAlign(home, "fields_of_work", "section_body");
+  const alignItemTitle = getTextAlign(home, "fields_of_work", "item_title");
+  const alignItemDesc = getTextAlign(home, "fields_of_work", "item_desc");
+  const gradStyle = getGradientOverlay(home, "fields_of_work");
 
   return (
     <section
@@ -42,8 +49,11 @@ export default function FieldsOfWorkB() {
       data-testid="section-fields"
       data-theme-component="theme-b-fields"
       className="relative isolate overflow-hidden"
-      style={{ background: home?.section_styles?.fields_of_work?.bg_color || "var(--tb-paper-base)" }}
+      style={{ backgroundColor: home?.section_styles?.fields_of_work?.bg_color || "var(--tb-paper-base)" }}
     >
+      {gradStyle.backgroundImage && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ ...gradStyle, zIndex: 1 }} />
+      )}
       {hasBg && (
         <>
           <img
@@ -75,6 +85,7 @@ export default function FieldsOfWorkB() {
                   color: tsEyebrow.color,
                   fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
                   fontWeight: tsEyebrow.fontWeight,
+                  textAlign: alignEyebrow || undefined,
                 }}
               >{home[`fields_eyebrow_${lang}`] || (lang === "ar" ? "مجالات العمل" : "Fields of Work")}</span>
             </div>
@@ -85,6 +96,7 @@ export default function FieldsOfWorkB() {
                 lineHeight: 1.25,
                 fontWeight: tsSectionTitle.fontWeight ?? 500,
                 color: tsSectionTitle.color,
+                textAlign: alignSectionTitle || undefined,
               }}
               data-testid="fields-title"
             >
@@ -97,6 +109,7 @@ export default function FieldsOfWorkB() {
               color: tsSectionBody.color || "var(--tb-text)",
               fontSize: tsSectionBody.sizeMul !== 1 ? `calc(1.1875rem * ${tsSectionBody.sizeMul})` : undefined,
               fontWeight: tsSectionBody.fontWeight,
+              textAlign: alignSectionBody || undefined,
             }}
             data-testid="fields-body"
           >
@@ -152,6 +165,7 @@ export default function FieldsOfWorkB() {
                     fontWeight: tsItemTitle.fontWeight ?? 500,
                     lineHeight: 1.35,
                     fontSize: tsItemTitle.sizeMul !== 1 ? `calc(21px * ${titleScale} * ${tsItemTitle.sizeMul})` : undefined,
+                    textAlign: alignItemTitle || undefined,
                   }}
                 >
                   {f[`title_${lang}`]}
@@ -164,6 +178,7 @@ export default function FieldsOfWorkB() {
                     lineHeight: 1.9,
                     color: tsItemDesc.color || "var(--tb-text-muted)",
                     fontWeight: tsItemDesc.fontWeight,
+                    textAlign: alignItemDesc || undefined,
                   }}
                 >
                   {f[`description_${lang}`]}

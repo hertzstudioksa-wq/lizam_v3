@@ -2,7 +2,7 @@ import { Mail, ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings, useHomeContent } from "@/hooks/useSiteSettings";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
 import Reveal from "@/components/theme-b/Reveal";
 
 /** Theme B — Contact Block: editorial pairing + premium email lockup. */
@@ -18,15 +18,23 @@ export default function ContactBlockB() {
   const tsEyebrow = getTextStyles(home, "contact", "eyebrow");
   const tsTitle = getTextStyles(home, "contact", "title");
   const tsBlurb = getTextStyles(home, "contact", "blurb");
+  const alignEyebrow = getTextAlign(home, "contact", "eyebrow");
+  const alignTitle = getTextAlign(home, "contact", "title");
+  const alignBlurb = getTextAlign(home, "contact", "blurb");
+  const gradStyle = getGradientOverlay(home, "contact");
 
   return (
     <section
       id="contact"
       data-testid="section-contact"
       data-theme-component="theme-b-contact"
-      style={{ background: home?.section_styles?.contact?.bg_color || "var(--tb-paper-base)" }}
+      className="relative isolate"
+      style={{ backgroundColor: home?.section_styles?.contact?.bg_color || "var(--tb-paper-base)" }}
     >
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-20 py-24 md:py-28">
+      {gradStyle.backgroundImage && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={gradStyle} />
+      )}
+      <div className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-12 lg:px-20 py-24 md:py-28">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 items-start">
           <Reveal variant="right" className="md:col-span-5" style={{ transitionDuration: "0.7s" }}>
             <div className="tb-section-eyebrow">
@@ -37,6 +45,7 @@ export default function ContactBlockB() {
                   color: tsEyebrow.color,
                   fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
                   fontWeight: tsEyebrow.fontWeight,
+                  textAlign: alignEyebrow || undefined,
                 }}
               >{home?.[`contact_eyebrow_${lang}`] || (lang === "ar" ? "تواصل" : "Contact")}</span>
             </div>
@@ -47,6 +56,7 @@ export default function ContactBlockB() {
                 lineHeight: 1.3,
                 fontWeight: tsTitle.fontWeight ?? 500,
                 color: tsTitle.color,
+                textAlign: alignTitle || undefined,
               }}
               data-testid="contact-headline"
             >
@@ -64,6 +74,7 @@ export default function ContactBlockB() {
                 lineHeight: 1.95,
                 color: tsBlurb.color || "var(--tb-text)",
                 fontWeight: tsBlurb.fontWeight,
+                textAlign: alignBlurb || undefined,
               }}
               data-testid="contact-body"
             >

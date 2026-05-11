@@ -1,7 +1,7 @@
 import { Quote } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
 import Reveal from "@/components/theme-b/Reveal";
 
 /**
@@ -27,14 +27,21 @@ export default function PullBandB() {
   const titleScale = home?.section_styles?.pull_band?.title_scale ?? 1;
   const tsText = getTextStyles(home, "pull_band", "text");
   const tsAttr = getTextStyles(home, "pull_band", "attribution");
+  const alignText = getTextAlign(home, "pull_band", "text");
+  const alignAttr = getTextAlign(home, "pull_band", "attribution");
+  const gradStyle = getGradientOverlay(home, "pull_band");
 
   return (
     <section
       data-testid="section-pull-band"
       data-theme-component="theme-b-pull"
-      style={{ background: home?.section_styles?.pull_band?.bg_color || "var(--tb-paper-warm)" }}
+      className="relative isolate"
+      style={{ backgroundColor: home?.section_styles?.pull_band?.bg_color || "var(--tb-paper-warm)" }}
     >
-      <div className="mx-auto max-w-[1100px] px-6 md:px-12 lg:px-16 py-24 md:py-28 text-center">
+      {gradStyle.backgroundImage && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={gradStyle} />
+      )}
+      <div className="relative z-10 mx-auto max-w-[1100px] px-6 md:px-12 lg:px-16 py-24 md:py-28 text-center">
         <Quote
           size={36}
           strokeWidth={1.2}
@@ -53,6 +60,7 @@ export default function PullBandB() {
               lineHeight: 1.45,
               fontWeight: tsText.fontWeight ?? 500,
               color: tsText.color || "var(--tb-navy-900)",
+              textAlign: alignText || undefined,
             }}
           >
             {text}
@@ -78,6 +86,7 @@ export default function PullBandB() {
               color: tsAttr.color || "var(--tb-gold-deep)",
               fontSize: tsAttr.sizeMul !== 1 ? `calc(0.78rem * ${tsAttr.sizeMul})` : undefined,
               fontWeight: tsAttr.fontWeight,
+              textAlign: alignAttr || undefined,
             }}
           >
             {attribution}

@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useInView } from "@/hooks/useInView";
-import { getTextStyles } from "@/lib/sectionTypo";
+import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
 
 /**
  * Theme B — Mission & Vision (split v4, fully linkable).
@@ -37,7 +37,7 @@ function lede(text) {
 }
 
 function Half({
-  side, lang, eyebrowText, title, body, ts, tsEyebrow, dark, anim, testid, bgColor,
+  side, lang, eyebrowText, title, body, ts, tsEyebrow, dark, anim, testid, bgColor, alignOverride,
 }) {
   const [hover, setHover] = useState(false);
   // Reversed alignment — text now pulls TOWARD the outer edges (away from the
@@ -45,9 +45,11 @@ function Half({
   // more decisively as two distinct columns.
   //   • RTL: left half → align left,  right half → align right
   //   • LTR: left half → align right, right half → align left  (per spec)
-  const align = lang === "ar"
+  // Admin per-field alignment override (if set) takes precedence.
+  const defaultAlign = lang === "ar"
     ? (side === "left" ? "left" : "right")
     : (side === "left" ? "right" : "left");
+  const align = alignOverride || defaultAlign;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   // Background: admin-controlled override > default theme color
   const defaultBg = dark ? "var(--tb-navy-900)" : "var(--tb-paper-base)";
@@ -177,6 +179,10 @@ export default function MissionVisionB() {
   // Per-half background color overrides — saved from /admin/home → Mission card.
   const missionBg = home?.section_styles?.mission?.mission_bg || "";
   const visionBg = home?.section_styles?.mission?.vision_bg || "";
+  // Per-field alignment overrides
+  const alignMissionText = getTextAlign(home, "mission", "mission_text");
+  const alignVisionText = getTextAlign(home, "mission", "vision_text");
+  const gradStyle = getGradientOverlay(home, "mission");
 
   // Heading texts (kept as before — not separately editable in CMS).
   const missionTitle =
@@ -207,13 +213,16 @@ export default function MissionVisionB() {
       data-testid="section-mission-vision"
       data-theme-component="theme-b-mission"
       className="relative isolate"
-      style={{ background: "var(--tb-paper-base)" }}
+      style={{ backgroundColor: "var(--tb-paper-base)" }}
     >
+      {gradStyle.backgroundImage && (
+        <div aria-hidden className="absolute inset-0 pointer-events-none" style={{ ...gradStyle, zIndex: 3 }} />
+      )}
       {/* `direction: ltr` on the grid keeps Mission visually LEFT and Vision
        *  visually RIGHT regardless of page direction. Each half restores its
        *  own text dir below. */}
       <div
-        className="grid grid-cols-1 md:grid-cols-2 items-stretch"
+        className="grid grid-cols-1 md:grid-cols-2 items-stretch relative z-10"
         style={{ direction: "ltr" }}
         data-testid="mv-split"
       >
@@ -229,6 +238,7 @@ export default function MissionVisionB() {
           anim={leftAnim}
           testid="block-mission"
           bgColor={missionBg}
+          alignOverride={alignMissionText}
         />
         <Half
           side="right"
@@ -242,6 +252,7 @@ export default function MissionVisionB() {
           anim={rightAnim}
           testid="block-vision"
           bgColor={visionBg}
+          alignOverride={alignVisionText}
         />
       </div>
     </section>

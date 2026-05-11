@@ -654,6 +654,60 @@ multiplier that respects existing responsive `clamp()` values:
 
 ---
 
+## Update — Feb 11, 2026 (later 3) · Per-field alignment + Section gradient accent
+
+### New admin controls (HomeAdmin.jsx)
+- **`<AlignToggle>`** — compact 3-button strip (⇥ يمين · ≡ وسط · ⇤ يسار) per
+  text field. Rendered above every BiInput, BiList, EyebrowRow when the
+  parent passes `sectionKey + fieldKey`. Includes a "default" reset.
+- **`<GradientAccentControl>`** — same UX as BgColorControl: swatch + hex
+  input + Reset + tooltip "يطبَّق كلون ثانوي في زاوية الخلفية السفلى-اليسرى".
+  Added to all 9 section cards in `/admin/home`.
+- **Live preview**: `TextInput` and `TextArea` now accept a `style` prop;
+  BiInput/BiList/EyebrowRow pass `textAlign` through so the admin sees the
+  alignment in the editor immediately.
+
+### Storage model (NO Pydantic schema change)
+- Alignment: `section_styles[section].text_aligns[fieldKey]` ∈ "right"|"center"|"left"|""
+- Gradient: `section_styles[section].gradient_accent` (hex string)
+- Both flow through the existing `HomeContentIn.section_styles: Dict[str, Dict[str, Any]]`
+  field. `extra="ignore"` makes flat fields unsafe — nested storage is the
+  correct path.
+
+### Public component updates (Theme B)
+- New helpers in `lib/sectionTypo.js`: `getTextAlign()` + `getGradientOverlay()`.
+- Every Theme B section now reads its alignment + gradient overrides and
+  applies them as inline styles. Components touched:
+  HeroB · AboutB · MissionVisionB · PullBandB · ObjectivesB · FieldsOfWorkB ·
+  FeaturedPublicationsB · ContactBlockB · NewsletterB.
+- **ObjectivesB** specifically: gradient is now ON by default with the
+  brass-gold `#8B6914` accent (per spec). Admin override changes the accent
+  color but the gradient remains the default visual; "no gradient" is not
+  available here.
+- All other sections: gradient only shows when admin sets a `gradient_accent`
+  value. Empty/missing ⇒ section uses its solid background only (unchanged).
+- The `background:` shorthand was split into `backgroundColor` +
+  `backgroundImage` for components that need to layer a gradient on top of
+  a flat color.
+
+### Verified live (Playwright)
+- About: eyebrow + main paragraph adopt `text-align: center` when chosen in
+  admin. Gradient overlay rendered: `linear-gradient(to left bottom,
+  rgba(0,0,0,0) 60%, rgba(180,145,74,0.25) 100%)`.
+- Objectives: gradient = `rgba(204,136,68,0.25)` accent at bottom-left.
+  Items title + desc respect center alignment.
+- Fields: section title respects `left` override.
+- Admin: About card shows 14 alignment toggles + 1 gradient control; live
+  preview applies textAlign to AR/EN textareas instantly.
+- Backend: PATCH/GET round-trip persists `text_aligns` and `gradient_accent`
+  exactly. Reset to empty restores theme defaults across all 8 sections,
+  Objectives keeps its default brass-gold accent.
+
+### Outstanding
+- DnD reorder · Resend wiring · HomeAdmin.jsx refactor · deploy prep.
+
+---
+
 ## Update — Feb 11, 2026 (later 2) · Per-section background color + Mission/Vision tweaks
 
 ### MissionVisionB (visual tweaks only — no admin/backend changes)
