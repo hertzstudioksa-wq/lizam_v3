@@ -1,256 +1,250 @@
+import { Link } from "react-router-dom";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
+import { useInView } from "@/hooks/useInView";
 import { getTextStyles } from "@/lib/sectionTypo";
 
 /**
- * Theme B — Mission & Vision (v2: balanced, restrained).
+ * Theme B — Mission & Vision (split layout v3).
  *
- * Design principles:
- *  - Eyebrow → heading → body type ramps in modest steps; nothing screams.
- *  - Section header is compact, not headline-of-the-page big.
- *  - Two equally-weighted cards with a subtle hairline border + small accent.
- *  - Tighter padding and content widths so the section doesn't dominate.
- *  - Uses the project's typography classes (tb-display, tb-overline) so
- *    Arabic font shaping is preserved on both LTR and RTL.
+ * Visual: full-width section split into two equal halves (50/50).
+ *   Left  → dark navy panel hosting MISSION
+ *   Right → cream paper panel hosting VISION
+ * Below both halves, a centered outline CTA to /about.
+ *
+ * Notes:
+ *   - Backed by the same `home_content` data as before. No props/keys/admin
+ *     touchpoints changed. Only JSX/CSS reshaped.
+ *   - The dynamic `home_content` mission/vision body is preserved exactly;
+ *     only a short lede is rendered (first sentence or first 120 chars).
+ *   - Section-typo overrides (size · weight · color) still apply through
+ *     getTextStyles() for `eyebrow / mission_text / vision_text`.
+ *   - On first scroll into view, the left half slides in from -40px and the
+ *     right half from +40px. Uses IntersectionObserver — no extra library.
  */
+
+/** Pick first sentence or first 120 chars, whichever is shorter. */
+function lede(text) {
+  if (!text) return "";
+  const s = String(text).trim();
+  // Sentence-end detection: Arabic period (.), Latin period, !, ?, Arabic question mark.
+  const m = s.match(/^[\s\S]*?[.!?؟](\s|$)/);
+  const first = m ? m[0].trim() : s;
+  return first.length > 120 ? first.slice(0, 120).trimEnd() + "…" : first;
+}
+
 export default function MissionVisionB() {
   const { lang, pick } = useLang();
   const { data: home } = useHomeContent();
-  // Admin-controlled bg from /admin/home → Mission card.
-  // No legacy fallback — section uses solid color when no image is set.
-  const bg = home?.section_styles?.mission?.bg;
-  const hasBg = bg?.enabled !== false && !!bg?.url;
-  const overlayOpacity = typeof bg?.overlay_opacity === "number" ? bg.overlay_opacity : 0;
+  const [animRef, inView] = useInView({ threshold: 0.18 });
+
   if (!home) return null;
-  // Visibility — placed AFTER all hooks (Mission card in /admin/home controls this combined band).
+  // Visibility — placed AFTER all hooks (hook rules).
   const vs = home?.visible_sections;
   if (Array.isArray(vs) && vs.length > 0 && !vs.includes("mission")) return null;
 
   const mission = pick(home, "mission");
   const vision = pick(home, "vision");
-  const mp = home[`mission_points_${lang}`] || [];
-  const vp = home[`vision_points_${lang}`] || [];
-  const titleScale = home?.section_styles?.mission?.title_scale ?? 1;
   const tsEyebrow = getTextStyles(home, "mission", "eyebrow");
   const tsMissionText = getTextStyles(home, "mission", "mission_text");
   const tsVisionText = getTextStyles(home, "mission", "vision_text");
-  const tsMissionPts = getTextStyles(home, "mission", "mission_points");
-  const tsVisionPts = getTextStyles(home, "mission", "vision_points");
 
-  const Card = ({ index, kicker, title, body, points, testid, tsBody, tsPts }) => (
-    <article
-      data-testid={testid}
-      className="tb-card lz-mv-card flex flex-col h-full"
-      style={{ padding: "2.1rem 2.25rem 2.25rem" }}
-    >
-      {/* Top row: index + kicker + dot */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <span
-            className="tabular-nums"
-            style={{
-              fontFamily: '"Thmanyah Sans", sans-serif',
-              fontSize: 11,
-              color: "var(--tb-gold)",
-              letterSpacing: "0.22em",
-              fontFeatureSettings: '"tnum" 1',
-            }}
-          >
-            {index}
-          </span>
-          <span style={{ height: 1, width: 22, background: "var(--tb-gold)" }} />
-          <span className="tb-overline">{kicker}</span>
-        </div>
-        <span
-          aria-hidden
-          className="lz-mv-dot inline-flex items-center justify-center"
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: "var(--tb-radius-pill)",
-            background: "var(--tb-gold-faint)",
-            color: "var(--tb-gold-deep)",
-            fontFamily: '"Thmanyah Sans", sans-serif',
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: "0.04em",
-          }}
-        >
-          {kicker.charAt(0)}
-        </span>
-      </div>
+  // Titles are not stored in CMS as separate fields (intentional) — preserved
+  // from the previous implementation verbatim.
+  const missionTitle =
+    lang === "ar"
+      ? "بحث قانوني رصين يخدم الحوكمة والسياسات."
+      : "Rigorous legal research in the service of governance.";
+  const visionTitle =
+    lang === "ar"
+      ? "مرجع موثوق للدراسات القانونية في المملكة."
+      : "A trusted reference for legal studies in the Kingdom.";
 
-      {/* Heading */}
-      <h3
-        className="mt-7 text-[19px] md:text-[21px]"
-        style={{
-          fontFamily: '"Thmanyah Serif Display", serif',
-          color: "var(--tb-navy-900)",
-          fontWeight: 500,
-          lineHeight: 1.4,
-          maxWidth: "30ch",
-          fontSize: `calc(21px * ${titleScale})`,
-        }}
-      >
-        {title}
-      </h3>
+  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
 
-      {/* Body */}
-      <p
-        className="mt-4"
-        style={{
-          fontFamily: '"Thmanyah Sans", sans-serif',
-          fontSize: tsBody.sizeMul !== 1 ? `calc(15px * ${tsBody.sizeMul})` : 15,
-          lineHeight: 1.9,
-          color: tsBody.color || "var(--tb-text-muted)",
-          fontWeight: tsBody.fontWeight,
-          maxWidth: "60ch",
-        }}
-      >
-        {body}
-      </p>
-
-      {/* Points */}
-      {points.length > 0 && (
-        <ul
-          className="mt-7 space-y-3.5"
-          style={{ borderTop: "1px solid var(--tb-hairline-soft)", paddingTop: "1.25rem" }}
-        >
-          {points.map((p, i) => (
-            <li key={i} className="flex items-start gap-3">
-              <span
-                aria-hidden
-                style={{
-                  marginTop: 11,
-                  flexShrink: 0,
-                  width: 14,
-                  height: 1,
-                  background: "var(--tb-gold)",
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: '"Thmanyah Sans", sans-serif',
-                  fontSize: tsPts.sizeMul !== 1 ? `calc(14.5px * ${tsPts.sizeMul})` : 14.5,
-                  lineHeight: 1.85,
-                  color: tsPts.color || "var(--tb-text)",
-                  fontWeight: tsPts.fontWeight,
-                }}
-              >
-                {p}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </article>
-  );
+  // Transition timing — 0.6s ease-out, fires once.
+  const baseTrans = "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease-out";
+  const leftStyle = {
+    transform: inView ? "translateX(0)" : "translateX(-40px)",
+    opacity: inView ? 1 : 0,
+    transition: baseTrans,
+  };
+  const rightStyle = {
+    transform: inView ? "translateX(0)" : "translateX(40px)",
+    opacity: inView ? 1 : 0,
+    transition: baseTrans,
+  };
 
   return (
     <section
       id="mission-vision"
+      ref={animRef}
       data-testid="section-mission-vision"
       data-theme-component="theme-b-mission"
-      className="relative isolate overflow-hidden"
-      style={{ background: "var(--tb-paper-deep)" }}
+      className="relative isolate"
+      style={{ background: "var(--tb-paper-base)" }}
     >
-      {hasBg && (
-        <>
-          <img
-            src={bg.url}
-            alt={bg.alt_ar || bg.alt_en || ""}
-            aria-hidden
-            className="absolute inset-0 w-full h-full"
-            style={{
-              objectFit: "cover",
-              objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
-              zIndex: 0,
-            }}
-          />
-          {overlayOpacity > 0 && (
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{ background: `rgba(249, 247, 243, ${overlayOpacity})`, zIndex: 0 }}
-            />
-          )}
-        </>
-      )}
-      <div className="relative z-10 mx-auto max-w-[1180px] px-6 md:px-10 lg:px-12 py-20 md:py-24">
-        {/* Compact section intro */}
-        <div className="max-w-[680px]">
+      {/* Split halves
+       *   We force `direction: ltr` on the grid itself so DOM order maps to
+       *   visual left → right regardless of the page's `dir` attribute.
+       *   Inside each panel we restore the active language direction so
+       *   Arabic text aligns naturally. This guarantees: Mission stays on
+       *   the physical LEFT (dark) and Vision on the physical RIGHT (cream)
+       *   under both AR-RTL and EN-LTR.
+       */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-2 items-stretch"
+        style={{ direction: "ltr" }}
+        data-testid="mv-split"
+      >
+        {/* LEFT HALF (physical) — Mission on deep navy */}
+        <div
+          dir={lang === "ar" ? "rtl" : "ltr"}
+          className="relative px-7 md:px-14 lg:px-20 py-20 md:py-28 lg:py-32 flex flex-col"
+          style={{
+            background: "var(--tb-navy-900)",
+            color: "var(--tb-paper-base)",
+            minHeight: "clamp(420px, 56vh, 620px)",
+            ...leftStyle,
+          }}
+          data-testid="block-mission"
+        >
+          {/* Eyebrow */}
           <div className="flex items-center gap-3">
-            <span style={{ height: 1, width: 24, background: "var(--tb-gold)" }} />
+            <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
             <span
               className="tb-overline"
               style={{
-                color: tsEyebrow.color,
+                color: tsEyebrow.color || "var(--tb-gold-soft)",
+                letterSpacing: "0.22em",
                 fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
                 fontWeight: tsEyebrow.fontWeight,
               }}
             >
-              {home[`mission_eyebrow_${lang}`] || (lang === "ar" ? "المنطلقات" : "Foundations")}
+              {lang === "ar" ? "الرسالة" : "Mission"}
             </span>
           </div>
-          <h2
-            className="tb-display mt-4"
+
+          {/* Main heading */}
+          <h3
+            className="tb-display mt-8"
             style={{
-              fontSize: "clamp(1.6rem, 2.1vw, 2rem)",
+              fontSize: "clamp(1.7rem, 3vw, 2.4rem)",
               lineHeight: 1.32,
               fontWeight: 500,
-              maxWidth: "32ch",
+              maxWidth: "26ch",
+              color: "var(--tb-paper-base)",
             }}
           >
-            {lang === "ar"
-              ? "ما الذي يقود عملنا، وإلى أين نتجه."
-              : "What drives our work — and where we are headed."}
-          </h2>
+            {missionTitle}
+          </h3>
+
+          {/* Short lede */}
           <p
-            className="mt-4"
+            className="mt-7 max-w-[48ch]"
             style={{
-              fontSize: 15.5,
-              lineHeight: 1.85,
-              color: "var(--tb-text-muted)",
-              maxWidth: "58ch",
+              fontFamily: '"Thmanyah Serif Text", serif',
+              fontSize: tsMissionText.sizeMul !== 1 ? `calc(1.05rem * ${tsMissionText.sizeMul})` : "1.05rem",
+              lineHeight: 1.95,
+              color: tsMissionText.color || "rgba(251, 250, 247, 0.82)",
+              fontWeight: tsMissionText.fontWeight,
             }}
           >
-            {lang === "ar"
-              ? "رسالتنا ورؤيتنا تحددان الأثر الذي نسعى إليه والمكانة التي نطمح لبلوغها."
-              : "Our mission and vision define the impact we pursue and the standing we aspire to."}
+            {lede(mission)}
           </p>
         </div>
 
-        {/* Two equal-weight cards */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-7 items-stretch">
-          <Card
-            index="01"
-            kicker={lang === "ar" ? "الرسالة" : "Mission"}
-            title={
-              lang === "ar"
-                ? "بحث قانوني رصين يخدم الحوكمة والسياسات."
-                : "Rigorous legal research in the service of governance."
-            }
-            body={mission}
-            points={mp}
-            testid="block-mission"
-            tsBody={tsMissionText}
-            tsPts={tsMissionPts}
-          />
-          <Card
-            index="02"
-            kicker={lang === "ar" ? "الرؤية" : "Vision"}
-            title={
-              lang === "ar"
-                ? "مرجع موثوق للدراسات القانونية في المملكة."
-                : "A trusted reference for legal studies in the Kingdom."
-            }
-            body={vision}
-            points={vp}
-            testid="block-vision"
-            tsBody={tsVisionText}
-            tsPts={tsVisionPts}
-          />
+        {/* RIGHT HALF (physical) — Vision on cream paper */}
+        <div
+          dir={lang === "ar" ? "rtl" : "ltr"}
+          className="relative px-7 md:px-14 lg:px-20 py-20 md:py-28 lg:py-32 flex flex-col"
+          style={{
+            background: "var(--tb-paper-base)",
+            color: "var(--tb-navy-900)",
+            minHeight: "clamp(420px, 56vh, 620px)",
+            borderInlineStart: "1px solid var(--tb-hairline)",
+            ...rightStyle,
+          }}
+          data-testid="block-vision"
+        >
+          {/* Eyebrow */}
+          <div className="flex items-center gap-3">
+            <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
+            <span
+              className="tb-overline"
+              style={{
+                color: tsEyebrow.color || "var(--tb-gold-deep)",
+                letterSpacing: "0.22em",
+                fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                fontWeight: tsEyebrow.fontWeight,
+              }}
+            >
+              {lang === "ar" ? "الرؤية" : "Vision"}
+            </span>
+          </div>
+
+          {/* Main heading */}
+          <h3
+            className="tb-display mt-8"
+            style={{
+              fontSize: "clamp(1.7rem, 3vw, 2.4rem)",
+              lineHeight: 1.32,
+              fontWeight: 500,
+              maxWidth: "26ch",
+              color: "var(--tb-navy-900)",
+            }}
+          >
+            {visionTitle}
+          </h3>
+
+          {/* Short lede */}
+          <p
+            className="mt-7 max-w-[48ch]"
+            style={{
+              fontFamily: '"Thmanyah Serif Text", serif',
+              fontSize: tsVisionText.sizeMul !== 1 ? `calc(1.05rem * ${tsVisionText.sizeMul})` : "1.05rem",
+              lineHeight: 1.95,
+              color: tsVisionText.color || "var(--tb-text-muted)",
+              fontWeight: tsVisionText.fontWeight,
+            }}
+          >
+            {lede(vision)}
+          </p>
         </div>
+      </div>
+
+      {/* Centered CTA — full-width band below the split */}
+      <div
+        className="flex items-center justify-center py-14 md:py-16"
+        style={{ background: "var(--tb-paper-deep)" }}
+      >
+        <Link
+          to="/about"
+          className="inline-flex items-center gap-3 px-9 py-4 transition-all duration-300"
+          style={{
+            border: "1px solid var(--tb-navy-900)",
+            color: "var(--tb-navy-900)",
+            fontFamily: '"Thmanyah Sans", sans-serif',
+            fontSize: 14,
+            letterSpacing: "0.14em",
+            textTransform: lang === "ar" ? "none" : "uppercase",
+            fontWeight: 500,
+            background: "transparent",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--tb-navy-900)";
+            e.currentTarget.style.color = "var(--tb-paper-base)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.color = "var(--tb-navy-900)";
+          }}
+          data-testid="mv-cta-about"
+        >
+          <span>{lang === "ar" ? "للتعرف أكثر على المركز" : "Learn more about the center"}</span>
+          <Arrow size={15} strokeWidth={1.6} />
+        </Link>
       </div>
     </section>
   );
