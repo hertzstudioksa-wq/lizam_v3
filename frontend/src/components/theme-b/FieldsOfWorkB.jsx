@@ -58,7 +58,7 @@ export default function FieldsOfWorkB() {
         <>
           <img
             src={bg.url}
-            alt={bg.alt_ar || bg.alt_en || ""}
+            alt=""
             aria-hidden
             className="absolute inset-0 w-full h-full"
             style={{
@@ -66,6 +66,7 @@ export default function FieldsOfWorkB() {
               objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
               zIndex: 0,
             }}
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
           <div
             aria-hidden

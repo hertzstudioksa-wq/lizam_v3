@@ -85,7 +85,7 @@ export default function HeroB() {
           <>
             <img
               src={bg.url}
-              alt={bg[`alt_${lang}`] || bg.alt_en || bg.alt_ar || ""}
+              alt=""
               aria-hidden
               className="absolute inset-0 w-full h-full tb-ken-burns"
               style={{
@@ -93,6 +93,7 @@ export default function HeroB() {
                 objectPosition: `${bg.focal_x ?? 50}% ${bg.focal_y ?? 50}%`,
                 zIndex: 0,
               }}
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
             />
             <div
               aria-hidden
