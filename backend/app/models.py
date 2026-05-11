@@ -109,10 +109,14 @@ class HomeContentIn(BaseModel):
     about_extended_en: Optional[str] = None
     mission_ar: Optional[str] = None
     mission_en: Optional[str] = None
+    mission_title_ar: Optional[str] = None
+    mission_title_en: Optional[str] = None
     mission_points_ar: Optional[List[str]] = None
     mission_points_en: Optional[List[str]] = None
     vision_ar: Optional[str] = None
     vision_en: Optional[str] = None
+    vision_title_ar: Optional[str] = None
+    vision_title_en: Optional[str] = None
     vision_points_ar: Optional[List[str]] = None
     vision_points_en: Optional[List[str]] = None
     objectives: Optional[List[Dict[str, Any]]] = None

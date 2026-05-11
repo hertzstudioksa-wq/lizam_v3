@@ -545,25 +545,30 @@ function FieldTypoControls({ form, sectionKey, fieldKey, testid }) {
 }
 
 /**
- * <AlignToggle> — 3 small toggle buttons (Right · Center · Left) writing/reading
- * `section_styles[sectionKey].text_aligns[fieldKey]`.
+ * <AlignToggle> — 3 small toggle buttons (Right · Center · Left).
+ *
+ * Default mode: writes/reads `section_styles[sectionKey].text_aligns[fieldKey]`.
+ * Lang-suffix mode (when `langSuffix` ∈ {"ar","en"} is set): writes/reads
+ *   `text_aligns[fieldKey + "_" + langSuffix]` — used for fields whose AR/EN
+ *   versions need independent alignment (e.g. Mission lede, Vision lede).
  *
  * Values stored: "right" | "center" | "left" | "" (empty = use the component
- * default, no override). Lives on its own row above the input.
+ * default, no override).
  */
-function AlignToggle({ form, sectionKey, fieldKey, testid }) {
+function AlignToggle({ form, sectionKey, fieldKey, testid, langSuffix, label }) {
   const styles = form.value.section_styles || {};
   const sectionObj = styles[sectionKey] || {};
   const aligns = sectionObj.text_aligns || {};
-  const cur = aligns[fieldKey] || "";
-  const tid = testid || `align-${sectionKey}-${fieldKey}`;
+  const storageKey = langSuffix ? `${fieldKey}_${langSuffix}` : fieldKey;
+  const cur = aligns[storageKey] || "";
+  const tid = testid || `align-${sectionKey}-${storageKey}`;
 
   const setVal = (v) => {
     const nextAligns = { ...aligns };
     if (v === "" || v === cur) {
-      delete nextAligns[fieldKey];
+      delete nextAligns[storageKey];
     } else {
-      nextAligns[fieldKey] = v;
+      nextAligns[storageKey] = v;
     }
     form.patch("section_styles", {
       ...styles,
@@ -571,7 +576,7 @@ function AlignToggle({ form, sectionKey, fieldKey, testid }) {
     });
   };
 
-  const Btn = ({ value, glyph, label }) => {
+  const Btn = ({ value, glyph, label: btnLabel }) => {
     const active = cur === value;
     return (
       <button
@@ -582,7 +587,7 @@ function AlignToggle({ form, sectionKey, fieldKey, testid }) {
             ? "bg-navy-deep text-paper border-navy-deep"
             : "bg-white text-navy-deep border-rule hover:border-brass"
         }`}
-        title={label}
+        title={btnLabel}
         aria-pressed={active}
         data-testid={`${tid}-${value}`}
       >
@@ -593,7 +598,9 @@ function AlignToggle({ form, sectionKey, fieldKey, testid }) {
 
   return (
     <div className="flex items-center gap-2 mb-1.5" data-testid={tid}>
-      <span className="text-[10.5px] uppercase tracking-[0.14em] text-mute">محاذاة</span>
+      <span className="text-[10.5px] uppercase tracking-[0.14em] text-mute">
+        {label || "محاذاة"}
+      </span>
       <div className="inline-flex">
         <Btn value="right" glyph="⇥" label="يمين" />
         <Btn value="center" glyph="≡" label="وسط" />
@@ -621,24 +628,35 @@ function alignOf(form, sectionKey, fieldKey) {
 
 
 /** Pair of AR/EN inputs in a 2-col grid. */
-function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows = 3, testid, sectionKey, fieldKey }) {
+function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows = 3, testid, sectionKey, fieldKey, perLangAlign = false }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
   const Cmp = multiline ? TextArea : TextInput;
   const showTypo = sectionKey && fieldKey;
   // Per-field alignment override (saved in section_styles.{section}.text_aligns)
-  // Applied as inline style on BOTH the AR and EN inputs so the admin sees the
-  // result live. Empty string falls back to the browser's natural dir-based
-  // alignment for each input.
-  const align = showTypo ? alignOf(form, sectionKey, fieldKey) : "";
-  const alignStyle = align ? { textAlign: align } : undefined;
+  // Two modes:
+  //  - default: one alignment applied to both AR & EN inputs
+  //  - perLangAlign: two independent alignments keyed `{fieldKey}_ar` /
+  //    `{fieldKey}_en`. Used for Mission/Vision where each language has its
+  //    own visual layout per spec.
+  const alignShared = showTypo && !perLangAlign ? alignOf(form, sectionKey, fieldKey) : "";
+  const alignAr = perLangAlign && showTypo ? alignOf(form, sectionKey, `${fieldKey}_ar`) : alignShared;
+  const alignEn = perLangAlign && showTypo ? alignOf(form, sectionKey, `${fieldKey}_en`) : alignShared;
   return (
     <div>
       {showTypo && (
         <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`typo-${testid}`} />
       )}
-      {showTypo && (
+      {showTypo && !perLangAlign && (
         <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`align-${testid}`} />
+      )}
+      {showTypo && perLangAlign && (
+        <div className="flex flex-wrap gap-x-6">
+          <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} langSuffix="ar"
+            testid={`align-${testid}-ar`} label="محاذاة العربية" />
+          <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} langSuffix="en"
+            testid={`align-${testid}-en`} label="محاذاة الإنجليزية" />
+        </div>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Field label={`${tr(labelAr, labelEn)} — ${tr("عربية", "AR")}`}>
@@ -648,7 +666,7 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
             dir="rtl"
             rows={rows}
             testid={`${testid}-ar`}
-            style={alignStyle}
+            style={alignAr ? { textAlign: alignAr } : undefined}
           />
         </Field>
         <Field label={`${tr(labelAr, labelEn)} — EN`}>
@@ -657,7 +675,7 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
             onChange={(v) => form.patch(keyEn, v)}
             rows={rows}
             testid={`${testid}-en`}
-            style={alignStyle}
+            style={alignEn ? { textAlign: alignEn } : undefined}
           />
         </Field>
       </div>
@@ -666,25 +684,34 @@ function BiInput({ form, keyAr, keyEn, labelAr, labelEn, multiline = false, rows
 }
 
 /** Eyebrow AR/EN grid with optional typography controls + alignment toggle above. */
-function EyebrowRow({ form, keyAr, keyEn, sectionKey, testid }) {
+function EyebrowRow({ form, keyAr, keyEn, sectionKey, testid, perLangAlign = false, fieldKey = "eyebrow" }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
-  const align = sectionKey ? alignOf(form, sectionKey, "eyebrow") : "";
-  const alignStyle = align ? { textAlign: align } : undefined;
+  const alignShared = sectionKey && !perLangAlign ? alignOf(form, sectionKey, fieldKey) : "";
+  const alignAr = perLangAlign && sectionKey ? alignOf(form, sectionKey, `${fieldKey}_ar`) : alignShared;
+  const alignEn = perLangAlign && sectionKey ? alignOf(form, sectionKey, `${fieldKey}_en`) : alignShared;
   return (
     <div>
       {sectionKey && (
-        <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey="eyebrow" testid={`typo-${testid || sectionKey}-eyebrow`} />
+        <FieldTypoControls form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`typo-${testid || sectionKey}-${fieldKey}`} />
       )}
-      {sectionKey && (
-        <AlignToggle form={form} sectionKey={sectionKey} fieldKey="eyebrow" testid={`align-${testid || sectionKey}-eyebrow`} />
+      {sectionKey && !perLangAlign && (
+        <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} testid={`align-${testid || sectionKey}-${fieldKey}`} />
+      )}
+      {sectionKey && perLangAlign && (
+        <div className="flex flex-wrap gap-x-6">
+          <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} langSuffix="ar"
+            testid={`align-${testid || sectionKey}-${fieldKey}-ar`} label="محاذاة العربية" />
+          <AlignToggle form={form} sectionKey={sectionKey} fieldKey={fieldKey} langSuffix="en"
+            testid={`align-${testid || sectionKey}-${fieldKey}-en`} label="محاذاة الإنجليزية" />
+        </div>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <Field label={tr("التسمية الصغيرة (eyebrow) — عربية", "Eyebrow AR")}>
-          <TextInput value={form.value[keyAr] || ""} onChange={(v) => form.patch(keyAr, v)} dir="rtl" testid={`${testid}-eyebrow-ar`} style={alignStyle} />
+          <TextInput value={form.value[keyAr] || ""} onChange={(v) => form.patch(keyAr, v)} dir="rtl" testid={`${testid}-eyebrow-ar`} style={alignAr ? { textAlign: alignAr } : undefined} />
         </Field>
         <Field label={tr("التسمية الصغيرة — إنجليزية", "Eyebrow EN")}>
-          <TextInput value={form.value[keyEn] || ""} onChange={(v) => form.patch(keyEn, v)} testid={`${testid}-eyebrow-en`} style={alignStyle} />
+          <TextInput value={form.value[keyEn] || ""} onChange={(v) => form.patch(keyEn, v)} testid={`${testid}-eyebrow-en`} style={alignEn ? { textAlign: alignEn } : undefined} />
         </Field>
       </div>
     </div>
@@ -1162,26 +1189,77 @@ export default function HomeAdmin() {
         <SectionCard id="mission" title={tr("الرسالة والرؤية (المنطلقات)", "Mission & Vision (Foundations)")}
           eyebrow={tr("٣", "3")} visibleSections={visible} onToggleVisibility={toggleVisibility}
           {...orderInfo("mission")} onMove={moveSection}>
+          {/* Section-level eyebrow ("المنطلقات"). */}
           <div className="mt-4">
-            <EyebrowRow form={form} keyAr="mission_eyebrow_ar" keyEn="mission_eyebrow_en" sectionKey="mission" testid="mission" />
+            <EyebrowRow form={form} keyAr="mission_eyebrow_ar" keyEn="mission_eyebrow_en"
+              sectionKey="mission" testid="mission" />
           </div>
 
-          <h4 className="mt-6 mb-2 text-[12.5px] uppercase tracking-[0.16em] text-brass">{tr("الرسالة", "Mission")}</h4>
-          <BiInput form={form} keyAr="mission_ar" keyEn="mission_en"
-            labelAr="نص الرسالة" labelEn="Mission statement"
-            multiline rows={4} testid="mission-text"
-            sectionKey="mission" fieldKey="mission_text" />
+          {/* ─────────────── Mission group ─────────────── */}
+          <h4 className="mt-7 mb-2 text-[12.5px] uppercase tracking-[0.16em] text-brass">{tr("الرسالة", "Mission")}</h4>
+
+          {/* Alignment for the eyebrow label "الرسالة" / "Mission" inside the
+              half panel (the small label above the title). The label text is
+              fixed; admin controls only its alignment. */}
+          <div className="mb-2 px-3 py-2 bg-paper border border-rule" data-testid="align-mission-label">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-mute mb-1.5">
+              محاذاة كلمة «الرسالة / Mission»
+            </div>
+            <div className="flex flex-wrap gap-x-6">
+              <AlignToggle form={form} sectionKey="mission" fieldKey="mission_label" langSuffix="ar"
+                testid="align-mission-label-ar" label="محاذاة العربية" />
+              <AlignToggle form={form} sectionKey="mission" fieldKey="mission_label" langSuffix="en"
+                testid="align-mission-label-en" label="محاذاة الإنجليزية" />
+            </div>
+          </div>
+
+          {/* NEW headline / title fields for Mission half */}
+          <BiInput form={form} keyAr="mission_title_ar" keyEn="mission_title_en"
+            labelAr="عنوان الرسالة (الجملة الكبيرة)" labelEn="Mission headline (large)"
+            multiline rows={2} testid="mission-title"
+            sectionKey="mission" fieldKey="mission_title" perLangAlign />
+
+          {/* Body — per-language alignment per spec */}
+          <div className="mt-4">
+            <BiInput form={form} keyAr="mission_ar" keyEn="mission_en"
+              labelAr="نص الرسالة" labelEn="Mission statement"
+              multiline rows={4} testid="mission-text"
+              sectionKey="mission" fieldKey="mission_text" perLangAlign />
+          </div>
+
           <div className="mt-3">
             <BiList form={form} keyAr="mission_points_ar" keyEn="mission_points_en"
               labelAr="نقاط الرسالة" labelEn="Mission points" testid="mission-points"
               sectionKey="mission" fieldKey="mission_points" />
           </div>
 
-          <h4 className="mt-7 mb-2 text-[12.5px] uppercase tracking-[0.16em] text-brass">{tr("الرؤية", "Vision")}</h4>
-          <BiInput form={form} keyAr="vision_ar" keyEn="vision_en"
-            labelAr="نص الرؤية" labelEn="Vision statement"
-            multiline rows={4} testid="vision-text"
-            sectionKey="mission" fieldKey="vision_text" />
+          {/* ─────────────── Vision group ─────────────── */}
+          <h4 className="mt-9 mb-2 text-[12.5px] uppercase tracking-[0.16em] text-brass">{tr("الرؤية", "Vision")}</h4>
+
+          <div className="mb-2 px-3 py-2 bg-paper border border-rule" data-testid="align-vision-label">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-mute mb-1.5">
+              محاذاة كلمة «الرؤية / Vision»
+            </div>
+            <div className="flex flex-wrap gap-x-6">
+              <AlignToggle form={form} sectionKey="mission" fieldKey="vision_label" langSuffix="ar"
+                testid="align-vision-label-ar" label="محاذاة العربية" />
+              <AlignToggle form={form} sectionKey="mission" fieldKey="vision_label" langSuffix="en"
+                testid="align-vision-label-en" label="محاذاة الإنجليزية" />
+            </div>
+          </div>
+
+          <BiInput form={form} keyAr="vision_title_ar" keyEn="vision_title_en"
+            labelAr="عنوان الرؤية (الجملة الكبيرة)" labelEn="Vision headline (large)"
+            multiline rows={2} testid="vision-title"
+            sectionKey="mission" fieldKey="vision_title" perLangAlign />
+
+          <div className="mt-4">
+            <BiInput form={form} keyAr="vision_ar" keyEn="vision_en"
+              labelAr="نص الرؤية" labelEn="Vision statement"
+              multiline rows={4} testid="vision-text"
+              sectionKey="mission" fieldKey="vision_text" perLangAlign />
+          </div>
+
           <div className="mt-3">
             <BiList form={form} keyAr="vision_points_ar" keyEn="vision_points_en"
               labelAr="نقاط الرؤية" labelEn="Vision points" testid="vision-points"

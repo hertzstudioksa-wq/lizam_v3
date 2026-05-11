@@ -654,6 +654,49 @@ multiplier that respects existing responsive `clamp()` values:
 
 ---
 
+## Update — Feb 11, 2026 (later 4) · Mission/Vision per-language alignment + editable headlines
+
+### Backend
+- Added 4 optional fields to `HomeContentIn` (Pydantic, safe additive change):
+  `mission_title_ar`, `mission_title_en`, `vision_title_ar`, `vision_title_en`.
+  Backend restarted cleanly, no migrations needed.
+
+### Admin (HomeAdmin.jsx — Mission card redesign)
+- **`<AlignToggle>`** gained `langSuffix` ("ar"|"en") + `label` props. When set,
+  the toggle writes/reads `text_aligns[fieldKey + "_" + langSuffix]` so AR and
+  EN can have independent alignments.
+- **`<BiInput>` / `<EyebrowRow>`** gained `perLangAlign` prop. When true they
+  render TWO alignment strips side-by-side (محاذاة العربية / محاذاة الإنجليزية)
+  and pass distinct `textAlign` style to the AR vs EN textareas.
+- **Mission card layout** rebuilt with a clear hierarchy:
+  - Section-level eyebrow ("المنطلقات") — unchanged
+  - **Mission group**: alignment-only block for the label «الرسالة/Mission»
+    + NEW headline BiInput (per-lang aligned) + body BiInput (per-lang aligned)
+    + points BiList
+  - **Vision group**: same structure with «الرؤية/Vision»
+
+### Public (MissionVisionB.jsx)
+- `<Half>` accepts three separate alignment props (`alignLabel`, `alignTitle`,
+  `alignBody`) and applies each to its respective element. The eyebrow flex
+  row also uses the label alignment for `justify-content` so the label hugs
+  the correct edge.
+- Titles read from `home.mission_title_<lang>` / `home.vision_title_<lang>`
+  with the legacy hardcoded strings as fallback. Existing public visitors
+  see no change until an admin saves custom copy.
+- All 12 alignment slots are per-language: label/title/body × mission/vision
+  × ar/en. Reset (default) value re-engages the "outward pull" default.
+
+### Verified live (Playwright)
+- AR view: M label=center, M title=left, M body=center, V label=center, V title=right, V body=left.
+- EN view: M label=left, M title=center, V label=right, V title=left.
+- Custom titles render: "عنوان مخصص للرسالة (ع)" / "Custom Mission Headline (EN)".
+- Backend PATCH/GET round-trip persists all 4 title fields + 12 aligns.
+
+### Outstanding
+- DnD reorder · Resend wiring · HomeAdmin.jsx refactor · deploy prep.
+
+---
+
 ## Update — Feb 11, 2026 (later 3) · Per-field alignment + Section gradient accent
 
 ### New admin controls (HomeAdmin.jsx)

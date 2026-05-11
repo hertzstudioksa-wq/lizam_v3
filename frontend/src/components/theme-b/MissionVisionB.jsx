@@ -37,21 +37,20 @@ function lede(text) {
 }
 
 function Half({
-  side, lang, eyebrowText, title, body, ts, tsEyebrow, dark, anim, testid, bgColor, alignOverride,
+  side, lang, eyebrowText, title, body, ts, tsEyebrow, dark, anim, testid, bgColor,
+  alignLabel, alignTitle, alignBody,
 }) {
   const [hover, setHover] = useState(false);
-  // Reversed alignment — text now pulls TOWARD the outer edges (away from the
-  // central seam). Goal: each half feels self-contained and the split reads
-  // more decisively as two distinct columns.
-  //   • RTL: left half → align left,  right half → align right
-  //   • LTR: left half → align right, right half → align left  (per spec)
-  // Admin per-field alignment override (if set) takes precedence.
+  // Default "outward pull" alignment based on which half + language. Admin
+  // per-field overrides (alignLabel / alignTitle / alignBody) take precedence
+  // and are independent per language.
   const defaultAlign = lang === "ar"
     ? (side === "left" ? "left" : "right")
     : (side === "left" ? "right" : "left");
-  const align = alignOverride || defaultAlign;
+  const labelAlign = alignLabel || defaultAlign;
+  const titleAlign = alignTitle || defaultAlign;
+  const bodyAlign = alignBody || defaultAlign;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
-  // Background: admin-controlled override > default theme color
   const defaultBg = dark ? "var(--tb-navy-900)" : "var(--tb-paper-base)";
   return (
     <Link
@@ -63,7 +62,8 @@ function Half({
         background: bgColor || defaultBg,
         color: dark ? "var(--tb-paper-base)" : "var(--tb-navy-900)",
         borderInlineStart: side === "right" ? "1px solid var(--tb-hairline)" : undefined,
-        textAlign: align,
+        // Section-level textAlign is the BODY alignment so points/lede pick it up.
+        textAlign: bodyAlign,
         minHeight: "clamp(420px, 56vh, 620px)",
         cursor: "pointer",
         transition: "background-color 0.4s ease-out",
@@ -73,10 +73,13 @@ function Half({
       dir={lang === "ar" ? "rtl" : "ltr"}
     >
       <div className="relative h-full flex flex-col px-7 md:px-14 lg:px-20 py-20 md:py-28 lg:py-32">
-        {/* Eyebrow */}
+        {/* Eyebrow label (e.g. "الرسالة" / "Mission") — admin sets its alignment
+            independently per language via the dashboard. */}
         <div
           className="flex items-center gap-3"
-          style={{ justifyContent: align === "right" ? "flex-end" : "flex-start" }}
+          style={{
+            justifyContent: labelAlign === "right" ? "flex-end" : labelAlign === "center" ? "center" : "flex-start",
+          }}
         >
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
           <span
@@ -86,6 +89,7 @@ function Half({
               letterSpacing: "0.22em",
               fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
+              textAlign: labelAlign,
             }}
           >
             {eyebrowText}
@@ -101,7 +105,8 @@ function Half({
             fontWeight: 500,
             maxWidth: "26ch",
             color: dark ? "var(--tb-paper-base)" : "var(--tb-navy-900)",
-            marginInline: align === "right" ? "auto 0" : "0 auto",
+            textAlign: titleAlign,
+            marginInline: titleAlign === "right" ? "auto 0" : titleAlign === "center" ? "auto" : "0 auto",
           }}
         >
           {title}
@@ -117,7 +122,8 @@ function Half({
             color: ts.color || (dark ? "rgba(251, 250, 247, 0.82)" : "var(--tb-text-muted)"),
             fontWeight: ts.fontWeight,
             maxWidth: "48ch",
-            marginInline: align === "right" ? "auto 0" : "0 auto",
+            textAlign: bodyAlign,
+            marginInline: bodyAlign === "right" ? "auto 0" : bodyAlign === "center" ? "auto" : "0 auto",
           }}
         >
           {lede(body)}
@@ -179,20 +185,29 @@ export default function MissionVisionB() {
   // Per-half background color overrides — saved from /admin/home → Mission card.
   const missionBg = home?.section_styles?.mission?.mission_bg || "";
   const visionBg = home?.section_styles?.mission?.vision_bg || "";
-  // Per-field alignment overrides
-  const alignMissionText = getTextAlign(home, "mission", "mission_text");
-  const alignVisionText = getTextAlign(home, "mission", "vision_text");
+  // Per-language alignment overrides (independent for AR and EN visitors).
+  const langKey = lang; // "ar" | "en"
+  const alignLabelMission = getTextAlign(home, "mission", `mission_label_${langKey}`);
+  const alignLabelVision = getTextAlign(home, "mission", `vision_label_${langKey}`);
+  const alignTitleMission = getTextAlign(home, "mission", `mission_title_${langKey}`);
+  const alignTitleVision = getTextAlign(home, "mission", `vision_title_${langKey}`);
+  const alignBodyMission = getTextAlign(home, "mission", `mission_text_${langKey}`);
+  const alignBodyVision = getTextAlign(home, "mission", `vision_text_${langKey}`);
   const gradStyle = getGradientOverlay(home, "mission");
 
-  // Heading texts (kept as before — not separately editable in CMS).
+  // Mission & Vision headlines are now editable from the dashboard (new
+  // fields added to HomeContentIn). Fall back to the legacy hardcoded strings
+  // so the section stays meaningful before an admin enters their own copy.
   const missionTitle =
-    lang === "ar"
+    home?.[`mission_title_${lang}`] ||
+    (lang === "ar"
       ? "بحث قانوني رصين يخدم الحوكمة والسياسات."
-      : "Rigorous legal research in the service of governance.";
+      : "Rigorous legal research in the service of governance.");
   const visionTitle =
-    lang === "ar"
+    home?.[`vision_title_${lang}`] ||
+    (lang === "ar"
       ? "مرجع موثوق للدراسات القانونية في المملكة."
-      : "A trusted reference for legal studies in the Kingdom.";
+      : "A trusted reference for legal studies in the Kingdom.");
 
   const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
   const leftAnim = {
@@ -238,7 +253,9 @@ export default function MissionVisionB() {
           anim={leftAnim}
           testid="block-mission"
           bgColor={missionBg}
-          alignOverride={alignMissionText}
+          alignLabel={alignLabelMission}
+          alignTitle={alignTitleMission}
+          alignBody={alignBodyMission}
         />
         <Half
           side="right"
@@ -252,7 +269,9 @@ export default function MissionVisionB() {
           anim={rightAnim}
           testid="block-vision"
           bgColor={visionBg}
-          alignOverride={alignVisionText}
+          alignLabel={alignLabelVision}
+          alignTitle={alignTitleVision}
+          alignBody={alignBodyVision}
         />
       </div>
     </section>
