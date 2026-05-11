@@ -60,7 +60,7 @@ export default function FeaturedPublicationsB() {
       data-testid="section-featured"
       data-theme-component="theme-b-featured"
       className="relative isolate overflow-hidden"
-      style={{ background: "var(--tb-paper-base)" }}
+      style={{ background: home?.section_styles?.featured_publications?.bg_color || "var(--tb-paper-base)" }}
     >
       {hasBg && (
         <>

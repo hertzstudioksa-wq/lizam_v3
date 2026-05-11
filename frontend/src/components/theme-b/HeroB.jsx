@@ -50,13 +50,15 @@ export default function HeroB() {
 
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const [line1, line2] = (title || "").split("\n");
+  // Admin-controlled background color override (falls back to theme navy).
+  const bgColor = home?.section_styles?.hero?.bg_color || "var(--tb-navy-900)";
 
   return (
     <section
       id="hero"
       className="relative isolate pt-[120px] md:pt-[140px] pb-24 md:pb-28 overflow-hidden"
       style={{
-        background: "var(--tb-navy-900)",
+        background: bgColor,
         color: "var(--tb-paper-base)",
         minHeight: "82vh",
       }}

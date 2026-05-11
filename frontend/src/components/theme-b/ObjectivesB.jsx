@@ -154,8 +154,11 @@ export default function ObjectivesB() {
       data-theme-component="theme-b-objectives"
       className="relative isolate"
       style={{
-        background: useBg ? `url(${bg.url}) center/cover no-repeat` : "var(--tb-paper-base)",
-        backgroundColor: useBg ? "var(--tb-paper-base)" : undefined,
+        backgroundColor: home?.section_styles?.objectives?.bg_color || "var(--tb-paper-base)",
+        backgroundImage: useBg ? `url(${bg.url})` : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
       }}
     >
       {useBg && (

@@ -46,7 +46,7 @@ export default function NewsletterB() {
       id="newsletter"
       data-testid="section-newsletter"
       data-theme-component="theme-b-newsletter"
-      style={{ background: "var(--tb-navy-900)", color: "var(--tb-paper-base)" }}
+      style={{ background: home?.section_styles?.newsletter?.bg_color || "var(--tb-navy-900)", color: "var(--tb-paper-base)" }}
     >
       <div className="mx-auto max-w-[920px] px-6 md:px-12 py-28 md:py-36 text-center">
         <div className="inline-flex items-center justify-center gap-3">

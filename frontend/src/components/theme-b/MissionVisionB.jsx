@@ -37,15 +37,20 @@ function lede(text) {
 }
 
 function Half({
-  side, lang, eyebrowText, title, body, ts, tsEyebrow, dark, anim, testid,
+  side, lang, eyebrowText, title, body, ts, tsEyebrow, dark, anim, testid, bgColor,
 }) {
   const [hover, setHover] = useState(false);
-  // RTL: right-side half aligns LEFT, left-side half aligns RIGHT (splits the
-  // gaze outward, away from the seam). LTR: mirror the rule.
+  // Reversed alignment — text now pulls TOWARD the outer edges (away from the
+  // central seam). Goal: each half feels self-contained and the split reads
+  // more decisively as two distinct columns.
+  //   • RTL: left half → align left,  right half → align right
+  //   • LTR: left half → align right, right half → align left  (per spec)
   const align = lang === "ar"
-    ? (side === "right" ? "left" : "right")
-    : (side === "left" ? "left" : "right");
+    ? (side === "left" ? "left" : "right")
+    : (side === "left" ? "right" : "left");
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
+  // Background: admin-controlled override > default theme color
+  const defaultBg = dark ? "var(--tb-navy-900)" : "var(--tb-paper-base)";
   return (
     <Link
       to="/about"
@@ -53,7 +58,7 @@ function Half({
       onMouseLeave={() => setHover(false)}
       className="relative block group focus:outline-none"
       style={{
-        background: dark ? "var(--tb-navy-900)" : "var(--tb-paper-base)",
+        background: bgColor || defaultBg,
         color: dark ? "var(--tb-paper-base)" : "var(--tb-navy-900)",
         borderInlineStart: side === "right" ? "1px solid var(--tb-hairline)" : undefined,
         textAlign: align,
@@ -169,6 +174,9 @@ export default function MissionVisionB() {
   const tsEyebrow = getTextStyles(home, "mission", "eyebrow");
   const tsMission = getTextStyles(home, "mission", "mission_text");
   const tsVision = getTextStyles(home, "mission", "vision_text");
+  // Per-half background color overrides — saved from /admin/home → Mission card.
+  const missionBg = home?.section_styles?.mission?.mission_bg || "";
+  const visionBg = home?.section_styles?.mission?.vision_bg || "";
 
   // Heading texts (kept as before — not separately editable in CMS).
   const missionTitle =
@@ -180,7 +188,6 @@ export default function MissionVisionB() {
       ? "مرجع موثوق للدراسات القانونية في المملكة."
       : "A trusted reference for legal studies in the Kingdom.";
 
-  const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
   const leftAnim = {
     transform: inView ? "translateX(0)" : "translateX(-50px)",
@@ -221,6 +228,7 @@ export default function MissionVisionB() {
           tsEyebrow={tsEyebrow}
           anim={leftAnim}
           testid="block-mission"
+          bgColor={missionBg}
         />
         <Half
           side="right"
@@ -233,40 +241,8 @@ export default function MissionVisionB() {
           tsEyebrow={tsEyebrow}
           anim={rightAnim}
           testid="block-vision"
+          bgColor={visionBg}
         />
-      </div>
-
-      {/* Centered CTA — full-width band below the split */}
-      <div
-        className="flex items-center justify-center py-14 md:py-16"
-        style={{ background: "var(--tb-paper-deep)" }}
-      >
-        <Link
-          to="/about"
-          className="inline-flex items-center gap-3 px-9 py-4 transition-all duration-300"
-          style={{
-            border: "1px solid var(--tb-navy-900)",
-            color: "var(--tb-navy-900)",
-            fontFamily: '"Thmanyah Sans", sans-serif',
-            fontSize: 14,
-            letterSpacing: "0.14em",
-            textTransform: lang === "ar" ? "none" : "uppercase",
-            fontWeight: 500,
-            background: "transparent",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--tb-navy-900)";
-            e.currentTarget.style.color = "var(--tb-paper-base)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--tb-navy-900)";
-          }}
-          data-testid="mv-cta-about"
-        >
-          <span>{lang === "ar" ? "للتعرف أكثر على المركز" : "Learn more about the center"}</span>
-          <Arrow size={15} strokeWidth={1.6} />
-        </Link>
       </div>
     </section>
   );

@@ -32,7 +32,7 @@ export default function PullBandB() {
     <section
       data-testid="section-pull-band"
       data-theme-component="theme-b-pull"
-      style={{ background: "var(--tb-paper-warm)" }}
+      style={{ background: home?.section_styles?.pull_band?.bg_color || "var(--tb-paper-warm)" }}
     >
       <div className="mx-auto max-w-[1100px] px-6 md:px-12 lg:px-16 py-24 md:py-28 text-center">
         <Quote

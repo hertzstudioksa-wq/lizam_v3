@@ -38,7 +38,7 @@ export default function AboutB() {
       id="about"
       data-testid="section-about"
       data-theme-component="theme-b-about"
-      style={{ background: "var(--tb-paper-base)" }}
+      style={{ background: home?.section_styles?.about?.bg_color || "var(--tb-paper-base)" }}
     >
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-16 py-24 md:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">

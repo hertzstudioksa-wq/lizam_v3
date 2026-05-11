@@ -621,6 +621,83 @@ function ListItemTypoBlock({ form, sectionKey, testid }) {
   );
 }
 
+/**
+ * <BgColorControl> — admin picker for a section's background color override.
+ *
+ * Writes/reads `home.section_styles[sectionKey][styleKey]` (default
+ * styleKey = "bg_color"). An empty value means "use the theme default" and
+ * the public component will fall back to its standard background.
+ *
+ * Renders a compact strip: native <input type="color"> + a free-text hex
+ * input + a Reset button. Both inputs sync each other so admins can paste a
+ * hex value directly or use the swatch picker.
+ */
+function BgColorControl({ form, sectionKey, styleKey = "bg_color", labelAr, labelEn, testid }) {
+  const { lang } = useLang();
+  const tr = (ar, en) => (lang === "ar" ? ar : en);
+  const current = form.value?.section_styles?.[sectionKey]?.[styleKey] || "";
+  const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+  // <input type="color"> always demands a non-empty hex — fall back to a neutral
+  // navy when the admin hasn't picked one yet so the swatch stays visible.
+  const swatchValue = HEX_RE.test(current) ? current : "#0A111C";
+  const setVal = (v) => {
+    const sectionStyles = { ...(form.value.section_styles || {}) };
+    const cur = { ...(sectionStyles[sectionKey] || {}) };
+    if (v === "" || v == null) {
+      delete cur[styleKey];
+    } else {
+      cur[styleKey] = v;
+    }
+    sectionStyles[sectionKey] = cur;
+    form.patch("section_styles", sectionStyles);
+  };
+  return (
+    <div className="mt-4 flex items-center gap-3 px-3 py-2 bg-paper border border-rule" data-testid={testid || `bg-color-${sectionKey}-${styleKey}`}>
+      <span className="text-[11.5px] uppercase tracking-[0.14em] text-brass shrink-0">
+        {tr(labelAr || "لون خلفية القسم", labelEn || "Section background")}
+      </span>
+      <input
+        type="color"
+        value={swatchValue}
+        onChange={(e) => setVal(e.target.value)}
+        className="w-9 h-9 cursor-pointer rounded border border-rule"
+        style={{ padding: 2, background: "transparent" }}
+        data-testid={`${testid || `bg-color-${sectionKey}-${styleKey}`}-swatch`}
+        aria-label={tr("اختر لون", "Pick color")}
+      />
+      <input
+        type="text"
+        value={current}
+        onChange={(e) => {
+          const v = e.target.value.trim();
+          if (v === "" || HEX_RE.test(v)) setVal(v);
+          else setVal(v); // store raw — validation is soft so admins can type freely
+        }}
+        placeholder="#1A1A2E"
+        spellCheck={false}
+        className="font-mono text-[12.5px] px-2 py-1 border border-rule bg-paper focus:outline-none focus:border-brass uppercase"
+        style={{ width: 110 }}
+        data-testid={`${testid || `bg-color-${sectionKey}-${styleKey}`}-hex`}
+      />
+      <button
+        type="button"
+        onClick={() => setVal("")}
+        className="text-[11.5px] text-mute hover:text-navy-deep underline-offset-2 hover:underline"
+        data-testid={`${testid || `bg-color-${sectionKey}-${styleKey}`}-reset`}
+      >
+        {tr("إعادة الافتراضي", "Reset")}
+      </button>
+      {current === "" && (
+        <span className="text-[10.5px] text-mute italic ms-auto">
+          {tr("(يستخدم لون الثيم)", "(theme default)")}
+        </span>
+      )}
+    </div>
+  );
+}
+
+
+
 
 /** Bilingual textarea pair for "one item per line" lists. */
 function BiList({ form, keyAr, keyEn, labelAr, labelEn, testid, sectionKey, fieldKey }) {
@@ -858,6 +935,8 @@ export default function HomeAdmin() {
                 sample={tr("بحث قانوني رصين", "Rigorous legal research")} sampleSize={36} />
             </div>
           </div>
+          <BgColorControl form={form} sectionKey="hero"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -892,6 +971,8 @@ export default function HomeAdmin() {
                 sample={tr("عن المركز", "About the Center")} sampleSize={28} />
             </div>
           </div>
+          <BgColorControl form={form} sectionKey="about"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -935,6 +1016,13 @@ export default function HomeAdmin() {
             <BgImageBlock form={form} sectionKey="mission" defaultOverlay={0}
               label={tr("صورة خلفية القسم (اختيارية)", "Section background (optional)")} />
           </div>
+          {/* Per-half background color overrides (Mission and Vision panels) */}
+          <BgColorControl form={form} sectionKey="mission" styleKey="mission_bg"
+            labelAr="لون خلفية الرسالة" labelEn="Mission half background"
+            testid="bg-color-mission-half" />
+          <BgColorControl form={form} sectionKey="mission" styleKey="vision_bg"
+            labelAr="لون خلفية الرؤية" labelEn="Vision half background"
+            testid="bg-color-vision-half" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -966,6 +1054,8 @@ export default function HomeAdmin() {
               labelAr="حجم خط الاقتباس" labelEn="Quote font size"
               sample={tr("نقدّم بحثاً قانونياً مستقلاً", "Independent legal research")} sampleSize={28} />
           </div>
+          <BgColorControl form={form} sectionKey="pull_band"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1023,6 +1113,8 @@ export default function HomeAdmin() {
             <BgImageBlock form={form} sectionKey="objectives" defaultOverlay={0.78}
               label={tr("خلفية قسم الأهداف (اختيارية)", "Objectives background (optional)")} />
           </div>
+          <BgColorControl form={form} sectionKey="objectives"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1094,6 +1186,8 @@ export default function HomeAdmin() {
             <BgImageBlock form={form} sectionKey="fields_of_work" defaultOverlay={0.12}
               label={tr("خلفية قسم مجالات العمل (اختيارية)", "Fields of Work background (optional)")} />
           </div>
+          <BgColorControl form={form} sectionKey="fields_of_work"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1145,6 +1239,8 @@ export default function HomeAdmin() {
             <BgImageBlock form={form} sectionKey="featured_publications" defaultOverlay={0.12}
               label={tr("خلفية قسم الإصدارات (اختيارية)", "Featured Publications background (optional)")} />
           </div>
+          <BgColorControl form={form} sectionKey="featured_publications"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1173,6 +1269,8 @@ export default function HomeAdmin() {
               "Contact details (email, phone, address) are managed in “Site Settings” and reflected here automatically.",
             )}
           </div>
+          <BgColorControl form={form} sectionKey="contact"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
         {/* ============================================================ */}
@@ -1192,6 +1290,8 @@ export default function HomeAdmin() {
               multiline rows={3} testid="news-blurb"
               sectionKey="newsletter" fieldKey="blurb" />
           </div>
+          <BgColorControl form={form} sectionKey="newsletter"
+            labelAr="لون خلفية القسم" labelEn="Section background color" />
         </SectionCard>
 
       </div>

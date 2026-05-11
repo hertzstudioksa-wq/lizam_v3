@@ -42,7 +42,7 @@ export default function FieldsOfWorkB() {
       data-testid="section-fields"
       data-theme-component="theme-b-fields"
       className="relative isolate overflow-hidden"
-      style={{ background: "var(--tb-paper-base)" }}
+      style={{ background: home?.section_styles?.fields_of_work?.bg_color || "var(--tb-paper-base)" }}
     >
       {hasBg && (
         <>

@@ -24,7 +24,7 @@ export default function ContactBlockB() {
       id="contact"
       data-testid="section-contact"
       data-theme-component="theme-b-contact"
-      style={{ background: "var(--tb-paper-base)" }}
+      style={{ background: home?.section_styles?.contact?.bg_color || "var(--tb-paper-base)" }}
     >
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 lg:px-20 py-24 md:py-28">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 items-start">

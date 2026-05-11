@@ -654,6 +654,46 @@ multiplier that respects existing responsive `clamp()` values:
 
 ---
 
+## Update — Feb 11, 2026 (later 2) · Per-section background color + Mission/Vision tweaks
+
+### MissionVisionB (visual tweaks only — no admin/backend changes)
+- **Reversed text alignment** so each half pulls TOWARD its outer edge of
+  the screen (was: toward the seam). The split now reads as two visually
+  decisive columns. Implementation: `align = (side === "left" ? "left" : "right")`
+  in RTL, mirrored in LTR per spec.
+- **Removed** the "للتعرف أكثر على المركز" CTA strip beneath the split.
+  The whole halves remain clickable as `<Link to="/about">` (kept from prev).
+- **New per-half background overrides** wired through new Admin BgColorControl
+  (see below) — `home.section_styles.mission.mission_bg` /
+  `.vision_bg`. Falls back to default theme navy/cream when unset.
+
+### Background color picker (new feature)
+- Added `<BgColorControl>` to `HomeAdmin.jsx` — compact strip with native
+  `<input type="color">` swatch + free-text hex input + "Reset to default"
+  + "(theme default)" hint. Empty/missing value falls back to the theme.
+- Storage: `home.section_styles[section].bg_color` (or `mission_bg` /
+  `vision_bg` for Mission). **No backend schema change required** —
+  `HomeContentIn.section_styles` is already `Dict[str, Dict[str, Any]]`.
+- Public component updates — every theme-b section now reads the override:
+  `HeroB`, `AboutB`, `PullBandB`, `ObjectivesB`, `FieldsOfWorkB`,
+  `FeaturedPublicationsB`, `ContactBlockB`, `NewsletterB`, and `MissionVisionB`
+  (per-half). Falls back to existing CSS variables when no override is set.
+
+### Verified live (Playwright e2e)
+- All 8 sections accept hex overrides and render the exact saved color
+  (verified e.g. `#1A1A2E`, `#F0E8D8`, `#E8E0D0`, `#2A1A1A`).
+- Mission/Vision halves render `#0D1F3C` and `#F5E6CC` respectively.
+- MV text-align: Mission half = `left`, Vision half = `right` (outer pull, RTL).
+- CTA `mv-cta-about` count = **0** (button fully removed).
+- `/admin/home` opens cleanly with new pickers visible in every card.
+
+### Outstanding
+- DnD reorder (`@dnd-kit/sortable`)
+- Resend API wiring
+- `HomeAdmin.jsx` refactor — now ~1330 lines.
+
+---
+
 ## Update — Feb 11, 2026 · Homepage motion pass + Mission/Vision v4 + Objectives v4
 
 Full-page motion overhaul (no framer-motion — pure CSS keyframes + a tiny
