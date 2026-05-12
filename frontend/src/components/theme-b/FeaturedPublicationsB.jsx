@@ -6,7 +6,6 @@ import { useImageAssets } from "@/hooks/useImageAssets";
 import { usePublications } from "@/hooks/usePublications";
 import PublicationCardB from "@/components/theme-b/PublicationCardB";
 import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
-import Reveal from "@/components/theme-b/Reveal";
 
 /**
  * Theme B — Featured Publications (Nadeem-inspired refinement).
@@ -43,6 +42,13 @@ export default function FeaturedPublicationsB() {
     if (merged.length >= cardCount) break;
   }
   const items = merged;
+  // Duplicate the items so the marquee track can loop seamlessly from 0 → -50%.
+  // If only 1–2 unique items exist, repeat enough times to fill the viewport.
+  const minMarqueeItems = 6;
+  const repeats = items.length === 0 ? 0 : Math.max(2, Math.ceil(minMarqueeItems / items.length) * 2);
+  const marqueeItems = Array.from({ length: repeats }, () => items).flat();
+  // Slow the scroll a touch as we add more cards.
+  const marqueeDuration = `${Math.max(28, items.length * 9)}s`;
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const tsEyebrow = getTextStyles(home, "featured_publications", "eyebrow");
   const tsTitle = getTextStyles(home, "featured_publications", "title");
@@ -139,19 +145,32 @@ export default function FeaturedPublicationsB() {
           </p>
         </header>
 
-        {/* 3 horizontal cards — staggered in, hover lifts */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 md:gap-8">
-          {items.map((pub, i) => (
-            <Reveal
-              key={pub.id}
-              variant="up"
-              delay={Math.min(5, i + 1)}
-              className="tb-card-hover"
-              style={{ transitionDuration: "0.6s" }}
-            >
-              <PublicationCardB pub={pub} testid={`featured-pub-${pub.id}`} />
-            </Reveal>
-          ))}
+        {/* Auto-scrolling marquee — RTL visual flow (right → left), infinite loop.
+            Track is forced dir="ltr" so the translateX math is consistent regardless
+            of page direction. Edge fades come from the viewport's CSS mask. */}
+        <div
+          className="mt-20 tb-marquee-viewport"
+          data-testid="featured-marquee"
+          dir="ltr"
+          aria-roledescription="carousel"
+        >
+          <div
+            className="tb-marquee-track"
+            style={{ "--tb-marquee-duration": marqueeDuration }}
+          >
+            {marqueeItems.map((pub, i) => (
+              <div
+                key={`${pub.id}-${i}`}
+                className="tb-marquee-item tb-card-hover"
+                aria-hidden={i >= items.length ? "true" : undefined}
+              >
+                <PublicationCardB
+                  pub={pub}
+                  testid={i < items.length ? `featured-pub-${pub.id}` : undefined}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Centered "View all" — Nadeem-style outlined */}

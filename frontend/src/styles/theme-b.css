@@ -498,6 +498,47 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
   box-shadow: 0 14px 36px rgba(10, 17, 28, 0.10);
 }
 
+/* ---------- Featured Publications: infinite marquee ----------
+ * The track contains 2x the items so animating from 0 → -50% gives a
+ * seamless loop. The viewport uses a horizontal mask so cards fade in
+ * from the right edge and fade out toward the left edge. */
+.tb-marquee-viewport {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0%,
+    #000 9%,
+    #000 91%,
+    transparent 100%);
+          mask-image: linear-gradient(to right,
+    transparent 0%,
+    #000 9%,
+    #000 91%,
+    transparent 100%);
+}
+.tb-marquee-track {
+  display: flex;
+  flex-wrap: nowrap;
+  width: max-content;
+  gap: 2rem;
+  animation: tb-marquee-scroll var(--tb-marquee-duration, 42s) linear infinite;
+  will-change: transform;
+}
+.tb-marquee-viewport:hover .tb-marquee-track {
+  animation-play-state: paused;
+}
+.tb-marquee-item {
+  flex: 0 0 auto;
+  width: clamp(280px, 32vw, 380px);
+}
+@keyframes tb-marquee-scroll {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tb-marquee-track { animation: none !important; }
+}
+
 /* "Read more" underline reveal — animates from start-edge to end-edge. */
 .tb-read-link {
   position: relative;
