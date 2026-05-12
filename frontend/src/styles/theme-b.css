@@ -504,7 +504,11 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
  * from the right edge and fade out toward the left edge. */
 .tb-marquee-viewport {
   position: relative;
-  overflow: hidden;
+  /* overflow-x clips horizontally for the marquee, but overflow-y stays visible
+     so hover scale + box-shadow on cards aren't cropped at top/bottom. */
+  overflow-x: clip;
+  overflow-y: visible;
+  padding-block: 18px;
   -webkit-mask-image: linear-gradient(to right,
     transparent 0%,
     #000 9%,
