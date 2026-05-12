@@ -5,18 +5,19 @@ import { api } from "@/lib/api";
  * Shared singleton fetchers — very light, no dependency on react-query for Phase 1.
  * Cached on module level to avoid refetching on route changes.
  *
- * Cache invalidation rule: when admin PATCHes a setting/home/branding, call
- * invalidateSiteCache(...). This ALWAYS re-fetches and pushes the fresh data
- * to every currently-mounted listener — so long-lived components like
+ * Cache invalidation rule: when admin PATCHes a setting/home/about/branding,
+ * call invalidateSiteCache(...). This ALWAYS re-fetches and pushes the fresh
+ * data to every currently-mounted listener — so long-lived components like
  * BrandThemeSync update without a hard reload.
  */
-const cache = { site: null, home: null };
-const listeners = { site: new Set(), home: new Set() };
+const cache = { site: null, home: null, about: null };
+const listeners = { site: new Set(), home: new Set(), about: new Set() };
 const fetchers = {
   site: async () => (await api.get("/public/site-settings")).data,
   home: async () => (await api.get("/public/home-content")).data,
+  about: async () => (await api.get("/public/about-content")).data,
 };
-let inflight = { site: null, home: null };
+let inflight = { site: null, home: null, about: null };
 
 function notify(key, data) {
   listeners[key].forEach((l) => l(data));
@@ -36,7 +37,7 @@ async function loadOnce(key) {
  * to every active subscriber. Use this after a successful admin PATCH.
  */
 export function invalidateSiteCache(key) {
-  const keys = key ? [key] : ["site", "home"];
+  const keys = key ? [key] : ["site", "home", "about"];
   for (const k of keys) {
     cache[k] = null;
     fetchers[k]()
@@ -68,3 +69,4 @@ function useShared(key) {
 
 export function useSiteSettings() { return useShared("site"); }
 export function useHomeContent() { return useShared("home"); }
+export function useAboutContent() { return useShared("about"); }

@@ -56,6 +56,15 @@ async def get_home_content():
     return doc
 
 
+@router.get("/about-content")
+async def get_about_content():
+    """Public read for the dedicated About page (separate from home)."""
+    doc = await db.about_content.find_one({}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="About content not seeded")
+    return doc
+
+
 @router.get("/image-assets")
 async def public_get_image_assets():
     """Returns active image slots used by the public site."""

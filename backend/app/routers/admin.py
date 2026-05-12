@@ -3,7 +3,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.config import db
 from app.models import (
-    SiteSettingsIn, BrandingIn, HomeContentIn, PublicationIn, AuthorIn, CategoryIn, UserUpdateIn,
+    SiteSettingsIn, BrandingIn, HomeContentIn, AboutContentIn, PublicationIn, AuthorIn, CategoryIn, UserUpdateIn,
     FeatureToggles,
 )
 from app.sanitize import sanitize_html, slugify, estimate_reading_time
@@ -129,6 +129,30 @@ async def admin_update_home(body: HomeContentIn,
     await db.home_content.update_one({"id": "home"}, {"$set": update}, upsert=True)
     await audit_log(user, "update", "home_content", "home", {"fields": list(update.keys())})
     return await db.home_content.find_one({"id": "home"}, {"_id": 0})
+
+
+# ---------------------------------------------------------------------------
+# About page content (separate collection from home_content). Reuses the
+# `home.*` permission keys — same admin roles already manage page content.
+# ---------------------------------------------------------------------------
+@router.get("/about")
+async def admin_get_about(user: dict = Depends(require_permission("home.read"))):
+    doc = await db.about_content.find_one({"id": "about"}, {"_id": 0})
+    return doc or {}
+
+
+@router.patch("/about")
+async def admin_update_about(body: AboutContentIn,
+                             user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=400, detail="No fields provided")
+    update["updated_at"] = utc_iso()
+    update["_seed_origin"] = "admin"
+    update["updated_by"] = user["email"]
+    await db.about_content.update_one({"id": "about"}, {"$set": update}, upsert=True)
+    await audit_log(user, "update", "about_content", "about", {"fields": list(update.keys())})
+    return await db.about_content.find_one({"id": "about"}, {"_id": 0})
 
 
 # ---------------------------------------------------------------------------

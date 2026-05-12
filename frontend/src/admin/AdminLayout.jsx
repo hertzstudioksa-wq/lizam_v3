@@ -19,13 +19,14 @@ const NAV_DEFS = (lang) => ({
   roles:        { to: "/admin/roles",        icon: ShieldCheck,     label: lang === "ar" ? "الأدوار والصلاحيات" : "Roles & Permissions", testid: "admin-nav-roles" },
   messages:     { to: "/admin/messages",     icon: Mail,            label: lang === "ar" ? "الرسائل" : "Messages", testid: "admin-nav-messages" },
   home:         { to: "/admin/home",         icon: BookOpen,        label: lang === "ar" ? "محتوى الرئيسية" : "Home Content", testid: "admin-nav-home" },
+  about:        { to: "/admin/about",        icon: BookOpen,        label: lang === "ar" ? "محتوى صفحة عن المركز" : "About Page Content", testid: "admin-nav-about" },
   branding:     { to: "/admin/branding",     icon: Palette,         label: lang === "ar" ? "الهوية والتصميم" : "Branding & Design", testid: "admin-nav-branding" },
   images:       { to: "/admin/images",       icon: ImageIcon,       label: lang === "ar" ? "إدارة الصور" : "Image Management", testid: "admin-nav-images" },
   settings:     { to: "/admin/settings",     icon: Settings,        label: lang === "ar" ? "إعدادات الموقع" : "Site Settings", testid: "admin-nav-settings" },
   toggles:      { to: "/admin/toggles",      icon: ToggleLeft,      label: lang === "ar" ? "مفاتيح الميزات" : "Feature Toggles", testid: "admin-nav-toggles" },
   audit:        { to: "/admin/audit",        icon: Activity,        label: lang === "ar" ? "سجل النشاط" : "Audit Log", testid: "admin-nav-audit" },
 });
-const DEFAULT_NAV_KEYS = ["overview","publications","authors","categories","responses","users","roles","messages","home","branding","images","settings","toggles","audit"];
+const DEFAULT_NAV_KEYS = ["overview","publications","authors","categories","responses","users","roles","messages","home","about","branding","images","settings","toggles","audit"];
 
 export default function AdminLayout() {
   const { user, bootstrapping, logout } = useAuth();

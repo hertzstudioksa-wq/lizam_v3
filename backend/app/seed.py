@@ -232,6 +232,163 @@ async def seed_all() -> None:
     }
     await _upsert_if_seed(db.home_content, {"id": "home"}, home_defaults)
 
+    # ---- About page content (dedicated page, separate collection) ----
+    about_defaults = {
+        "id": "about",
+        # Ordered list of section keys — drives both rendering order and visibility
+        "visible_sections": [
+            "hero", "intro", "mission_vision", "objectives",
+            "board", "partners", "contact_cta",
+        ],
+        # Hero
+        "hero_eyebrow_ar": "عن المركز",
+        "hero_eyebrow_en": "About",
+        "hero_title_ar": "بحث قانوني رصين، في خدمة الحوكمة والسياسات.",
+        "hero_title_en": "Rigorous Legal Research in Service of Governance and Policy.",
+        "hero_subtitle_ar": "مركز سعودي متخصص في الدراسات القانونية والسياسات العامة، يقدّم معرفة مستقلة تخدم القطاعين العام والخاص.",
+        "hero_subtitle_en": "A Saudi research center dedicated to legal studies and public policy — producing independent knowledge that serves public and private institutions.",
+        # Intro
+        "intro_eyebrow_ar": "نبذة",
+        "intro_eyebrow_en": "Overview",
+        "intro_title_ar": "مَنْ نحن",
+        "intro_title_en": "Who We Are",
+        "intro_body_ar": "يجسّد مركز لزام مبادرة جماعية من نخبة من الأكاديميين القانونيين السعوديين الملتزمين بتطوير البحث القانوني الرصين، وتحديث الممارسات القانونية بما يستلهم التجارب العالمية القائمة على أسس علمية ومؤسسية.",
+        "intro_body_en": "LIZAM is a collective initiative led by a select group of Saudi legal academics committed to advancing rigorous legal research and modernising legal practice in light of leading global experiences grounded in scholarly foundations.",
+        "intro_body_extended_ar": "ويقوم المركز على اعتقاد راسخ بأن الأنظمة القانونية تتطور من خلال الاجتهاد البحثي المستمر، والحوار المؤسسي، والمساهمات التحليلية المعمقة في عملية صنع القرار.",
+        "intro_body_extended_en": "The Center is built on the conviction that legal systems evolve through sustained scholarly inquiry, institutional dialogue, and substantive analytical contributions to decision-making.",
+        # Mission & Vision (numbered manifesto)
+        "mission_eyebrow_ar": "الفصل الأول",
+        "mission_eyebrow_en": "Chapter One",
+        "mission_title_ar": "الرسالة",
+        "mission_title_en": "Mission",
+        "mission_body_ar": "تتمثل رسالة المركز في الارتقاء بالبحث القانوني في المملكة العربية السعودية من خلال إنتاج دراسات قانونية أصيلة ومعاصرة وذات صلة بالسياسات العامة، تسهم في تطوير القانون والمؤسسات القانونية وممارسات الحوكمة.",
+        "mission_body_en": "Our mission is to advance legal research in Saudi Arabia by producing original, contemporary, and policy-relevant legal studies that contribute to the development of law, legal institutions, and governance practices.",
+        "mission_points_ar": [
+            "تعزيز جودة وعمق البحوث القانونية السعودية، بما يعزّز مكانتها دولياً.",
+            "تجسير الفجوة بين الدراسات الأكاديمية والممارسة المؤسسية.",
+            "تعزيز ثقافة بحثية تُقدّر المنهجية الصارمة والاستقلال الفكري.",
+        ],
+        "mission_points_en": [
+            "Elevate the quality and depth of Saudi legal research, strengthening its international standing.",
+            "Bridge the gap between academic legal scholarship and institutional practice.",
+            "Cultivate a research culture that values methodological rigour and intellectual independence.",
+        ],
+        "vision_eyebrow_ar": "الفصل الثاني",
+        "vision_eyebrow_en": "Chapter Two",
+        "vision_title_ar": "الرؤية",
+        "vision_title_en": "Vision",
+        "vision_body_ar": "تتمثل رؤية المركز في أن يصبح مؤسسة بحثية قانونية رائدة وعالمية، مقرّها السعودية، ومعترفاً بجدية طرحها الفكري، وعمقها التحليلي، ومساهمتها المستدامة في الفكر القانوني وصياغة السياسات.",
+        "vision_body_en": "Our vision is to become a leading legal research institution of global standing, headquartered in Saudi Arabia, recognised for its intellectual contribution and sustained impact on legal thought and policymaking.",
+        "vision_points_ar": [
+            "أن يكون مرجعاً موثوقاً للدراسات القانونية المتعلقة بالمملكة.",
+            "المساهمة في الحوارات الإقليمية والعالمية حول القانون والحوكمة.",
+            "إعداد جيل جديد من الباحثين القانونيين السعوديين.",
+            "تقديم نموذج استشاري قائم على منهجيات بحثية حديثة.",
+        ],
+        "vision_points_en": [
+            "Serve as a trusted reference for legal research relevant to the Kingdom.",
+            "Contribute to regional and global conversations on law and governance.",
+            "Prepare a new generation of Saudi legal researchers.",
+            "Offer a contemporary advisory model rooted in sound methodology.",
+        ],
+        # Objectives
+        "objectives_eyebrow_ar": "الأهداف",
+        "objectives_eyebrow_en": "Objectives",
+        "objectives_title_ar": "خمسة أهداف تحدد أولوياتنا البحثية.",
+        "objectives_title_en": "Five priorities that shape our research.",
+        "objectives": [
+            {"id": uid(), "sort_order": i + 1, **o}
+            for i, o in enumerate([
+                {"title_ar": "النهوض بالدراسات القانونية", "title_en": "Advancing Legal Studies",
+                 "description_ar": "إنتاج بحثي نوعي وطويل المدى، لمعالجة القضايا ذات الصلة بالقانون والحوكمة والسياسات في المملكة.",
+                 "description_en": "High-quality, long-horizon research addressing law, governance, and policy issues in the Kingdom."},
+                {"title_ar": "دعم حوكمة القطاع العام", "title_en": "Supporting Public Sector Governance",
+                 "description_ar": "إسناد المؤسسات العامة بدراسات معمّقة ومحايدة في قضايا التشريع والتنظيم والصلاحيات المؤسسية.",
+                 "description_en": "Supporting public institutions with in-depth, independent analysis on legislation, regulation, and institutional mandates."},
+                {"title_ar": "خدمة القطاع الخاص", "title_en": "Serving the Private Sector",
+                 "description_ar": "تقديم خدمات بحثية واستشارية تساعد الكيانات الخاصة على فهم الأطر التنظيمية والمخاطر القانونية.",
+                 "description_en": "Research and advisory services helping private entities navigate regulatory frameworks and legal risks."},
+                {"title_ar": "بناء القدرات البحثية", "title_en": "Building Research Capabilities",
+                 "description_ar": "توجيه الباحثين والممارسين في بداية مسيرتهم المهنية المهتمين بالبحث القانوني المتقدم.",
+                 "description_en": "Mentoring early-career researchers and practitioners engaged with advanced legal research."},
+                {"title_ar": "تعزيز المعرفة المتاحة للجميع", "title_en": "Promoting Open Access to Knowledge",
+                 "description_ar": "إتاحة المخرجات البحثية للجمهور، والإسهام في إثراء النقاش العام حول القضايا القانونية والسياسات.",
+                 "description_en": "Making research outputs publicly accessible and enriching public discourse on legal and policy matters."},
+            ])
+        ],
+        # Board of Directors (4 members default)
+        "board_eyebrow_ar": "القيادة",
+        "board_eyebrow_en": "Leadership",
+        "board_title_ar": "مجلس الإدارة",
+        "board_title_en": "Board of Directors",
+        "board_blurb_ar": "نخبة من القانونيين والمختصين الذين يقودون توجّه المركز البحثي والمؤسسي.",
+        "board_blurb_en": "A distinguished group of legal scholars and professionals steering the Center's research and institutional direction.",
+        "board_members": [
+            {"id": uid(), "sort_order": 1,
+             "name_ar": "د. فيصل القحطاني", "name_en": "Dr. Faisal Al-Qahtani",
+             "role_ar": "رئيس مجلس الإدارة", "role_en": "Chairman of the Board",
+             "bio_ar": "أستاذ القانون التجاري، خبرة تزيد عن عشرين عاماً في الاستشارات والتشريع.",
+             "bio_en": "Professor of commercial law with over two decades of advisory and legislative experience.",
+             "image_url": "",
+             "linkedin": ""},
+            {"id": uid(), "sort_order": 2,
+             "name_ar": "د. نوال السبيعي", "name_en": "Dr. Nawal Al-Subaie",
+             "role_ar": "نائبة الرئيس", "role_en": "Vice Chair",
+             "bio_ar": "متخصصة في السياسات العامة والقانون الإداري، باحثة معتمدة في عدد من المراكز الدولية.",
+             "bio_en": "Specialist in public policy and administrative law, affiliated with leading international research centres.",
+             "image_url": "",
+             "linkedin": ""},
+            {"id": uid(), "sort_order": 3,
+             "name_ar": "أ. عبدالعزيز الراشد", "name_en": "Mr. Abdulaziz Al-Rashid",
+             "role_ar": "عضو مجلس", "role_en": "Board Member",
+             "bio_ar": "مستشار قانوني في الحوكمة المؤسسية وأطر الامتثال للقطاعين العام والخاص.",
+             "bio_en": "Legal advisor on corporate governance and compliance frameworks across public and private sectors.",
+             "image_url": "",
+             "linkedin": ""},
+            {"id": uid(), "sort_order": 4,
+             "name_ar": "د. هند العنزي", "name_en": "Dr. Hind Al-Anazi",
+             "role_ar": "عضو مجلس", "role_en": "Board Member",
+             "bio_ar": "باحثة في الفقه المعاصر والقانون المقارن، مهتمة بقضايا الحوكمة الرقمية.",
+             "bio_en": "Scholar of contemporary jurisprudence and comparative law with a focus on digital governance.",
+             "image_url": "",
+             "linkedin": ""},
+        ],
+        # Success partners
+        "partners_eyebrow_ar": "شركاء النجاح",
+        "partners_eyebrow_en": "Success Partners",
+        "partners_title_ar": "نعمل مع كيانات رائدة",
+        "partners_title_en": "We work with leading institutions",
+        "partners_blurb_ar": "شراكات بحثية ومؤسسية مع جهات حكومية وأكاديمية تُعزّز أثر المركز.",
+        "partners_blurb_en": "Research and institutional partnerships with government, academic, and professional entities that amplify the Center's impact.",
+        "partners": [
+            {"id": uid(), "sort_order": i + 1, "name_ar": "", "name_en": "", "logo_url": "", "link": ""}
+            for i in range(6)
+        ],
+        # Contact CTA
+        "contact_eyebrow_ar": "تواصل",
+        "contact_eyebrow_en": "Contact",
+        "contact_title_ar": "نرحّب بالتعاون البحثي والاستفسارات المؤسسية.",
+        "contact_title_en": "We welcome research collaboration and institutional enquiries.",
+        "contact_blurb_ar": "تواصل مع فريق المركز لمناقشة الشراكات أو طلب دراسة قانونية مخصصة.",
+        "contact_blurb_en": "Reach out to discuss research partnerships or request a bespoke legal study.",
+        "contact_cta_label_ar": "تواصل معنا",
+        "contact_cta_label_en": "Get in touch",
+        "contact_cta_link": "/contact",
+        # Default Hero background image (admins can override from /admin/about)
+        "section_styles": {
+            "hero": {
+                "bg": {
+                    "url": "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=2400",
+                    "focal_x": 50, "focal_y": 50,
+                    "overlay_opacity": 0.62,
+                    "enabled": True,
+                }
+            },
+        },
+        "updated_at": utc_iso(),
+    }
+    await _upsert_if_seed(db.about_content, {"id": "about"}, about_defaults)
+
     # ---- Image asset slots ----
     # Only slots actually consumed by the active public theme (Theme B) are
     # seeded. Adding more here would surface as orphan rows in /admin/images

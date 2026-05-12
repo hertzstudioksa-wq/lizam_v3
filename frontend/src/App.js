@@ -20,6 +20,7 @@ import ContactPage from "@/pages/ContactPage";
 import SiteSettingsAdmin from "@/admin/pages/SiteSettingsAdmin";
 import BrandingAdmin from "@/admin/pages/BrandingAdmin";
 import HomeAdmin from "@/admin/pages/HomeAdmin";
+import AboutAdmin from "@/admin/pages/AboutAdmin";
 import ImagesAdmin from "@/admin/pages/ImagesAdmin";
 import HeroMediaAdmin from "@/admin/pages/HeroMediaAdmin";
 import AboutPage from "@/pages/AboutPage";
@@ -95,6 +96,7 @@ function App() {
               <Route path="roles" element={<RolesAdmin />} />
               <Route path="messages" element={<MessagesAdmin />} />
               <Route path="home" element={<HomeAdmin />} />
+              <Route path="about" element={<AboutAdmin />} />
               <Route path="branding" element={<BrandingAdmin />} />
               <Route path="images" element={<ImagesAdmin />} />
               <Route path="hero-media" element={<HeroMediaAdmin />} />

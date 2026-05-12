@@ -195,6 +195,86 @@ class PublicationIn(BaseModel):
     related_publication_ids: Optional[List[str]] = None
 
 
+class AboutContentIn(BaseModel):
+    """Inputs for the dedicated `/about` page (separate from home_content).
+
+    Mirrors the home-content pattern: per-section eyebrows/titles/bodies, a
+    flexible `section_styles` dict for typography/alignment/bg/gradient
+    overrides, plus list-shaped sections (objectives, board, partners).
+    Anything not declared here passes through because of extra="ignore" —
+    keep that, the admin UI saves nested style objects opaquely.
+    """
+    model_config = ConfigDict(extra="ignore")
+    # Visibility + order (ordered list of section keys)
+    visible_sections: Optional[List[str]] = None
+    section_styles: Optional[Dict[str, Dict[str, Any]]] = None
+    # Hero (page masthead)
+    hero_eyebrow_ar: Optional[str] = None
+    hero_eyebrow_en: Optional[str] = None
+    hero_title_ar: Optional[str] = None
+    hero_title_en: Optional[str] = None
+    hero_subtitle_ar: Optional[str] = None
+    hero_subtitle_en: Optional[str] = None
+    # Intro (long-form "about the center" copy block)
+    intro_eyebrow_ar: Optional[str] = None
+    intro_eyebrow_en: Optional[str] = None
+    intro_title_ar: Optional[str] = None
+    intro_title_en: Optional[str] = None
+    intro_body_ar: Optional[str] = None
+    intro_body_en: Optional[str] = None
+    intro_body_extended_ar: Optional[str] = None
+    intro_body_extended_en: Optional[str] = None
+    # Mission & Vision (numbered manifesto)
+    mission_eyebrow_ar: Optional[str] = None
+    mission_eyebrow_en: Optional[str] = None
+    mission_title_ar: Optional[str] = None
+    mission_title_en: Optional[str] = None
+    mission_body_ar: Optional[str] = None
+    mission_body_en: Optional[str] = None
+    mission_points_ar: Optional[List[str]] = None
+    mission_points_en: Optional[List[str]] = None
+    vision_eyebrow_ar: Optional[str] = None
+    vision_eyebrow_en: Optional[str] = None
+    vision_title_ar: Optional[str] = None
+    vision_title_en: Optional[str] = None
+    vision_body_ar: Optional[str] = None
+    vision_body_en: Optional[str] = None
+    vision_points_ar: Optional[List[str]] = None
+    vision_points_en: Optional[List[str]] = None
+    # Objectives
+    objectives_eyebrow_ar: Optional[str] = None
+    objectives_eyebrow_en: Optional[str] = None
+    objectives_title_ar: Optional[str] = None
+    objectives_title_en: Optional[str] = None
+    objectives: Optional[List[Dict[str, Any]]] = None
+    # Board of directors (4 members default)
+    board_eyebrow_ar: Optional[str] = None
+    board_eyebrow_en: Optional[str] = None
+    board_title_ar: Optional[str] = None
+    board_title_en: Optional[str] = None
+    board_blurb_ar: Optional[str] = None
+    board_blurb_en: Optional[str] = None
+    board_members: Optional[List[Dict[str, Any]]] = None
+    # Success partners (logo wall)
+    partners_eyebrow_ar: Optional[str] = None
+    partners_eyebrow_en: Optional[str] = None
+    partners_title_ar: Optional[str] = None
+    partners_title_en: Optional[str] = None
+    partners_blurb_ar: Optional[str] = None
+    partners_blurb_en: Optional[str] = None
+    partners: Optional[List[Dict[str, Any]]] = None
+    # Contact CTA
+    contact_eyebrow_ar: Optional[str] = None
+    contact_eyebrow_en: Optional[str] = None
+    contact_title_ar: Optional[str] = None
+    contact_title_en: Optional[str] = None
+    contact_blurb_ar: Optional[str] = None
+    contact_blurb_en: Optional[str] = None
+    contact_cta_label_ar: Optional[str] = None
+    contact_cta_label_en: Optional[str] = None
+    contact_cta_link: Optional[str] = None
+
+
 class AuthorIn(BaseModel):
     model_config = ConfigDict(extra="ignore")
     name_ar: Optional[str] = None
