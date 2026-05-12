@@ -11,8 +11,10 @@
  */
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Linkedin } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LanguageContext";
 import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
+import { useInView } from "@/hooks/useInView";
 import Reveal from "@/components/theme-b/Reveal";
 
 
@@ -673,6 +675,158 @@ export function SuccessPartnersB({ about }) {
               </Reveal>
             );
           })}
+        </div>
+      </div>
+    </SectionShell>
+  );
+}
+
+
+/** ────────────────────────────────────────────────────────────────
+ * 6.5 STATS / KPI BAND — animated counters
+ *
+ * Each tile counts from 0 → its target value over ~1.6s when the
+ * section first enters the viewport. Uses easeOutCubic so the
+ * counter slows down at the end (more natural than linear).
+ * Numerals are rendered with Arabic-Indic glyphs in RTL via
+ * `Intl.NumberFormat("ar-SA")` when lang === "ar".
+ * ──────────────────────────────────────────────────────────────── */
+function AnimatedCounter({ target, durationMs = 1600, prefix = "", suffix = "", lang = "en" }) {
+  const [ref, inView] = useInView({ threshold: 0.35, once: true });
+  const [val, setVal] = useState(0);
+  const rafRef = useRef(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const start = performance.now();
+    const from = 0;
+    const to = Number(target) || 0;
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / durationMs);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      setVal(from + (to - from) * eased);
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
+      else setVal(to);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [inView, target, durationMs]);
+
+  const isInt = Number.isInteger(Number(target));
+  const display = isInt ? Math.round(val) : (Math.round(val * 10) / 10);
+  // Localised numerals for Arabic
+  const formatted = lang === "ar"
+    ? new Intl.NumberFormat("ar-SA", { maximumFractionDigits: isInt ? 0 : 1 }).format(display)
+    : new Intl.NumberFormat("en-US", { maximumFractionDigits: isInt ? 0 : 1 }).format(display);
+  // Affixes render at ~55% of the number size so longer suffixes like "سنوات"/"yrs"
+  // don't compete visually with the headline numeral and fit on a single line.
+  const affixStyle = { fontSize: "0.55em", fontWeight: 500, opacity: 0.92, letterSpacing: 0 };
+  return (
+    <span
+      ref={ref}
+      data-testid="stat-counter"
+      className="tabular-nums"
+      style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "baseline", gap: "0.18em" }}
+    >
+      {prefix && <span style={affixStyle}>{prefix}</span>}
+      <span>{formatted}</span>
+      {suffix && <span style={affixStyle}>{suffix.trim()}</span>}
+    </span>
+  );
+}
+
+export function AboutStatsB({ about }) {
+  const { lang } = useLang();
+  const tsEyebrow = getTextStyles(about, "stats", "eyebrow");
+  const tsTitle = getTextStyles(about, "stats", "title");
+  const tsBlurb = getTextStyles(about, "stats", "blurb");
+  const tsValue = getTextStyles(about, "stats", "value");
+  const tsLabel = getTextStyles(about, "stats", "label");
+  const alignTitle = getTextAlign(about, "stats", "title");
+  const alignBlurb = getTextAlign(about, "stats", "blurb");
+  const items = (about?.stats || []).filter((s) => s && (Number(s.value) || s.label_ar || s.label_en));
+  if (!items.length) return null;
+  const cols = items.length >= 4 ? "lg:grid-cols-4" : items.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2";
+  return (
+    <SectionShell id="stats" sectionKey="stats" about={about} dark paddingY="py-24 md:py-28">
+      <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
+        <div className="mx-auto max-w-[720px] text-center">
+          <Reveal variant="up">
+            <div className="inline-flex items-center gap-3 justify-center">
+              <span style={{ height: 1, width: 24, background: "var(--tb-gold)" }} />
+              <span className="tb-overline"
+                style={{
+                  color: tsEyebrow.color || "var(--tb-gold)",
+                  fontWeight: tsEyebrow.fontWeight,
+                  fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
+                }}>{about?.[`stats_eyebrow_${lang}`]}</span>
+              <span style={{ height: 1, width: 24, background: "var(--tb-gold)" }} />
+            </div>
+          </Reveal>
+          <Reveal variant="up" delay={1}>
+            <h2 className="tb-display mt-5"
+              style={{
+                color: tsTitle.color || "var(--tb-paper-base)",
+                fontSize: `calc(clamp(1.7rem, 2.6vw, 2.3rem) * ${tsTitle.sizeMul})`,
+                lineHeight: 1.3, fontWeight: tsTitle.fontWeight ?? 500,
+                maxWidth: "26ch", marginInline: "auto",
+                textAlign: alignTitle || "center",
+              }}>{about?.[`stats_title_${lang}`]}</h2>
+          </Reveal>
+          {about?.[`stats_blurb_${lang}`] && (
+            <Reveal variant="up" delay={2}>
+              <p className="mt-5 mx-auto"
+                style={{
+                  fontSize: tsBlurb.sizeMul !== 1 ? `calc(1rem * ${tsBlurb.sizeMul})` : "1rem",
+                  lineHeight: 1.85, color: tsBlurb.color || "rgba(251,250,247,0.72)",
+                  fontWeight: tsBlurb.fontWeight, maxWidth: "60ch",
+                  textAlign: alignBlurb || "center",
+                }}>{about[`stats_blurb_${lang}`]}</p>
+            </Reveal>
+          )}
+        </div>
+
+        <div className={`mt-14 md:mt-16 grid grid-cols-2 sm:grid-cols-2 ${cols} gap-px`}
+          style={{ background: "rgba(184, 155, 94, 0.18)" }} data-testid="stats-grid">
+          {items.map((s, i) => (
+            <Reveal key={s.id || i} variant="zoom" delay={Math.min(5, i + 1)}
+              className="flex flex-col items-center text-center px-5 py-10 md:py-12"
+              style={{ background: "var(--tb-navy-900, #0A111C)" }}
+              data-testid={`stat-tile-${i}`}>
+              <div className="tb-display"
+                style={{
+                  color: tsValue.color || "var(--tb-gold)",
+                  fontSize: `calc(clamp(2.8rem, 5vw, 4rem) * ${tsValue.sizeMul})`,
+                  lineHeight: 1, fontWeight: tsValue.fontWeight ?? 400,
+                  letterSpacing: "-0.02em",
+                  fontFamily: '"Thmanyah Serif Display", serif',
+                }}>
+                <AnimatedCounter
+                  target={Number(s.value) || 0}
+                  prefix={s.prefix || ""}
+                  suffix={(lang === "ar" ? s.suffix_ar : s.suffix_en) || ""}
+                  lang={lang}
+                />
+              </div>
+              <div aria-hidden className="mt-4 mb-5" style={{ height: 1, width: 36, background: "var(--tb-gold)", opacity: 0.6 }} />
+              <div
+                style={{
+                  fontFamily: '"Thmanyah Sans", sans-serif',
+                  fontSize: tsLabel.sizeMul !== 1 ? `calc(0.875rem * ${tsLabel.sizeMul})` : "0.875rem",
+                  lineHeight: 1.65,
+                  letterSpacing: lang === "ar" ? "0.02em" : "0.08em",
+                  color: tsLabel.color || "rgba(251,250,247,0.78)",
+                  fontWeight: tsLabel.fontWeight ?? 500,
+                  textTransform: lang === "ar" ? "none" : "uppercase",
+                  maxWidth: "22ch",
+                }}>
+                {lang === "ar" ? s.label_ar : s.label_en}
+              </div>
+            </Reveal>
+          ))}
         </div>
       </div>
     </SectionShell>

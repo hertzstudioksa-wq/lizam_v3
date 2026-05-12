@@ -12,13 +12,14 @@ import {
 import { useLang } from "@/i18n/LanguageContext";
 import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 
-const SECTIONS = ["hero", "intro", "mission_vision", "objectives", "board", "partners", "contact_cta"];
+const SECTIONS = ["hero", "intro", "mission_vision", "objectives", "stats", "board", "partners", "contact_cta"];
 
 const SECTION_LABELS_AR = {
   hero: "البطل (Hero)",
   intro: "نبذة عن المركز",
   mission_vision: "الرسالة والرؤية",
   objectives: "الأهداف",
+  stats: "إحصائيات وأرقام مميزة",
   board: "مجلس الإدارة",
   partners: "شركاء النجاح",
   contact_cta: "دعوة للتواصل",
@@ -28,6 +29,7 @@ const SECTION_LABELS_EN = {
   intro: "About intro",
   mission_vision: "Mission & Vision",
   objectives: "Objectives",
+  stats: "Stats & KPIs",
   board: "Board of Directors",
   partners: "Success Partners",
   contact_cta: "Contact CTA",
@@ -124,6 +126,15 @@ export default function AboutAdmin() {
   const addMember = () =>
     form.patch("board_members", [...board, { id: uid(), name_ar: "", name_en: "", role_ar: "", role_en: "", bio_ar: "", bio_en: "", image_url: "", linkedin: "" }]);
   const removeMember = (i) => form.patch("board_members", board.filter((_, idx) => idx !== i));
+
+  // -------- Stats / KPI tiles --------
+  const stats = form.value.stats || [];
+  const updateStat = (i, patch) =>
+    form.patch("stats", stats.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  const moveStat = (from, to) => form.patch("stats", moveItem(stats, from, to));
+  const addStat = () =>
+    form.patch("stats", [...stats, { id: uid(), value: 0, prefix: "", suffix_ar: "", suffix_en: "", label_ar: "", label_en: "" }]);
+  const removeStat = (i) => form.patch("stats", stats.filter((_, idx) => idx !== i));
 
   // -------- Partners --------
   const partners = form.value.partners || [];
@@ -438,6 +449,107 @@ export default function AboutAdmin() {
           </div>
           <BgColorControl form={form} sectionKey="board" labelAr="لون خلفية القسم" labelEn="Section background color" />
           <GradientAccentControl form={form} sectionKey="board" />
+        </SectionCard>
+
+        {/* ============================================================ */}
+        {/* 5.5 STATS / KPI                                                */}
+        {/* ============================================================ */}
+        <SectionCard id="stats" title={tr("إحصائيات وأرقام مميزة", "Stats & KPIs")}
+          eyebrow={tr("٥٫٥", "5.5")} visibleSections={visible} onToggleVisibility={toggleVisibility}
+          {...orderInfo("stats")} onMove={moveSection}>
+          <div className="mt-4">
+            <EyebrowRow form={form} keyAr="stats_eyebrow_ar" keyEn="stats_eyebrow_en"
+              sectionKey="stats" testid="stats" />
+          </div>
+          <div className="mt-4">
+            <BiInput form={form} keyAr="stats_title_ar" keyEn="stats_title_en"
+              labelAr="العنوان الرئيسي" labelEn="Main heading"
+              testid="stats-title" sectionKey="stats" fieldKey="title" />
+          </div>
+          <div className="mt-4">
+            <BiInput form={form} keyAr="stats_blurb_ar" keyEn="stats_blurb_en"
+              labelAr="نص تعريفي قصير" labelEn="Short blurb" multiline rows={2}
+              testid="stats-blurb" sectionKey="stats" fieldKey="blurb" />
+          </div>
+
+          {/* Typography for value (number) + label (caption under it) */}
+          <div className="mt-5 px-3 py-3 bg-amber-50/40 border border-rule">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-brass mb-2">
+              {tr("تنسيق الأرقام والوصف (يطبّق على الكل)", "Number & label typography (applies to all)")}
+            </div>
+            <div className="text-[10.5px] text-mute mb-1">{tr("الرقم", "Number value")}</div>
+            <FieldTypoControls form={form} sectionKey="stats" fieldKey="value" testid="typo-stats-value" />
+            <div className="text-[10.5px] text-mute mb-1">{tr("الوصف تحت الرقم", "Caption under number")}</div>
+            <FieldTypoControls form={form} sectionKey="stats" fieldKey="label" testid="typo-stats-label" />
+          </div>
+
+          {/* Stat tiles CRUD */}
+          <div className="mt-5">
+            {(stats || []).map((s, i) => (
+              <ItemRow key={s.id || i} index={i} total={stats.length}
+                onMove={moveStat} onRemove={removeStat} testid={`stat-${i}`}>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 items-end">
+                  <Field label={tr("القيمة (رقم)", "Value (number)")}>
+                    <TextInput
+                      type="number"
+                      value={s.value ?? ""}
+                      onChange={(v) => updateStat(i, { value: v === "" ? 0 : Number(v) })}
+                      placeholder="120" testid={`stat-${i}-value`} />
+                  </Field>
+                  <Field label={tr("بادئة (اختياري)", "Prefix (optional)")}>
+                    <TextInput value={s.prefix || ""} onChange={(v) => updateStat(i, { prefix: v })}
+                      placeholder="$, ~, …" testid={`stat-${i}-prefix`} />
+                  </Field>
+                  <Field label={tr("لاحقة — عربية", "Suffix — AR")}>
+                    <TextInput value={s.suffix_ar || ""} onChange={(v) => updateStat(i, { suffix_ar: v })}
+                      dir="rtl" placeholder="+ ، % ، سنوات" testid={`stat-${i}-suffix-ar`} />
+                  </Field>
+                  <Field label={tr("لاحقة — إنجليزية", "Suffix — EN")}>
+                    <TextInput value={s.suffix_en || ""} onChange={(v) => updateStat(i, { suffix_en: v })}
+                      placeholder="+, %, yrs" testid={`stat-${i}-suffix-en`} />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">
+                  <Field label={tr("الوصف — عربية", "Caption — AR")}>
+                    <TextInput value={s.label_ar || ""} onChange={(v) => updateStat(i, { label_ar: v })}
+                      dir="rtl" placeholder="إصدار وبحث قانوني" testid={`stat-${i}-label-ar`} />
+                  </Field>
+                  <Field label={tr("الوصف — إنجليزية", "Caption — EN")}>
+                    <TextInput value={s.label_en || ""} onChange={(v) => updateStat(i, { label_en: v })}
+                      placeholder="Publications & studies" testid={`stat-${i}-label-en`} />
+                  </Field>
+                </div>
+                {/* Inline preview */}
+                <div className="mt-3 px-3 py-2 bg-navy-deep text-paper border border-rule flex items-center justify-center gap-3" style={{ fontFamily: '"Thmanyah Serif Display", serif' }}>
+                  <span style={{ fontSize: 28, color: "var(--tb-gold)", letterSpacing: "-0.02em" }}>
+                    {s.prefix || ""}{Number(s.value) || 0}{(lang === "ar" ? s.suffix_ar : s.suffix_en) || ""}
+                  </span>
+                  <span style={{ height: 1, width: 18, background: "var(--tb-gold)", opacity: 0.6 }} />
+                  <span style={{ fontFamily: '"Thmanyah Sans", sans-serif', fontSize: 12, opacity: 0.8 }}>
+                    {lang === "ar" ? (s.label_ar || "—") : (s.label_en || "—")}
+                  </span>
+                </div>
+              </ItemRow>
+            ))}
+            <button type="button" onClick={addStat}
+              className="inline-flex items-center gap-1.5 text-[12.5px] text-navy-deep border border-rule px-3 py-1.5 hover:border-brass hover:text-brass"
+              data-testid="add-stat">
+              <Plus size={13} /> {tr("إضافة رقم", "Add stat")}
+            </button>
+            <p className="mt-2 text-[11.5px] text-mute">
+              {tr(
+                "يُفضّل 4 أو 8 أرقام للتوافق مع شبكة العرض. الأرقام تتحرّك من 0 إلى القيمة عند ظهور القسم.",
+                "Best with 4 or 8 stats for clean grid. Counters animate from 0 → value when section enters viewport.",
+              )}
+            </p>
+          </div>
+
+          <div className="mt-5">
+            <BgImageBlock form={form} sectionKey="stats" defaultOverlay={0.7}
+              label={tr("صورة خلفية القسم (اختيارية)", "Section background (optional)")} />
+          </div>
+          <BgColorControl form={form} sectionKey="stats" labelAr="لون خلفية القسم" labelEn="Section background color" />
+          <GradientAccentControl form={form} sectionKey="stats" />
         </SectionCard>
 
         {/* ============================================================ */}

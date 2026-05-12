@@ -238,7 +238,7 @@ async def seed_all() -> None:
         # Ordered list of section keys — drives both rendering order and visibility
         "visible_sections": [
             "hero", "intro", "mission_vision", "objectives",
-            "board", "partners", "contact_cta",
+            "stats", "board", "partners", "contact_cta",
         ],
         # Hero
         "hero_eyebrow_ar": "عن المركز",
@@ -364,6 +364,27 @@ async def seed_all() -> None:
             {"id": uid(), "sort_order": i + 1, "name_ar": "", "name_en": "", "logo_url": "", "link": ""}
             for i in range(6)
         ],
+        # Stats / KPI band (animated counters)
+        "stats_eyebrow_ar": "أرقام",
+        "stats_eyebrow_en": "By the Numbers",
+        "stats_title_ar": "أثر متراكم بأرقام",
+        "stats_title_en": "Measurable impact in numbers",
+        "stats_blurb_ar": "نتائج ملموسة تعكس جدية البحث القانوني الذي يقدّمه المركز عبر السنوات.",
+        "stats_blurb_en": "Tangible outcomes reflecting the depth of our legal research over the years.",
+        "stats": [
+            {"id": uid(), "sort_order": 1, "value": 120,
+             "prefix": "", "suffix_ar": "+", "suffix_en": "+",
+             "label_ar": "إصدار وبحث قانوني", "label_en": "Publications & studies"},
+            {"id": uid(), "sort_order": 2, "value": 25,
+             "prefix": "", "suffix_ar": "", "suffix_en": "",
+             "label_ar": "باحث وخبير قانوني", "label_en": "Researchers & experts"},
+            {"id": uid(), "sort_order": 3, "value": 12,
+             "prefix": "", "suffix_ar": "", "suffix_en": "",
+             "label_ar": "شريك مؤسسي", "label_en": "Institutional partners"},
+            {"id": uid(), "sort_order": 4, "value": 8,
+             "prefix": "", "suffix_ar": " سنوات", "suffix_en": " yrs",
+             "label_ar": "من البحث الرصين", "label_en": "of rigorous research"},
+        ],
         # Contact CTA
         "contact_eyebrow_ar": "تواصل",
         "contact_eyebrow_en": "Contact",
@@ -388,6 +409,32 @@ async def seed_all() -> None:
         "updated_at": utc_iso(),
     }
     await _upsert_if_seed(db.about_content, {"id": "about"}, about_defaults)
+
+    # One-time backfill: ensure 'stats' fields exist on admin-edited about docs.
+    # The seed guard skips admin-edited docs, but new section fields must still
+    # propagate so existing pages don't break.
+    await db.about_content.update_one(
+        {"id": "about", "stats": {"$exists": False}},
+        {"$set": {
+            "stats_eyebrow_ar": about_defaults["stats_eyebrow_ar"],
+            "stats_eyebrow_en": about_defaults["stats_eyebrow_en"],
+            "stats_title_ar": about_defaults["stats_title_ar"],
+            "stats_title_en": about_defaults["stats_title_en"],
+            "stats_blurb_ar": about_defaults["stats_blurb_ar"],
+            "stats_blurb_en": about_defaults["stats_blurb_en"],
+            "stats": about_defaults["stats"],
+        }},
+    )
+    # Also ensure 'stats' is included in visible_sections for legacy docs.
+    legacy = await db.about_content.find_one({"id": "about"}, {"_id": 0, "visible_sections": 1})
+    if legacy and isinstance(legacy.get("visible_sections"), list) and "stats" not in legacy["visible_sections"]:
+        # Insert after 'objectives' if present, else append
+        vs = legacy["visible_sections"]
+        if "objectives" in vs:
+            vs.insert(vs.index("objectives") + 1, "stats")
+        else:
+            vs.append("stats")
+        await db.about_content.update_one({"id": "about"}, {"$set": {"visible_sections": vs}})
 
     # ---- Image asset slots ----
     # Only slots actually consumed by the active public theme (Theme B) are

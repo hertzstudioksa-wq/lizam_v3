@@ -2,7 +2,7 @@ import PublicLayout from "@/components/layout/PublicLayout";
 import { useAboutContent } from "@/hooks/useSiteSettings";
 import {
   AboutHeroB, AboutIntroB, AboutMissionVisionB, AboutObjectivesB,
-  BoardOfDirectorsB, SuccessPartnersB, AboutContactCtaB,
+  BoardOfDirectorsB, SuccessPartnersB, AboutStatsB, AboutContactCtaB,
 } from "@/components/theme-b/AboutSectionsB";
 
 /**
@@ -16,12 +16,13 @@ const SECTION_RENDERERS = {
   intro:           AboutIntroB,
   mission_vision:  AboutMissionVisionB,
   objectives:      AboutObjectivesB,
+  stats:           AboutStatsB,
   board:           BoardOfDirectorsB,
   partners:        SuccessPartnersB,
   contact_cta:     AboutContactCtaB,
 };
 
-const DEFAULT_ORDER = ["hero", "intro", "mission_vision", "objectives", "board", "partners", "contact_cta"];
+const DEFAULT_ORDER = ["hero", "intro", "mission_vision", "objectives", "stats", "board", "partners", "contact_cta"];
 
 export default function AboutPage() {
   const { data: about, loading } = useAboutContent();

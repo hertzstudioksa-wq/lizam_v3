@@ -263,6 +263,14 @@ class AboutContentIn(BaseModel):
     partners_blurb_ar: Optional[str] = None
     partners_blurb_en: Optional[str] = None
     partners: Optional[List[Dict[str, Any]]] = None
+    # Stats / KPI band (animated counters)
+    stats_eyebrow_ar: Optional[str] = None
+    stats_eyebrow_en: Optional[str] = None
+    stats_title_ar: Optional[str] = None
+    stats_title_en: Optional[str] = None
+    stats_blurb_ar: Optional[str] = None
+    stats_blurb_en: Optional[str] = None
+    stats: Optional[List[Dict[str, Any]]] = None
     # Contact CTA
     contact_eyebrow_ar: Optional[str] = None
     contact_eyebrow_en: Optional[str] = None
