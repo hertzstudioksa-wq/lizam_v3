@@ -524,7 +524,7 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
   display: flex;
   flex-wrap: nowrap;
   width: max-content;
-  gap: 2rem;
+  gap: var(--tb-marquee-gap, 2rem);
   animation: tb-marquee-scroll var(--tb-marquee-duration, 42s) linear infinite;
   will-change: transform;
 }

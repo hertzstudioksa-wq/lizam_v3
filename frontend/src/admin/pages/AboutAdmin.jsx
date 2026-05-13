@@ -574,23 +574,43 @@ export default function AboutAdmin() {
           </div>
 
           {/* Logo-size slider — controls the marquee logo height (default 1× = 64px) */}
-          <div className="mt-5">
-            <FontScaleSlider
-              form={form}
-              sectionKey="partners"
-              styleKey="logo_scale"
-              labelAr="حجم الشعارات (في الشريط المتحرك)"
-              labelEn="Logo size (marquee)"
-              min={0.6}
-              max={2.5}
-              step={0.1}
-            />
-            <p className="mt-1.5 text-[11.5px] text-mute px-1">
-              {tr(
-                "يتحكم في ارتفاع الشعارات داخل الشريط المتحرك. الافتراضي 100% ≈ 64 بكسل.",
-                "Controls logo height inside the marquee. Default 100% ≈ 64px.",
-              )}
-            </p>
+          <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <FontScaleSlider
+                form={form}
+                sectionKey="partners"
+                styleKey="logo_scale"
+                labelAr="حجم الشعارات (في الشريط المتحرك)"
+                labelEn="Logo size (marquee)"
+                min={0.6}
+                max={2.5}
+                step={0.1}
+              />
+              <p className="mt-1.5 text-[11.5px] text-mute px-1">
+                {tr(
+                  "يتحكم في ارتفاع الشعارات داخل الشريط المتحرك. الافتراضي 100% ≈ 64 بكسل.",
+                  "Controls logo height inside the marquee. Default 100% ≈ 64px.",
+                )}
+              </p>
+            </div>
+            <div>
+              <FontScaleSlider
+                form={form}
+                sectionKey="partners"
+                styleKey="logo_gap"
+                labelAr="المسافة بين الشعارات"
+                labelEn="Spacing between logos"
+                min={0.25}
+                max={3}
+                step={0.25}
+              />
+              <p className="mt-1.5 text-[11.5px] text-mute px-1">
+                {tr(
+                  "يتحكم في المسافة الأفقية بين الشعارات. الافتراضي 100% ≈ 32 بكسل (2rem).",
+                  "Horizontal spacing between logos. Default 100% ≈ 32px (2rem).",
+                )}
+              </p>
+            </div>
           </div>
 
           <div className="mt-5">

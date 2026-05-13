@@ -607,6 +607,10 @@ export function SuccessPartnersB({ about }) {
   // Admin-controlled logo height multiplier (default 1 → 64px on desktop).
   const rawScale = about?.section_styles?.partners?.logo_scale;
   const logoScale = typeof rawScale === "number" ? Math.max(0.6, Math.min(2.5, rawScale)) : 1;
+  // Admin-controlled gap between logos (default 1 → 2rem ≈ 32px).
+  const rawGap = about?.section_styles?.partners?.logo_gap;
+  const gapScale = typeof rawGap === "number" ? Math.max(0.25, Math.min(3, rawGap)) : 1;
+  const gapRem = (2 * gapScale).toFixed(2);
   const baseH = 56;          // base 56px @ mobile
   const baseHDesktop = 64;   // base 64px @ md+
   const logoStyle = {
@@ -679,7 +683,10 @@ export function SuccessPartnersB({ about }) {
           dir="ltr"
           aria-roledescription="carousel"
         >
-          <div className="tb-marquee-track" style={{ "--tb-marquee-duration": marqueeDuration }}>
+          <div className="tb-marquee-track" style={{
+            "--tb-marquee-duration": marqueeDuration,
+            "--tb-marquee-gap": `${gapRem}rem`,
+          }}>
             {marqueeItems.map((p, i) => {
               const name = lang === "ar" ? (p.name_ar || p.name_en) : (p.name_en || p.name_ar);
               const inner = p.logo_url ? (
