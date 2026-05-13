@@ -573,6 +573,26 @@ export default function AboutAdmin() {
               testid="partners-blurb" sectionKey="partners" fieldKey="blurb" />
           </div>
 
+          {/* Logo-size slider — controls the marquee logo height (default 1× = 64px) */}
+          <div className="mt-5">
+            <FontScaleSlider
+              form={form}
+              sectionKey="partners"
+              styleKey="logo_scale"
+              labelAr="حجم الشعارات (في الشريط المتحرك)"
+              labelEn="Logo size (marquee)"
+              min={0.6}
+              max={2.5}
+              step={0.1}
+            />
+            <p className="mt-1.5 text-[11.5px] text-mute px-1">
+              {tr(
+                "يتحكم في ارتفاع الشعارات داخل الشريط المتحرك. الافتراضي 100% ≈ 64 بكسل.",
+                "Controls logo height inside the marquee. Default 100% ≈ 64px.",
+              )}
+            </p>
+          </div>
+
           <div className="mt-5">
             {(partners || []).map((p, i) => (
               <ItemRow key={p.id || i} index={i} total={partners.length}

@@ -587,7 +587,12 @@ export function BoardOfDirectorsB({ about }) {
 
 
 /** ────────────────────────────────────────────────────────────────
- * 6. SUCCESS PARTNERS — logo wall
+ * 6. SUCCESS PARTNERS — logo wall (RTL infinite marquee)
+ *
+ * The wall scrolls right → left infinitely. Cards fade in from the
+ * right edge and out toward the left edge via a horizontal CSS mask
+ * (same pattern as FeaturedPublicationsB). Logo size is admin-tunable
+ * via section_styles.partners.logo_scale (0.7 → 2.0; default 1).
  * ──────────────────────────────────────────────────────────────── */
 export function SuccessPartnersB({ about }) {
   const { lang } = useLang();
@@ -598,6 +603,34 @@ export function SuccessPartnersB({ about }) {
   const alignBlurb = getTextAlign(about, "partners", "blurb");
   const partners = (about?.partners || []).filter((p) => p && (p.logo_url || p.name_ar || p.name_en));
   if (!partners.length) return null;
+
+  // Admin-controlled logo height multiplier (default 1 → 64px on desktop).
+  const rawScale = about?.section_styles?.partners?.logo_scale;
+  const logoScale = typeof rawScale === "number" ? Math.max(0.6, Math.min(2.5, rawScale)) : 1;
+  const baseH = 56;          // base 56px @ mobile
+  const baseHDesktop = 64;   // base 64px @ md+
+  const logoStyle = {
+    height: `${baseH * logoScale}px`,
+    width: "auto",
+    maxWidth: "100%",
+    objectFit: "contain",
+    filter: "grayscale(100%)",
+    opacity: 0.78,
+    transition: "filter 300ms ease, opacity 300ms ease",
+  };
+
+  // Duplicate the track so the 0 → -50% animation loops seamlessly.
+  // For very short lists, duplicate enough times to fill the viewport.
+  const minMarqueeItems = 8;
+  const repeats = Math.max(2, Math.ceil(minMarqueeItems / partners.length) * 2);
+  const marqueeItems = Array.from({ length: repeats }, () => partners).flat();
+  // Pace the scroll: slower for fewer items so they don't blur past.
+  const marqueeDuration = `${Math.max(34, partners.length * 7)}s`;
+
+  // Per-tile width also scales with the logo size so spacing stays harmonious.
+  const tileWidthMobile = Math.round(180 * logoScale);
+  const tileWidthDesktop = Math.round(230 * logoScale);
+
   return (
     <SectionShell id="partners" sectionKey="partners" about={about}>
       <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-12">
@@ -636,45 +669,67 @@ export function SuccessPartnersB({ about }) {
             </Reveal>
           )}
         </div>
-        <div className="mt-14 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10 items-center">
-          {partners.map((p, i) => {
-            const name = lang === "ar" ? (p.name_ar || p.name_en) : (p.name_en || p.name_ar);
-            const inner = p.logo_url ? (
-              <img
-                src={p.logo_url}
-                alt={name || ""}
-                loading="lazy"
-                className="w-full h-12 md:h-14 object-contain"
-                style={{
-                  filter: "grayscale(100%)",
-                  opacity: 0.7,
-                  transition: "filter 300ms ease, opacity 300ms ease",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.filter = "grayscale(0%)"; e.currentTarget.style.opacity = "1"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.filter = "grayscale(100%)"; e.currentTarget.style.opacity = "0.7"; }}
-              />
-            ) : (
-              <div className="w-full h-12 md:h-14 flex items-center justify-center px-3"
-                style={{ border: "1px dashed var(--tb-hairline)" }}>
-                <span style={{
-                  fontFamily: '"Thmanyah Serif Display", serif',
-                  fontSize: "0.95rem", color: "var(--tb-text-muted)",
-                  letterSpacing: "0.04em", textAlign: "center",
-                }}>{name || "—"}</span>
-              </div>
-            );
-            return (
-              <Reveal key={p.id || i} variant="zoom" delay={Math.min(5, Math.floor(i / 2) + 1)}
-                className="flex items-center justify-center"
-                data-testid={`partner-logo-${i}`}>
-                {p.link ? (
-                  <a href={p.link} target="_blank" rel="noreferrer" className="block w-full" title={name || ""}>
-                    {inner}
-                  </a>
-                ) : inner}
-              </Reveal>
-            );
-          })}
+
+        {/* Infinite RTL marquee. Track is dir="ltr" so translateX math is
+            independent of page direction; the visual flow still reads
+            right → left because the animation pushes the track negatively. */}
+        <div
+          className="mt-14 md:mt-16 tb-marquee-viewport"
+          data-testid="partners-marquee"
+          dir="ltr"
+          aria-roledescription="carousel"
+        >
+          <div className="tb-marquee-track" style={{ "--tb-marquee-duration": marqueeDuration }}>
+            {marqueeItems.map((p, i) => {
+              const name = lang === "ar" ? (p.name_ar || p.name_en) : (p.name_en || p.name_ar);
+              const inner = p.logo_url ? (
+                <img
+                  src={p.logo_url}
+                  alt=""
+                  aria-label={name || ""}
+                  loading="lazy"
+                  style={logoStyle}
+                  className="tb-partner-logo"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.filter = "grayscale(0%)"; e.currentTarget.style.opacity = "1"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.filter = "grayscale(100%)"; e.currentTarget.style.opacity = "0.78"; }}
+                />
+              ) : (
+                <div className="flex items-center justify-center px-4"
+                  style={{
+                    height: `${baseHDesktop * logoScale}px`,
+                    border: "1px dashed var(--tb-hairline)",
+                    minWidth: "100%",
+                  }}>
+                  <span style={{
+                    fontFamily: '"Thmanyah Serif Display", serif',
+                    fontSize: `${0.95 * logoScale}rem`,
+                    color: "var(--tb-text-muted)",
+                    letterSpacing: "0.04em",
+                    textAlign: "center",
+                  }}>{name || "—"}</span>
+                </div>
+              );
+              return (
+                <div
+                  key={`${p.id || i}-${i}`}
+                  className="tb-marquee-item flex items-center justify-center"
+                  style={{
+                    width: `clamp(${tileWidthMobile}px, ${22 * logoScale}vw, ${tileWidthDesktop}px)`,
+                  }}
+                  aria-hidden={i >= partners.length ? "true" : undefined}
+                  data-testid={i < partners.length ? `partner-logo-${i}` : undefined}
+                >
+                  {p.link ? (
+                    <a href={p.link} target="_blank" rel="noreferrer"
+                      className="flex items-center justify-center w-full" title={name || ""}>
+                      {inner}
+                    </a>
+                  ) : inner}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </SectionShell>

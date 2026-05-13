@@ -133,7 +133,7 @@ export function SectionCard({
 // ============================================================================
 // <FontScaleSlider>
 // ============================================================================
-export function FontScaleSlider({ form, sectionKey, styleKey = "title_scale", labelAr, labelEn, sample, sampleSize = 24 }) {
+export function FontScaleSlider({ form, sectionKey, styleKey = "title_scale", labelAr, labelEn, sample, sampleSize = 24, min = 0.8, max = 1.5, step = 0.05 }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
   const styles = form.value.section_styles || {};
@@ -141,7 +141,7 @@ export function FontScaleSlider({ form, sectionKey, styleKey = "title_scale", la
   const v = typeof sectionObj[styleKey] === "number" ? sectionObj[styleKey] : 1;
   const pct = Math.round(v * 100);
   const setVal = (n) => {
-    const nv = Math.max(0.8, Math.min(1.5, n));
+    const nv = Math.max(min, Math.min(max, n));
     const next = { ...styles, [sectionKey]: { ...sectionObj, [styleKey]: Math.round(nv * 100) / 100 } };
     form.patch("section_styles", next);
   };
@@ -151,7 +151,7 @@ export function FontScaleSlider({ form, sectionKey, styleKey = "title_scale", la
         <label className="text-[12.5px] font-medium text-navy-deep">{tr(labelAr, labelEn)}</label>
         <span className="text-[11.5px] text-mute tabular-nums">{pct}%</span>
       </div>
-      <input type="range" min={0.8} max={1.5} step="0.05" value={v}
+      <input type="range" min={min} max={max} step={step} value={v}
         onChange={(e) => setVal(parseFloat(e.target.value))}
         className="w-full accent-brass cursor-pointer"
         data-testid={`fs-${sectionKey}-${styleKey}-slider`} />
@@ -159,7 +159,7 @@ export function FontScaleSlider({ form, sectionKey, styleKey = "title_scale", la
         <button type="button" onClick={() => setVal(1)} className="hover:text-navy underline underline-offset-2">
           {tr("إعادة إلى 100%", "Reset to 100%")}
         </button>
-        <span className="opacity-70">80% – 150%</span>
+        <span className="opacity-70">{Math.round(min * 100)}% – {Math.round(max * 100)}%</span>
       </div>
       {sample && (
         <div className="mt-2 px-3 py-2 bg-white border border-rule" dir={lang === "ar" ? "rtl" : "ltr"}>
