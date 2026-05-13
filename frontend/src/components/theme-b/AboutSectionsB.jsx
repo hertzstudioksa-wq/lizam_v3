@@ -604,15 +604,16 @@ export function SuccessPartnersB({ about }) {
   const partners = (about?.partners || []).filter((p) => p && (p.logo_url || p.name_ar || p.name_en));
   if (!partners.length) return null;
 
-  // Admin-controlled logo height multiplier (default 1 → 64px on desktop).
+  // Admin-controlled logo height multiplier. Default 1× = 100px tall.
   const rawScale = about?.section_styles?.partners?.logo_scale;
   const logoScale = typeof rawScale === "number" ? Math.max(0.6, Math.min(2.5, rawScale)) : 1;
-  // Admin-controlled gap between logos (default 1 → 2rem ≈ 32px).
+  // Admin-controlled gap between logos. Default 1× = 5px tight spacing.
   const rawGap = about?.section_styles?.partners?.logo_gap;
-  const gapScale = typeof rawGap === "number" ? Math.max(0.25, Math.min(3, rawGap)) : 1;
-  const gapRem = (2 * gapScale).toFixed(2);
-  const baseH = 56;          // base 56px @ mobile
-  const baseHDesktop = 64;   // base 64px @ md+
+  const gapScale = typeof rawGap === "number" ? Math.max(0, Math.min(20, rawGap)) : 1;
+  const gapPx = Math.max(0, Math.round(5 * gapScale));
+  // Base logo height (mobile + desktop kept uniform to avoid jitter when
+  // crossing breakpoints — the marquee scrolls at a fixed pace).
+  const baseH = 100;
   const logoStyle = {
     height: `${baseH * logoScale}px`,
     width: "auto",
@@ -631,9 +632,13 @@ export function SuccessPartnersB({ about }) {
   // Pace the scroll: slower for fewer items so they don't blur past.
   const marqueeDuration = `${Math.max(34, partners.length * 7)}s`;
 
-  // Per-tile width also scales with the logo size so spacing stays harmonious.
-  const tileWidthMobile = Math.round(180 * logoScale);
-  const tileWidthDesktop = Math.round(230 * logoScale);
+  // Tile width:
+  //  - When a logo image is present, let the tile shrink-to-fit the image
+  //    width (auto), so spacing is dictated purely by `gap`.
+  //  - For text fallbacks, keep an explicit clamp so the "—" placeholder
+  //    doesn't collapse to zero width.
+  const fallbackTileMin = Math.round(160 * logoScale);
+  const fallbackTileMax = Math.round(240 * logoScale);
 
   return (
     <SectionShell id="partners" sectionKey="partners" about={about}>
@@ -685,7 +690,7 @@ export function SuccessPartnersB({ about }) {
         >
           <div className="tb-marquee-track" style={{
             "--tb-marquee-duration": marqueeDuration,
-            "--tb-marquee-gap": `${gapRem}rem`,
+            "--tb-marquee-gap": `${gapPx}px`,
           }}>
             {marqueeItems.map((p, i) => {
               const name = lang === "ar" ? (p.name_ar || p.name_en) : (p.name_en || p.name_ar);
@@ -704,7 +709,7 @@ export function SuccessPartnersB({ about }) {
               ) : (
                 <div className="flex items-center justify-center px-4"
                   style={{
-                    height: `${baseHDesktop * logoScale}px`,
+                    height: `${baseH * logoScale}px`,
                     border: "1px dashed var(--tb-hairline)",
                     minWidth: "100%",
                   }}>
@@ -721,9 +726,11 @@ export function SuccessPartnersB({ about }) {
                 <div
                   key={`${p.id || i}-${i}`}
                   className="tb-marquee-item flex items-center justify-center"
-                  style={{
-                    width: `clamp(${tileWidthMobile}px, ${22 * logoScale}vw, ${tileWidthDesktop}px)`,
-                  }}
+                  style={
+                    p.logo_url
+                      ? { width: "auto", padding: 0 }
+                      : { width: `clamp(${fallbackTileMin}px, ${18 * logoScale}vw, ${fallbackTileMax}px)` }
+                  }
                   aria-hidden={i >= partners.length ? "true" : undefined}
                   data-testid={i < partners.length ? `partner-logo-${i}` : undefined}
                 >

@@ -573,7 +573,7 @@ export default function AboutAdmin() {
               testid="partners-blurb" sectionKey="partners" fieldKey="blurb" />
           </div>
 
-          {/* Logo-size slider — controls the marquee logo height (default 1× = 64px) */}
+          {/* Logo-size slider — controls the marquee logo height (default 1× = 100px) */}
           <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div>
               <FontScaleSlider
@@ -588,8 +588,8 @@ export default function AboutAdmin() {
               />
               <p className="mt-1.5 text-[11.5px] text-mute px-1">
                 {tr(
-                  "يتحكم في ارتفاع الشعارات داخل الشريط المتحرك. الافتراضي 100% ≈ 64 بكسل.",
-                  "Controls logo height inside the marquee. Default 100% ≈ 64px.",
+                  "يتحكم في ارتفاع الشعارات داخل الشريط المتحرك. الافتراضي 100% = 100 بكسل.",
+                  "Controls logo height inside the marquee. Default 100% = 100px.",
                 )}
               </p>
             </div>
@@ -600,14 +600,14 @@ export default function AboutAdmin() {
                 styleKey="logo_gap"
                 labelAr="المسافة بين الشعارات"
                 labelEn="Spacing between logos"
-                min={0.25}
-                max={3}
-                step={0.25}
+                min={0}
+                max={20}
+                step={0.2}
               />
               <p className="mt-1.5 text-[11.5px] text-mute px-1">
                 {tr(
-                  "يتحكم في المسافة الأفقية بين الشعارات. الافتراضي 100% ≈ 32 بكسل (2rem).",
-                  "Horizontal spacing between logos. Default 100% ≈ 32px (2rem).",
+                  "يتحكم في المسافة الأفقية بين الشعارات. الافتراضي 100% = 5 بكسل (متلاصقة تقريباً).",
+                  "Horizontal spacing between logos. Default 100% = 5px (tight).",
                 )}
               </p>
             </div>
