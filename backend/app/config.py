@@ -17,7 +17,8 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Lizam@2026")
 # Allowed frontend origins — tightened from the previous wildcard regex
 ALLOWED_ORIGIN_REGEX = os.environ.get(
     "ALLOWED_ORIGIN_REGEX",
-    r"^https://(.*\.preview\.emergentagent\.com|.*\.emergentagent\.com|localhost(:\d+)?)$",
+    # http(s) for local dev; https for hosted previews — include 127.0.0.1 (not same host as "localhost" for cookies)
+    r"^https?://(.*\.preview\.emergentagent\.com|.*\.emergentagent\.com|localhost(:\d+)?|127\.0\.0\.1(:\d+)?)$",
 )
 
 # Upload paths

@@ -11,7 +11,7 @@ import { useLang } from "@/i18n/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
 import { usePublication } from "@/hooks/usePublications";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
-import { api, formatApiError } from "@/lib/api";
+import { api, formatApiError, BACKEND_URL } from "@/lib/api";
 
 function fmtDate(iso, lang) {
   if (!iso) return "";
@@ -90,8 +90,7 @@ export default function PublicationDetailPage() {
     setPdfState(null);
     try {
       const { data } = await api.get(`/public/publications/${pub.id}/pdf`);
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      const fullUrl = `${backendUrl}${data.stream_url}`;
+      const fullUrl = `${BACKEND_URL}${data.stream_url}`;
       setPdfState({ ok: true, url: fullUrl });
       window.open(fullUrl, "_blank", "noopener");
     } catch (e) {

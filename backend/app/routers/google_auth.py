@@ -113,7 +113,7 @@ async def google_callback(body: GoogleCallbackIn, request: Request, response: Re
     role = user.get("role") or user.get("role_key") or "registered"
     access = create_access_token(user["id"], email, role)
     refresh = create_refresh_token(user["id"])
-    set_auth_cookies(response, access, refresh)
+    set_auth_cookies(response, access, refresh, request)
 
     # Audit log (best-effort)
     try:

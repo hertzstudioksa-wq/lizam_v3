@@ -1,6 +1,12 @@
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+export const BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL ||
+  (process.env.NODE_ENV === "development" ? "http://localhost:8000" : "");
+if (!BACKEND_URL) {
+  // eslint-disable-next-line no-console
+  console.error("REACT_APP_BACKEND_URL is not set; API calls will fail.");
+}
 export const API_BASE = `${BACKEND_URL}/api`;
 
 export const api = axios.create({

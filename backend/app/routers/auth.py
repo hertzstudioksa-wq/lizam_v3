@@ -8,7 +8,7 @@ from app.config import db, JWT_SECRET, JWT_ALG
 from app.models import RegisterIn, LoginIn
 from app.security import (
     hash_password, verify_password, create_access_token, create_refresh_token,
-    set_auth_cookies, clear_auth_cookies, get_current_user, uid, utc_iso,
+    set_auth_cookies, set_access_token_cookie, clear_auth_cookies, get_current_user, uid, utc_iso,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -58,7 +58,7 @@ def _reset_fail(keys: list[str]) -> None:
 
 
 @router.post("/register")
-async def register(body: RegisterIn, response: Response):
+async def register(body: RegisterIn, request: Request, response: Response):
     # Honour global registration toggle.
     site = await db.site_settings.find_one(
         {"id": "site"}, {"_id": 0, "feature_toggles": 1}
@@ -79,7 +79,7 @@ async def register(body: RegisterIn, response: Response):
     await db.users.insert_one(user)
     access = create_access_token(user["id"], user["email"], user["role"])
     refresh = create_refresh_token(user["id"])
-    set_auth_cookies(response, access, refresh)
+    set_auth_cookies(response, access, refresh, request)
     user.pop("password_hash", None)
     user.pop("_id", None)
     return user
@@ -100,15 +100,15 @@ async def login(body: LoginIn, request: Request, response: Response):
     await reset_fail(keys)
     access = create_access_token(user["id"], user["email"], user["role"])
     refresh = create_refresh_token(user["id"])
-    set_auth_cookies(response, access, refresh)
+    set_auth_cookies(response, access, refresh, request)
     user.pop("password_hash", None)
     user.pop("_id", None)
     return user
 
 
 @router.post("/logout")
-async def logout(response: Response):
-    clear_auth_cookies(response)
+async def logout(request: Request, response: Response):
+    clear_auth_cookies(response, request)
     return {"ok": True}
 
 
@@ -130,8 +130,7 @@ async def refresh_token(request: Request, response: Response):
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         access = create_access_token(user["id"], user["email"], user["role"])
-        response.set_cookie("access_token", access, httponly=True, secure=True,
-                            samesite="none", max_age=3600, path="/")
+        set_access_token_cookie(response, access, request)
         return {"ok": True}
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")

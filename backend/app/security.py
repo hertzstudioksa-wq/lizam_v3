@@ -61,16 +61,37 @@ def decode_pdf_token(token: str) -> dict:
     return payload
 
 
-def set_auth_cookies(response: Response, access: str, refresh: str) -> None:
-    response.set_cookie("access_token", access, httponly=True, secure=True, samesite="none",
-                        max_age=3600, path="/")
-    response.set_cookie("refresh_token", refresh, httponly=True, secure=True, samesite="none",
-                        max_age=7 * 24 * 3600, path="/")
+def _cookie_flags(request: Request) -> tuple[bool, str]:
+    """HTTPS → Secure + SameSite=None (cross-site). HTTP (local dev) → no Secure + Lax."""
+    secure = request.url.scheme == "https"
+    samesite = "none" if secure else "lax"
+    return secure, samesite
 
 
-def clear_auth_cookies(response: Response) -> None:
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("refresh_token", path="/")
+def set_auth_cookies(response: Response, access: str, refresh: str, request: Request) -> None:
+    secure, samesite = _cookie_flags(request)
+    response.set_cookie(
+        "access_token", access, httponly=True, secure=secure, samesite=samesite,
+        max_age=3600, path="/",
+    )
+    response.set_cookie(
+        "refresh_token", refresh, httponly=True, secure=secure, samesite=samesite,
+        max_age=7 * 24 * 3600, path="/",
+    )
+
+
+def set_access_token_cookie(response: Response, access: str, request: Request) -> None:
+    secure, samesite = _cookie_flags(request)
+    response.set_cookie(
+        "access_token", access, httponly=True, secure=secure, samesite=samesite,
+        max_age=3600, path="/",
+    )
+
+
+def clear_auth_cookies(response: Response, request: Request) -> None:
+    secure, samesite = _cookie_flags(request)
+    response.delete_cookie("access_token", path="/", secure=secure, samesite=samesite)
+    response.delete_cookie("refresh_token", path="/", secure=secure, samesite=samesite)
 
 
 async def get_current_user(request: Request) -> dict:
