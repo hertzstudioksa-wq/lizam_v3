@@ -11,13 +11,15 @@ const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
 // Routes that render a dark, full-bleed hero behind the (transparent) header.
 // On every other route the header must be in "solid" mode from the first paint
 // otherwise its paper-coloured links are invisible against the paper page bg.
-const DARK_HERO_ROUTES = new Set(["/", "/publications", "/about", "/contact"]);
+const DARK_HERO_ROUTES = new Set(["/", "/publications", "/about", "/contact", "/activities", "/fellows"]);
 
-const NAV_DEFS = (t) => ({
+const STATIC_NAV = (t) => ({
   home:         { to: "/",             label: t("nav.home"),         testid: "nav-home" },
   publications: { to: "/publications", label: t("nav.publications"), testid: "nav-publications" },
   about:        { to: "/about",        label: t("nav.about"),        testid: "nav-about" },
   contact:      { to: "/contact",      label: t("nav.contact"),      testid: "nav-contact" },
+  activities:   { to: "/activities",   label: t("nav.activities"),   testid: "nav-activities" },
+  fellows:      { to: "/fellows",      label: t("nav.fellows"),      testid: "nav-fellows" },
 });
 const DEFAULT_ORDER = ["home", "publications", "about", "contact"];
 
@@ -55,12 +57,25 @@ export default function HeaderB() {
   }, [open]);
 
   const items = useMemo(() => {
-    const defs = NAV_DEFS(t);
+    const staticDefs = STATIC_NAV(t);
     const order = (site?.header_nav_order && site.header_nav_order.length)
       ? site.header_nav_order
       : DEFAULT_ORDER;
-    return order.map((k) => defs[k]).filter(Boolean);
-  }, [t, site?.header_nav_order]);
+    const customPages = site?.custom_pages || [];
+
+    return order.map((slug) => {
+      // Static page
+      if (staticDefs[slug]) return staticDefs[slug];
+      // Custom page
+      const cp = customPages.find((p) => p.slug === slug);
+      if (cp) return {
+        to: `/pages/${cp.slug}`,
+        label: lang === "ar" ? (cp.title_ar || cp.title_en) : (cp.title_en || cp.title_ar),
+        testid: `nav-custom-${cp.slug}`,
+      };
+      return null;
+    }).filter(Boolean);
+  }, [t, lang, site?.header_nav_order, site?.custom_pages]);
   const isAuthed = user && typeof user === "object";
   const isAdmin = isAuthed && ADMIN_ROLES.has(user.role);
 

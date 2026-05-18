@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
-export function usePublications({ featured, category, pubType, q, sort, limit = 12, offset = 0 } = {}) {
+export function usePublications({ featured, category, pubType, q, sort, limit = 12, offset = 0, authorId } = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,6 +15,7 @@ export function usePublications({ featured, category, pubType, q, sort, limit = 
     if (pubType) params.set("pub_type", pubType);
     if (q) params.set("q", q);
     if (sort) params.set("sort", sort);
+    if (authorId) params.set("author_id", authorId);
     params.set("limit", limit);
     params.set("offset", offset);
 
@@ -35,7 +36,7 @@ export function usePublications({ featured, category, pubType, q, sort, limit = 
     return () => {
       active = false;
     };
-  }, [featured, category, pubType, q, sort, limit, offset]);
+  }, [featured, category, pubType, q, sort, limit, offset, authorId]);
 
   return { data, loading, error };
 }
@@ -75,6 +76,14 @@ export function useCategories() {
   const [data, setData] = useState([]);
   useEffect(() => {
     api.get("/public/categories").then(({ data }) => setData(data.items || [])).catch(() => {});
+  }, []);
+  return data;
+}
+
+export function useAuthors() {
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    api.get("/public/authors").then(({ data }) => setData(data.items || [])).catch(() => {});
   }, []);
   return data;
 }

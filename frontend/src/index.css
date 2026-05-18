@@ -65,6 +65,20 @@ html[dir="ltr"] body {
   font-family: "Thmanyah Sans", "Inter", system-ui, sans-serif;
 }
 
+/* English: body/UI text → Thmanyah Sans; headings keep their own font */
+html[dir="ltr"] *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(input):not(textarea):not(select):not(code):not(pre) {
+  font-family: "Thmanyah Sans", "Inter", system-ui, sans-serif !important;
+}
+/* English headings → Thmanyah Serif Display */
+html[dir="ltr"] h1,
+html[dir="ltr"] h2,
+html[dir="ltr"] h3,
+html[dir="ltr"] h4,
+html[dir="ltr"] h5,
+html[dir="ltr"] h6 {
+  font-family: "Thmanyah Serif Display", "Source Serif 4", Georgia, serif !important;
+}
+
 body {
   @apply bg-ivory text-ink;
   margin: 0;
@@ -316,6 +330,45 @@ html[dir="rtl"] .lz-prose blockquote {
 .lz-prose a:hover { text-decoration-color: #B89B5E; }
 .lz-prose hr { border: 0; height: 1px; background: #E4E7EC; margin: 2.2em 0; }
 .lz-prose code { background: rgba(35,50,77,0.06); padding: 0.15em 0.4em; font-size: 0.92em; }
+
+/* Tables inside article body — break out of 68ch prose limit */
+.lz-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.8em 0;
+  font-size: 0.92em;
+  line-height: 1.6;
+  display: block;
+  overflow-x: auto;
+  max-width: min(100vw - 4rem, 900px);
+}
+.lz-prose thead { background: #F2F4F7; }
+.lz-prose th {
+  padding: 10px 14px;
+  text-align: start;
+  font-weight: 600;
+  font-size: 0.85em;
+  letter-spacing: 0.04em;
+  color: #344054;
+  border: 1px solid #D0D5DD;
+}
+.lz-prose td {
+  padding: 9px 14px;
+  border: 1px solid #D0D5DD;
+  vertical-align: top;
+  color: #1D2939;
+}
+.lz-prose tr:nth-child(even) td { background: #FAFAFA; }
+.lz-prose tr:hover td { background: #F5F6F8; transition: background 0.15s; }
+
+/* Table direction: keep column order as-is (Word stores LTR),
+   but render cell content RTL in Arabic pages */
+.lz-prose table { direction: ltr; }
+html[dir="rtl"] .lz-prose th,
+html[dir="rtl"] .lz-prose td {
+  direction: rtl;
+  text-align: right;
+}
 
 /* Hide scrollbars subtly */
 .lz-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }

@@ -111,6 +111,7 @@ export default function FieldsOfWorkB() {
               fontSize: tsSectionBody.sizeMul !== 1 ? `calc(1.1875rem * ${tsSectionBody.sizeMul})` : undefined,
               fontWeight: tsSectionBody.fontWeight,
               textAlign: alignSectionBody || undefined,
+              whiteSpace: "pre-line",
             }}
             data-testid="fields-body"
           >
@@ -180,6 +181,7 @@ export default function FieldsOfWorkB() {
                     color: tsItemDesc.color || "var(--tb-text-muted)",
                     fontWeight: tsItemDesc.fontWeight,
                     textAlign: alignItemDesc || undefined,
+                    whiteSpace: "pre-line",
                   }}
                 >
                   {f[`description_${lang}`]}

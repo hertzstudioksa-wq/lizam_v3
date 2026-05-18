@@ -58,6 +58,7 @@ class SiteSettingsIn(BaseModel):
     # Ordered list of header-nav item keys. Items NOT in the array are hidden
     # from the public header. Allowed keys: "home" | "publications" | "about" | "contact"
     header_nav_order: Optional[List[str]] = None
+    hidden_pages: Optional[List[str]] = None
     # Three-axis typography scale applied to public Theme B (range 0.85–1.25 each)
     font_scale: Optional[Dict[str, float]] = None  # {hero, heading, body}
 
@@ -164,6 +165,7 @@ class HomeContentIn(BaseModel):
     # Fields of work — body paragraph
     fields_body_ar: Optional[str] = None
     fields_body_en: Optional[str] = None
+    extra_sections: Optional[List[Dict[str, Any]]] = None
 
 
 class PublicationIn(BaseModel):
@@ -193,6 +195,55 @@ class PublicationIn(BaseModel):
     reading_time_minutes: Optional[int] = None
     tags: Optional[List[str]] = None
     related_publication_ids: Optional[List[str]] = None
+
+
+class FellowsPageContentIn(BaseModel):
+    """Editable content for the /fellows page."""
+    model_config = ConfigDict(extra="ignore")
+    visible_sections: Optional[List[str]] = None
+    section_styles: Optional[Dict[str, Dict[str, Any]]] = None
+    # Hero
+    hero_eyebrow_ar: Optional[str] = None
+    hero_eyebrow_en: Optional[str] = None
+    hero_title_ar: Optional[str] = None
+    hero_title_en: Optional[str] = None
+    hero_subtitle_ar: Optional[str] = None
+    hero_subtitle_en: Optional[str] = None
+    # Intro
+    intro_eyebrow_ar: Optional[str] = None
+    intro_eyebrow_en: Optional[str] = None
+    intro_title_ar: Optional[str] = None
+    intro_title_en: Optional[str] = None
+    intro_body_ar: Optional[str] = None
+    intro_body_en: Optional[str] = None
+    # Fellows section
+    fellows_eyebrow_ar: Optional[str] = None
+    fellows_eyebrow_en: Optional[str] = None
+    fellows_title_ar: Optional[str] = None
+    fellows_title_en: Optional[str] = None
+    fellows_body_ar: Optional[str] = None
+    fellows_body_en: Optional[str] = None
+    fellows_members: Optional[List[Dict[str, Any]]] = None
+
+
+class NewsItemIn(BaseModel):
+    """News/activity item for the /activities page."""
+    model_config = ConfigDict(extra="ignore")
+    title_ar: Optional[str] = None
+    title_en: Optional[str] = None
+    slug_ar: Optional[str] = None
+    slug_en: Optional[str] = None
+    summary_ar: Optional[str] = None
+    summary_en: Optional[str] = None
+    body_ar: Optional[str] = None
+    body_en: Optional[str] = None
+    cover_image_url: Optional[str] = None
+    date: Optional[str] = None
+    category_ar: Optional[str] = None
+    category_en: Optional[str] = None
+    tags: Optional[List[str]] = None
+    status: Optional[Literal["draft", "published"]] = None
+    featured: Optional[bool] = None
 
 
 class AboutContentIn(BaseModel):
@@ -281,6 +332,119 @@ class AboutContentIn(BaseModel):
     contact_cta_label_ar: Optional[str] = None
     contact_cta_label_en: Optional[str] = None
     contact_cta_link: Optional[str] = None
+    extra_sections: Optional[List[Dict[str, Any]]] = None
+
+
+class ContactContentIn(BaseModel):
+    """Editable content for the /contact page."""
+    model_config = ConfigDict(extra="ignore")
+    visible_sections: Optional[List[str]] = None
+    section_styles: Optional[Dict[str, Dict[str, Any]]] = None
+    # Hero masthead
+    hero_eyebrow_ar: Optional[str] = None
+    hero_eyebrow_en: Optional[str] = None
+    hero_title_ar: Optional[str] = None
+    hero_title_en: Optional[str] = None
+    hero_subtitle_ar: Optional[str] = None
+    hero_subtitle_en: Optional[str] = None
+    # Info block
+    location_ar: Optional[str] = None
+    location_en: Optional[str] = None
+    phone: Optional[str] = None
+    # Form labels & messages
+    form_heading_ar: Optional[str] = None
+    form_heading_en: Optional[str] = None
+    form_subheading_ar: Optional[str] = None
+    form_subheading_en: Optional[str] = None
+    field_name_ar: Optional[str] = None
+    field_name_en: Optional[str] = None
+    field_subject_ar: Optional[str] = None
+    field_subject_en: Optional[str] = None
+    field_message_ar: Optional[str] = None
+    field_message_en: Optional[str] = None
+    submit_label_ar: Optional[str] = None
+    submit_label_en: Optional[str] = None
+    consent_ar: Optional[str] = None
+    consent_en: Optional[str] = None
+    success_title_ar: Optional[str] = None
+    success_title_en: Optional[str] = None
+    success_body_ar: Optional[str] = None
+    success_body_en: Optional[str] = None
+    extra_sections: Optional[List[Dict[str, Any]]] = None
+
+
+class ActivitiesPageContentIn(BaseModel):
+    """Editable content for the /activities page."""
+    model_config = ConfigDict(extra="ignore")
+    visible_sections: Optional[List[str]] = None
+    section_styles: Optional[Dict[str, Dict[str, Any]]] = None
+    # Hero
+    hero_eyebrow_ar: Optional[str] = None
+    hero_eyebrow_en: Optional[str] = None
+    hero_title_ar: Optional[str] = None
+    hero_title_en: Optional[str] = None
+    hero_subtitle_ar: Optional[str] = None
+    hero_subtitle_en: Optional[str] = None
+    # Intro
+    intro_eyebrow_ar: Optional[str] = None
+    intro_eyebrow_en: Optional[str] = None
+    intro_title_ar: Optional[str] = None
+    intro_title_en: Optional[str] = None
+    intro_body_ar: Optional[str] = None
+    intro_body_en: Optional[str] = None
+    # News section
+    news_eyebrow_ar: Optional[str] = None
+    news_eyebrow_en: Optional[str] = None
+    news_title_ar: Optional[str] = None
+    news_title_en: Optional[str] = None
+    news_body_ar: Optional[str] = None
+    news_body_en: Optional[str] = None
+
+
+class PublicationsPageContentIn(BaseModel):
+    """Editable content for the /publications listing page."""
+    model_config = ConfigDict(extra="ignore")
+    visible_sections: Optional[List[str]] = None
+    section_styles: Optional[Dict[str, Dict[str, Any]]] = None
+    # Hero
+    hero_eyebrow_ar: Optional[str] = None
+    hero_eyebrow_en: Optional[str] = None
+    hero_title_ar: Optional[str] = None
+    hero_title_en: Optional[str] = None
+    hero_subtitle_ar: Optional[str] = None
+    hero_subtitle_en: Optional[str] = None
+    # Page labels & copy
+    search_placeholder_ar: Optional[str] = None
+    search_placeholder_en: Optional[str] = None
+    count_suffix_ar: Optional[str] = None
+    count_suffix_en: Optional[str] = None
+    all_fields_label_ar: Optional[str] = None
+    all_fields_label_en: Optional[str] = None
+    clear_filters_ar: Optional[str] = None
+    clear_filters_en: Optional[str] = None
+    empty_eyebrow_ar: Optional[str] = None
+    empty_eyebrow_en: Optional[str] = None
+    empty_title_ar: Optional[str] = None
+    empty_title_en: Optional[str] = None
+    empty_reset_ar: Optional[str] = None
+    empty_reset_en: Optional[str] = None
+    # Authors carousel section
+    authors_section_visible: Optional[bool] = None
+    authors_heading_ar: Optional[str] = None
+    authors_heading_en: Optional[str] = None
+    authors_subheading_ar: Optional[str] = None
+    authors_subheading_en: Optional[str] = None
+    extra_sections: Optional[List[Dict[str, Any]]] = None
+
+
+class CustomPageIn(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    title_ar: Optional[str] = None
+    title_en: Optional[str] = None
+    slug: Optional[str] = None
+    visible: Optional[bool] = None
+    sort_order: Optional[int] = None
+    sections: Optional[List[Dict[str, Any]]] = None
 
 
 class AuthorIn(BaseModel):

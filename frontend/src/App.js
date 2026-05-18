@@ -10,7 +10,7 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useTheme } from "@/hooks/useTheme";
 
 import HomePage from "@/pages/HomePage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
+
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import AccountPage from "@/pages/AccountPage";
@@ -21,16 +21,26 @@ import SiteSettingsAdmin from "@/admin/pages/SiteSettingsAdmin";
 import BrandingAdmin from "@/admin/pages/BrandingAdmin";
 import HomeAdmin from "@/admin/pages/HomeAdmin";
 import AboutAdmin from "@/admin/pages/AboutAdmin";
-import ImagesAdmin from "@/admin/pages/ImagesAdmin";
-import HeroMediaAdmin from "@/admin/pages/HeroMediaAdmin";
+import ContactAdmin from "@/admin/pages/ContactAdmin";
+import PublicationsPageAdmin from "@/admin/pages/PublicationsPageAdmin";
+import ActivitiesPageAdmin from "@/admin/pages/ActivitiesPageAdmin";
+import FellowsPageAdmin from "@/admin/pages/FellowsPageAdmin";
+import NewsAdmin from "@/admin/pages/NewsAdmin";
 import AboutPage from "@/pages/AboutPage";
+import ActivitiesPage from "@/pages/ActivitiesPage";
+import FellowsPage from "@/pages/FellowsPage";
+import NewsDetailPage from "@/pages/NewsDetailPage";
 import ResponsesAdmin from "@/admin/pages/ResponsesAdmin";
 import AuditLogAdmin from "@/admin/pages/AuditLogAdmin";
 import { PublicationsListAdmin, PublicationEditAdmin } from "@/admin/pages/PublicationsAdmin";
-import { AuthorsAdmin, CategoriesAdmin, UsersAdmin, RolesAdmin, TogglesAdmin, MessagesAdmin } from "@/admin/pages/SimpleAdmins";
+import { AuthorsAdmin, CategoriesAdmin, UsersAdmin, MessagesAdmin } from "@/admin/pages/SimpleAdmins";
 import AdminLayout from "@/admin/AdminLayout";
 import AdminOverview from "@/admin/pages/AdminOverview";
 import AdminComingSoon from "@/admin/pages/AdminComingSoon";
+import DynamicPage from "@/pages/DynamicPage";
+import PagesAdmin from "@/admin/pages/PagesAdmin";
+import CustomPageAdmin from "@/admin/pages/CustomPageAdmin";
+import AllSectionsAdmin from "@/admin/pages/AllSectionsAdmin";
 
 /** Small ambient component that pushes dynamic brand tokens onto :root
  *  once site-settings are loaded (primary_color, accent_color, etc.). */
@@ -65,19 +75,13 @@ function App() {
             <Route path="/publications" element={<PublicationsPage />} />
             <Route path="/publications/:slug" element={<PublicationDetailPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/activities" element={<ActivitiesPage />} />
+            <Route path="/activities/:slug" element={<NewsDetailPage />} />
+            <Route path="/fellows" element={<FellowsPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route
-              path="/policy"
-              element={<PlaceholderPage titleKey="footer.legal" noteKey="admin.comingSoon" />}
-            />
-            <Route
-              path="/privacy"
-              element={<PlaceholderPage titleKey="footer.privacy" noteKey="admin.comingSoon" />}
-            />
-            <Route
-              path="/terms"
-              element={<PlaceholderPage titleKey="footer.terms" noteKey="admin.comingSoon" />}
-            />
+
+            {/* Dynamic pages */}
+            <Route path="/pages/:slug" element={<DynamicPage />} />
 
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
@@ -93,16 +97,20 @@ function App() {
               <Route path="responses" element={<ResponsesAdmin />} />
               <Route path="audit" element={<AuditLogAdmin />} />
               <Route path="users" element={<UsersAdmin />} />
-              <Route path="roles" element={<RolesAdmin />} />
               <Route path="messages" element={<MessagesAdmin />} />
               <Route path="home" element={<HomeAdmin />} />
               <Route path="about" element={<AboutAdmin />} />
+              <Route path="contact" element={<ContactAdmin />} />
+              <Route path="activities-page" element={<ActivitiesPageAdmin />} />
+              <Route path="fellows-page" element={<FellowsPageAdmin />} />
+              <Route path="news" element={<NewsAdmin />} />
+              <Route path="publications-page" element={<PublicationsPageAdmin />} />
               <Route path="branding" element={<BrandingAdmin />} />
-              <Route path="images" element={<ImagesAdmin />} />
-              <Route path="hero-media" element={<HeroMediaAdmin />} />
               <Route path="settings" element={<SiteSettingsAdmin />} />
               <Route path="categories" element={<CategoriesAdmin />} />
-              <Route path="toggles" element={<TogglesAdmin />} />
+              <Route path="pages" element={<PagesAdmin />} />
+              <Route path="pages/:id" element={<CustomPageAdmin />} />
+              <Route path="all-sections" element={<AllSectionsAdmin />} />
             </Route>
 
             {/* Fallback */}

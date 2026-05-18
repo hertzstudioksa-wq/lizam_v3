@@ -136,6 +136,7 @@ export default function FeaturedPublicationsB() {
               fontWeight: tsBlurb.fontWeight,
               maxWidth: "58ch",
               textAlign: alignBlurb || undefined,
+              whiteSpace: "pre-line",
             }}
             data-testid="featured-blurb"
           >

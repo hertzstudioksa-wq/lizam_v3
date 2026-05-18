@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse \"D:\\\\Claude\\\\Projects\\\\lizam_v3\\\\lizam_export_extracted\")",
+      "Bash(Measure-Object -Property Length -Sum)",
+      "Bash(Select-Object -ExpandProperty Sum)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)"
+    ]
+  }
+}

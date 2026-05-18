@@ -45,6 +45,11 @@ async def get_site_settings():
     doc = await db.site_settings.find_one({}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Site settings not seeded")
+    # Embed visible custom pages so the Header can build the nav in one request
+    custom = await db.custom_pages.find(
+        {"visible": True}, {"_id": 0, "id": 1, "slug": 1, "title_ar": 1, "title_en": 1, "sort_order": 1}
+    ).sort("sort_order", 1).to_list(length=100)
+    doc["custom_pages"] = custom
     return doc
 
 
@@ -65,6 +70,52 @@ async def get_about_content():
     return doc
 
 
+@router.get("/contact-content")
+async def get_contact_content():
+    """Public read for the Contact page."""
+    doc = await db.contact_content.find_one({"id": "contact"}, {"_id": 0})
+    return doc or {}
+
+
+@router.get("/activities-page")
+async def get_activities_page():
+    """Public read for the Activities page."""
+    doc = await db.activities_page.find_one({"id": "activities"}, {"_id": 0})
+    return doc or {}
+
+
+@router.get("/fellows-page")
+async def get_fellows_page():
+    doc = await db.fellows_page.find_one({"id": "fellows"}, {"_id": 0})
+    return doc or {}
+
+
+@router.get("/news")
+async def list_news(limit: int = 20, offset: int = 0):
+    items = await db.news_items.find({"status": "published"}, {"_id": 0, "body_ar": 0, "body_en": 0}).sort("date", -1).skip(offset).limit(limit).to_list(length=limit)
+    total = await db.news_items.count_documents({"status": "published"})
+    return {"items": items, "total": total}
+
+
+@router.get("/news/{slug}")
+async def get_news_item(slug: str):
+    doc = await db.news_items.find_one(
+        {"$or": [{"slug_ar": slug}, {"slug_en": slug}, {"id": slug}], "status": "published"},
+        {"_id": 0}
+    )
+    if not doc:
+        raise HTTPException(404, "Not found")
+    await db.news_items.update_one({"id": doc["id"]}, {"$inc": {"view_count": 1}})
+    return doc
+
+
+@router.get("/publications-page")
+async def get_publications_page():
+    """Public read for the Publications listing page."""
+    doc = await db.publications_page_content.find_one({"id": "publications"}, {"_id": 0})
+    return doc or {}
+
+
 @router.get("/image-assets")
 async def public_get_image_assets():
     """Returns active image slots used by the public site."""
@@ -80,6 +131,7 @@ async def list_publications(
     limit: int = 12, offset: int = 0, featured: Optional[bool] = None,
     category: Optional[str] = None, pub_type: Optional[str] = None,
     q: Optional[str] = None, sort: str = "latest",
+    author_id: Optional[str] = None,
 ):
     filt: dict[str, Any] = {"status": "published", "access_level": {"$ne": "hidden"}}
     if featured is not None:
@@ -88,6 +140,8 @@ async def list_publications(
         filt["category_id"] = category
     if pub_type:
         filt["publication_type"] = pub_type
+    if author_id:
+        filt["author_ids"] = author_id
     if q:
         rx = {"$regex": q, "$options": "i"}
         filt["$or"] = [
@@ -164,9 +218,24 @@ async def get_publication(slug: str, request: Request):
         {"_id": 0, "id": 1, "title_ar": 1, "title_en": 1, "slug_ar": 1, "slug_en": 1,
          "summary_ar": 1, "summary_en": 1, "publication_type": 1, "access_level": 1,
          "reading_time_minutes": 1, "view_count": 1, "published_at": 1, "category_id": 1,
-         "author_ids": 1, "tags": 1, "featured": 1},
+         "author_ids": 1, "tags": 1, "featured": 1, "cover_image_url": 1},
     ).sort("published_at", -1).limit(3).to_list(length=3)
     pub["related"] = related
+
+    # Adjacent publications (prev = older, next = newer) for page-turning navigation
+    pub_date = pub.get("published_at", "")
+    _adj_proj = {"_id": 0, "id": 1, "title_ar": 1, "title_en": 1, "slug_ar": 1, "slug_en": 1, "cover_image_url": 1}
+    _adj_filt = {"status": "published", "access_level": {"$ne": "hidden"}, "id": {"$ne": pub["id"]}}
+    prev_pub = await db.publications.find_one(
+        {**_adj_filt, "published_at": {"$lt": pub_date}}, _adj_proj,
+        sort=[("published_at", -1)],
+    )
+    next_pub = await db.publications.find_one(
+        {**_adj_filt, "published_at": {"$gt": pub_date}}, _adj_proj,
+        sort=[("published_at", 1)],
+    )
+    pub["_prev"] = prev_pub
+    pub["_next"] = next_pub
 
     # Do not count admin/editor previews or obvious bot UAs toward view_count
     ua = request.headers.get("user-agent", "").lower()
@@ -232,6 +301,9 @@ async def pdf_stream(token: str, request: Request):
     if not toggles.get("pdf_download", True):
         raise HTTPException(status_code=403, detail="PDF downloads are disabled")
 
+    # Increment PDF download counter
+    await db.publications.update_one({"id": payload["pub"]}, {"$inc": {"pdf_download_count": 1}})
+
     # Prefer uploaded file if present
     if pub.get("pdf_file_url"):
         # Accepts either legacy "/uploads/pdfs/x.pdf" or new "/api/uploads/pdfs/x.pdf".
@@ -270,6 +342,20 @@ async def list_authors():
 async def list_categories():
     items = await db.categories.find({"active": True}, {"_id": 0}).sort("sort_order", 1).to_list(length=200)
     return {"items": items}
+
+
+@router.get("/custom-pages")
+async def list_custom_pages():
+    items = await db.custom_pages.find({"visible": True}, {"_id": 0}).sort("sort_order", 1).to_list(length=100)
+    return {"items": items}
+
+
+@router.get("/custom-pages/{slug}")
+async def get_custom_page(slug: str):
+    doc = await db.custom_pages.find_one({"slug": slug, "visible": True}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Page not found")
+    return doc
 
 
 @router.post("/contact")

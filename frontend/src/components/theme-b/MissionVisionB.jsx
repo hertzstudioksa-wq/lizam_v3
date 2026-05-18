@@ -124,6 +124,7 @@ function Half({
             maxWidth: "48ch",
             textAlign: bodyAlign,
             marginInline: bodyAlign === "right" ? "auto 0" : bodyAlign === "center" ? "auto" : "0 auto",
+            whiteSpace: "pre-line",
           }}
         >
           {lede(body)}

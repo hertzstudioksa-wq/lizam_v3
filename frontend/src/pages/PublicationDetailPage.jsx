@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Eye, Clock, Lock, FileDown, Share2, Copy, Twitter, Linkedin,
@@ -46,6 +46,21 @@ export default function PublicationDetailPage() {
   const [pdfState, setPdfState] = useState(null);
   const [showCite, setShowCite] = useState(false);
   const [citedStyle, setCitedStyle] = useState(null);
+  // Arrows visibility — hooks must be before early returns
+  const articleSectionRef = useRef(null);
+  const [arrowsVisible, setArrowsVisible] = useState(false);
+  useEffect(() => {
+    function check() {
+      const el = articleSectionRef.current;
+      if (!el) { setArrowsVisible(false); return; }
+      const { top, bottom } = el.getBoundingClientRect();
+      setArrowsVisible(top < window.innerHeight - 80 && bottom > 80);
+    }
+    check(); // run immediately on mount/update
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pub]);
 
   if (loading) {
     return (
@@ -82,6 +97,8 @@ export default function PublicationDetailPage() {
   const authors = pub.authors || [];
   const category = pub.category;
   const related = pub.related || [];
+  const prevPub = pub._prev || null;
+  const nextPub = pub._next || null;
   const pdfAccess = pub.pdf_access_level;
   const hasPdfConfigured = pub.pdf_file_url || pub.external_pdf_url;
   const Chevron = lang === "ar" ? ChevronLeft : ChevronRight;
@@ -211,6 +228,12 @@ export default function PublicationDetailPage() {
               <Eye size={13} />
               <span className="tabular-nums">{(pub.view_count || 0).toLocaleString(lang === "ar" ? "ar-SA" : "en")}</span>
             </div>
+            {pub.pdf_download_count > 0 && (
+              <div className="inline-flex items-center gap-1.5">
+                <FileDown size={13} />
+                <span className="tabular-nums">{(pub.pdf_download_count).toLocaleString(lang === "ar" ? "ar-SA" : "en")}</span>
+              </div>
+            )}
             {pub.access_level !== "public" && (
               <div className="inline-flex items-center gap-1.5 text-navy">
                 <Lock size={13} />
@@ -293,69 +316,300 @@ export default function PublicationDetailPage() {
         </div>
       </section>
 
-      {/* Tabs: article / responses */}
-      <section className="bg-ivory border-t border-rule" data-testid="publication-body">
-        <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14">
+      {/* ── Page-edge navigation arrows ── */}
+      <PubNavArrow pub={prevPub} lang={lang} side="prev" visible={arrowsVisible} />
+      <PubNavArrow pub={nextPub} lang={lang} side="next" visible={arrowsVisible} />
+
+      {/* Article + Sticky Sidebar */}
+      <section ref={articleSectionRef} className="bg-ivory border-t border-rule" data-testid="publication-body">
+        <div className="mx-auto max-w-[1360px] px-6 md:px-10 lg:px-14">
+
+          {/* Tabs — full width */}
           <div className="flex items-center gap-8 border-b border-rule text-[13.5px]">
-            <button
-              onClick={() => setTab("article")}
+            <button onClick={() => setTab("article")}
               className={`h-14 inline-flex items-center gap-2 transition-colors duration-300 ${tab === "article" ? "text-navy-deep border-b-2 border-brass" : "text-mute hover:text-navy"}`}
-              data-testid="tab-article"
-            >
+              data-testid="tab-article">
               <span>{lang === "ar" ? "نص الدراسة" : "Article"}</span>
             </button>
-            <button
-              onClick={() => setTab("responses")}
+            <button onClick={() => setTab("responses")}
               className={`h-14 inline-flex items-center gap-2 transition-colors duration-300 ${tab === "responses" ? "text-navy-deep border-b-2 border-brass" : "text-mute hover:text-navy"}`}
-              data-testid="tab-responses"
-            >
+              data-testid="tab-responses">
               <MessageSquare size={13} />
               <span>{lang === "ar" ? "الردود والمداخلات" : "Responses"}</span>
             </button>
           </div>
 
-          <div className="py-12 md:py-16">
-            {tab === "article" ? (
-              <ArticleBody
-                gated={gated}
-                gatedReason={gatedReason}
-                html={html}
-                lang={lang}
-                isAuthed={isAuthed}
-                registrationEnabled={registrationEnabled}
-                onLogin={() => nav("/login", { state: { from: { pathname: window.location.pathname } } })}
-              />
-            ) : (
-              <ResponsesTab
-                lang={lang}
-                slug={pub.slug_ar || pub.slug_en}
-                isAuthed={isAuthed}
-                responsesEnabled={pub.responses_enabled !== false}
-                userName={user?.name}
-                userEmail={user?.email}
-              />
-            )}
+          {/* Two-column layout: article + sidebar */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 py-12 md:py-16" style={{ direction: lang === "ar" ? "rtl" : "ltr" }}>
+
+            {/* ── Main article ── */}
+            <div className="lg:col-span-2">
+              {tab === "article" ? (
+                <ArticleBody
+                  gated={gated} gatedReason={gatedReason} html={html} lang={lang}
+                  isAuthed={isAuthed} registrationEnabled={registrationEnabled}
+                  onLogin={() => nav("/login", { state: { from: { pathname: window.location.pathname } } })}
+                />
+              ) : (
+                <ResponsesTab lang={lang} slug={pub.slug_ar || pub.slug_en}
+                  isAuthed={isAuthed} responsesEnabled={pub.responses_enabled !== false}
+                  userName={user?.name} userEmail={user?.email} />
+              )}
+            </div>
+
+            {/* ── Sticky Sidebar ── */}
+            <div>
+              <div className="lg:sticky lg:top-8 space-y-8" data-testid="article-sidebar">
+
+                {/* Author(s) */}
+                {authors.length > 0 && (
+                  <div>
+                    <SidebarHeading>
+                      {authors.length === 1
+                        ? (lang === "ar" ? "الباحث" : "Researcher")
+                        : (lang === "ar" ? "الباحثون" : "Researchers")}
+                    </SidebarHeading>
+                    <div className="space-y-4 mt-4">
+                      {authors.map((a) => <SidebarAuthorCard key={a.id} author={a} lang={lang} />)}
+                    </div>
+                  </div>
+                )}
+
+                {/* Related publications */}
+                {related.length > 0 && (
+                  <div>
+                    <SidebarHeading>
+                      {lang === "ar" ? "إصدارات ذات صلة" : "Related publications"}
+                    </SidebarHeading>
+                    <div className="space-y-3 mt-4">
+                      {related.slice(0, 5).map((r) => (
+                        <SidebarPubCard key={r.id} pub={r} lang={lang} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
-
-      {/* Related */}
-      {related.length > 0 && (
-        <section className="bg-paper border-t border-rule" data-testid="related-section">
-          <div className="mx-auto max-w-[1360px] px-6 md:px-10 lg:px-14 py-20">
-            <div className="lz-eyebrow text-navy/70">
-              {lang === "ar" ? "إصدارات مرتبطة" : "Related publications"}
-            </div>
-            <div className="mt-3 h-px w-12 bg-brass" />
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-rule border border-rule">
-              {related.map((r) => (
-                <PublicationCard key={r.id} pub={r} testid={`related-${r.id}`} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </PublicLayout>
+  );
+}
+
+/* ── Sidebar helpers ── */
+
+function SidebarHeading({ children }) {
+  return (
+    <div className="flex items-center gap-2 mb-1">
+      <span style={{ height: 1, width: 18, background: "var(--tb-gold, #B08C5A)", flexShrink: 0 }} />
+      <span style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
+        {children}
+      </span>
+    </div>
+  );
+}
+
+function SidebarAuthorCard({ author, lang }) {
+  const name  = author[`name_${lang}`]  || author.name_en  || author.name_ar  || "";
+  const title = author[`title_${lang}`] || author.title_en || author.title_ar || "";
+  const bio   = author[`bio_${lang}`]   || author.bio_en   || author.bio_ar   || "";
+
+  return (
+    <div className="bg-white p-4" style={{ border: "1px solid rgba(28,37,51,0.1)" }}>
+      {/* Photo — big */}
+      <div className="mb-3">
+        {author.photo_url ? (
+          <img src={author.photo_url} alt={name}
+            className="w-full object-cover"
+            style={{ maxHeight: 200, border: "1px solid rgba(28,37,51,0.08)" }} />
+        ) : (
+          <div className="w-full h-28 flex items-center justify-center"
+            style={{ background: "var(--tb-navy-900, #0A111C)", color: "rgba(251,250,247,0.5)", fontFamily: '"Thmanyah Serif Display", serif', fontSize: 42 }}>
+            {name.charAt(0)}
+          </div>
+        )}
+      </div>
+      <div className="text-[15px] font-medium text-navy-deep leading-snug"
+        style={{ fontFamily: '"Thmanyah Serif Display", serif' }}>
+        {name}
+      </div>
+      {title && (
+        <div className="mt-1 text-[11px] uppercase tracking-[0.1em] text-brass">{title}</div>
+      )}
+      {bio && (
+        <p className="mt-2 text-[12.5px] text-ink/65 leading-[1.7] line-clamp-4">{bio}</p>
+      )}
+      {(author.linkedin || author.email) && (
+        <div className="mt-3 flex items-center gap-3">
+          {author.linkedin && (
+            <a href={author.linkedin} target="_blank" rel="noopener noreferrer"
+              className="text-[11.5px] text-mute hover:text-navy transition-colors lz-linkline">
+              LinkedIn
+            </a>
+          )}
+          {author.email && (
+            <a href={`mailto:${author.email}`}
+              className="text-[11.5px] text-mute hover:text-navy transition-colors lz-linkline">
+              {lang === "ar" ? "البريد" : "Email"}
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SidebarPubCard({ pub, lang }) {
+  const title = pub[`title_${lang}`] || pub.title_en || pub.title_ar || "";
+  const slug  = pub[`slug_${lang}`]  || pub.slug_en  || pub.slug_ar  || pub.id;
+  const type  = TYPE_LABELS[lang]?.[pub.publication_type] || pub.publication_type || "";
+
+  return (
+    <Link to={`/publications/${slug}`}
+      className="group flex items-start gap-3"
+      style={{ borderBottom: "1px solid rgba(28,37,51,0.07)", paddingBottom: 12 }}>
+      {/* Cover image */}
+      {pub.cover_image_url ? (
+        <img src={pub.cover_image_url} alt={title}
+          className="w-14 h-[72px] object-cover shrink-0"
+          style={{ border: "1px solid rgba(28,37,51,0.08)" }} />
+      ) : (
+        <div className="w-14 h-[72px] shrink-0 flex items-center justify-center"
+          style={{ background: "var(--tb-navy-900,#0A111C)", opacity: 0.85 }}>
+          <span style={{ fontSize: 9, letterSpacing: "0.1em", color: "rgba(251,250,247,0.5)" }} className="uppercase px-1 text-center">
+            {type}
+          </span>
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        {type && (
+          <div style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(28,37,51,0.4)" }} className="uppercase mb-1">
+            {type}
+          </div>
+        )}
+        <div className="text-[13px] text-navy-deep leading-[1.5] group-hover:text-brass transition-colors line-clamp-3"
+          style={{ fontFamily: '"Thmanyah Serif Display", serif' }}>
+          {title}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function PubNavArrow({ pub, lang, side, visible }) {
+  const [hovered, setHovered] = useState(false);
+  if (!pub) return null;
+  // hooks above — safe to use now
+  const title = pub[`title_${lang}`] || pub.title_en || pub.title_ar || "";
+  const slug  = pub[`slug_${lang}`]  || pub.slug_en  || pub.slug_ar  || pub.id;
+  const isLeft = side === "prev";
+
+  return (
+    <Link
+      to={`/publications/${slug}`}
+      data-testid={`pub-nav-${side}`}
+      className="hidden lg:flex fixed top-1/2 -translate-y-1/2 z-30 items-center gap-1.5"
+      style={{
+        [isLeft ? "left" : "right"]: 10,
+        flexDirection: isLeft ? "row" : "row-reverse",
+        color: "var(--tb-gold, #B08C5A)",
+        textDecoration: "none",
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? "auto" : "none",
+        transition: "opacity 0.4s ease",
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Arrow — bounces outward on hover */}
+      <div style={{
+        transform: hovered
+          ? `translateX(${isLeft ? "-5px" : "5px"}) scale(1.15)`
+          : "translateX(0) scale(1)",
+        opacity: hovered ? 1 : 0.55,
+        transition: "transform 0.25s ease, opacity 0.2s ease",
+      }}>
+        {isLeft ? <ChevronLeft size={24} strokeWidth={1.4} /> : <ChevronRight size={24} strokeWidth={1.4} />}
+      </div>
+
+      {/* Vertical title — slides in on hover */}
+      <div style={{
+        writingMode: "vertical-rl",
+        textOrientation: "mixed",
+        fontSize: hovered ? 13.5 : 0,
+        letterSpacing: "0.07em",
+        lineHeight: 1.6,
+        fontFamily: '"Thmanyah Serif Display", serif',
+        transform: isLeft ? "rotate(180deg)" : "none",
+        whiteSpace: "nowrap",
+        maxHeight: hovered ? 180 : 0,
+        overflow: "hidden",
+        opacity: hovered ? 0.9 : 0,
+        transition: "max-height 0.35s ease, opacity 0.3s ease, font-size 0.25s ease",
+      }}>
+        {title.length > 38 ? title.slice(0, 38) + "…" : title}
+      </div>
+    </Link>
+  );
+}
+
+function AuthorCard({ author, lang }) {
+  const name  = author[`name_${lang}`]  || author.name_en  || author.name_ar  || "";
+  const title = author[`title_${lang}`] || author.title_en || author.title_ar || "";
+  const bio   = author[`bio_${lang}`]   || author.bio_en   || author.bio_ar   || "";
+
+  return (
+    <div className="flex items-start gap-5 p-5 bg-white border border-rule" data-testid={`author-card-${author.id}`}>
+      {/* Photo */}
+      {author.photo_url ? (
+        <img
+          src={author.photo_url}
+          alt={name}
+          className="w-16 h-16 object-cover shrink-0"
+          style={{ border: "1px solid rgba(28,37,51,0.1)" }}
+        />
+      ) : (
+        <div
+          className="w-16 h-16 shrink-0 flex items-center justify-center"
+          style={{ background: "var(--tb-navy-900, #0A111C)", color: "rgba(251,250,247,0.6)", fontFamily: '"Thmanyah Serif Display", serif', fontSize: 22 }}
+        >
+          {name.charAt(0)}
+        </div>
+      )}
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="text-[15.5px] font-medium text-navy-deep" style={{ fontFamily: '"Thmanyah Serif Display", serif' }}>
+          {name}
+        </div>
+        {title && (
+          <div className="mt-0.5 text-[12.5px] uppercase tracking-[0.12em] text-brass">{title}</div>
+        )}
+        {bio && (
+          <p className="mt-2 text-[13.5px] text-ink/70 leading-[1.75]">{bio}</p>
+        )}
+        {/* Links */}
+        {(author.linkedin || author.email) && (
+          <div className="mt-3 flex items-center gap-4">
+            {author.linkedin && (
+              <a href={author.linkedin} target="_blank" rel="noopener noreferrer"
+                className="text-[12px] text-mute hover:text-navy transition-colors lz-linkline">
+                LinkedIn
+              </a>
+            )}
+            {author.email && (
+              <a href={`mailto:${author.email}`}
+                className="text-[12px] text-mute hover:text-navy transition-colors lz-linkline">
+                {author.email}
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 

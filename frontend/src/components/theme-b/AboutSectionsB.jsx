@@ -10,7 +10,7 @@
  * Visibility & order are driven by about.visible_sections[].
  */
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Linkedin } from "lucide-react";
+import { ArrowLeft, ArrowRight, Linkedin, FileDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "@/i18n/LanguageContext";
 import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
@@ -212,6 +212,7 @@ export function AboutIntroB({ about }) {
               color: tsBody.color || "var(--tb-text)",
               fontWeight: tsBody.fontWeight,
               textAlign: alignBody || undefined,
+              whiteSpace: "pre-line",
             }}>
             {about?.[`intro_body_${lang}`]}
           </p>
@@ -225,6 +226,7 @@ export function AboutIntroB({ about }) {
                 color: tsExt.color || "var(--tb-text-muted)",
                 fontWeight: tsExt.fontWeight,
                 textAlign: alignExt || undefined,
+                whiteSpace: "pre-line",
               }}>
               {about[`intro_body_extended_${lang}`]}
             </p>
@@ -319,6 +321,7 @@ export function AboutMissionVisionB({ about }) {
                 color: tsBody.color || "var(--tb-text)",
                 fontWeight: tsBody.fontWeight,
                 textAlign: alignBody || undefined,
+                whiteSpace: "pre-line",
               }}>
               {about?.[`${bodyKey}_${lang}`]}
             </p>
@@ -509,71 +512,100 @@ export function BoardOfDirectorsB({ about }) {
             </Reveal>
           )}
         </div>
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 md:gap-8">
+        {/* Board grid */}
+        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {members.map((m, i) => {
             const name = lang === "ar" ? (m.name_ar || m.name_en) : (m.name_en || m.name_ar);
             const role = lang === "ar" ? (m.role_ar || m.role_en) : (m.role_en || m.role_ar);
             const bio  = lang === "ar" ? (m.bio_ar  || m.bio_en)  : (m.bio_en  || m.bio_ar);
             return (
-              <Reveal key={m.id || i} variant="up" delay={Math.min(5, i + 1)}
-                className="tb-card-hover" style={{ transitionDuration: "0.55s" }}>
-                <article className="flex flex-col" data-testid={`board-member-${i}`}>
-                  <div
-                    className="relative w-full overflow-hidden"
-                    style={{ aspectRatio: "4/5", background: "var(--tb-paper-deep)" }}
-                  >
-                    {m.image_url ? (
+              <Reveal key={m.id || i} variant="up" delay={Math.min(5, i + 1)}>
+                <article
+                  className="group relative flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1.5"
+                  style={{
+                    background: "var(--tb-paper-base, #FBFAF7)",
+                    border: "1px solid rgba(28,37,51,0.09)",
+                    willChange: "transform",
+                    transition: "box-shadow 0.3s, transform 0.3s",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(10,17,28,0.1)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+                  data-testid={`board-member-${i}`}
+                >
+                  {/* Gold top bar — full width */}
+                  <div style={{ height: 3, background: "var(--tb-gold, #B89B5E)", opacity: 0.7 }} />
+
+                  {/* Photo OR elegant monogram block */}
+                  {m.image_url ? (
+                    <div className="relative w-full overflow-hidden" style={{ aspectRatio: "1/1" }}>
                       <img src={m.image_url} alt={name || ""} loading="lazy"
-                        className="absolute inset-0 w-full h-full"
-                        style={{ objectFit: "cover", objectPosition: "center 22%" }} />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center"
-                        style={{ background: "linear-gradient(135deg, var(--tb-paper-deep), var(--tb-paper-base))" }}>
-                        <span aria-hidden style={{
-                          fontFamily: '"Thmanyah Serif Display", serif',
-                          fontSize: "3.5rem", color: "var(--tb-gold)", opacity: 0.45,
-                          letterSpacing: "0.04em",
-                        }}>{(name || "").charAt(0) || "·"}</span>
-                      </div>
-                    )}
-                    <div aria-hidden style={{
-                      position: "absolute", insetInlineStart: 0, bottom: 0,
-                      width: 36, height: 3, background: "var(--tb-gold)",
-                    }} />
-                  </div>
-                  <div className="pt-5">
-                    <h3 className="tb-display"
+                        className="absolute inset-0 w-full h-full object-cover object-top
+                                   transition-transform duration-500 group-hover:scale-105" />
+                    </div>
+                  ) : (
+                    <div className="w-full flex items-center justify-center"
                       style={{
-                        fontSize: tsName.sizeMul !== 1 ? `calc(1.1rem * ${tsName.sizeMul})` : "1.1rem",
-                        lineHeight: 1.35, fontWeight: tsName.fontWeight ?? 500,
-                        color: tsName.color || "var(--tb-navy-900)",
-                      }}>{name}</h3>
+                        aspectRatio: "1/1",
+                        background: "linear-gradient(145deg, var(--tb-navy-900,#0A111C) 0%, #1C2D44 100%)",
+                      }}>
+                      <span style={{
+                        fontFamily: '"Thmanyah Serif Display", serif',
+                        fontSize: "clamp(3rem, 5vw, 4.5rem)",
+                        color: "var(--tb-gold, #B89B5E)",
+                        opacity: 0.35,
+                        letterSpacing: "0.05em",
+                        lineHeight: 1,
+                      }}>{(name || "").charAt(0)}</span>
+                    </div>
+                  )}
+
+                  {/* Info */}
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 style={{
+                      fontFamily: '"Thmanyah Serif Display", serif',
+                      fontSize: tsName.sizeMul !== 1 ? `calc(1.05rem * ${tsName.sizeMul})` : "1.05rem",
+                      lineHeight: 1.3, fontWeight: tsName.fontWeight ?? 500,
+                      color: tsName.color || "var(--tb-navy-900, #0A111C)",
+                    }}>{name}</h3>
+
                     {role && (
-                      <div className="mt-1.5 tb-overline"
-                        style={{
-                          color: tsRole.color || "var(--tb-gold-deep)",
-                          fontWeight: tsRole.fontWeight,
-                          fontSize: tsRole.sizeMul !== 1 ? `calc(0.72rem * ${tsRole.sizeMul})` : "0.72rem",
-                        }}>{role}</div>
+                      <div className="mt-1.5" style={{
+                        fontSize: 10, letterSpacing: "0.15em",
+                        color: tsRole.color || "var(--tb-gold-deep, #8B6914)",
+                        textTransform: "uppercase",
+                      }}>{role}</div>
                     )}
+
                     {bio && (
-                      <p className="mt-3"
-                        style={{
-                          fontSize: tsBio.sizeMul !== 1 ? `calc(0.9rem * ${tsBio.sizeMul})` : "0.9rem",
-                          lineHeight: 1.8, color: tsBio.color || "var(--tb-text-muted)",
-                          fontWeight: tsBio.fontWeight,
-                        }}>{bio}</p>
+                      <p className="mt-3 line-clamp-3 flex-1" style={{
+                        fontSize: tsBio.sizeMul !== 1 ? `calc(0.875rem * ${tsBio.sizeMul})` : "0.875rem",
+                        lineHeight: 1.75,
+                        color: tsBio.color || "var(--tb-text-muted, #667085)",
+                      }}>{bio}</p>
                     )}
-                    {m.linkedin && (
-                      <a href={m.linkedin} target="_blank" rel="noreferrer"
-                        className="mt-4 inline-flex items-center gap-1.5 text-[12px] transition-colors"
-                        style={{ color: "var(--tb-gold-deep)" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = "var(--tb-navy-900)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tb-gold-deep)"; }}>
-                        <Linkedin size={13} strokeWidth={1.7} />
-                        <span>LinkedIn</span>
-                      </a>
-                    )}
+
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      {m.linkedin && (
+                        <a href={m.linkedin} target="_blank" rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 self-start"
+                          style={{ fontSize: 12, color: "rgba(28,37,51,0.3)", transition: "color 0.2s" }}
+                          onMouseEnter={e => e.currentTarget.style.color = "var(--tb-gold, #B89B5E)"}
+                          onMouseLeave={e => e.currentTarget.style.color = "rgba(28,37,51,0.3)"}>
+                          <Linkedin size={13} strokeWidth={1.6} />
+                          <span>LinkedIn</span>
+                        </a>
+                      )}
+                      {m.cv_pdf_url && (
+                        <a href={m.cv_pdf_url} target="_blank" rel="noreferrer" download
+                          className="inline-flex items-center gap-1.5 self-start transition-colors duration-200"
+                          style={{ fontSize: 12, color: "rgba(28,37,51,0.3)" }}
+                          onMouseEnter={e => e.currentTarget.style.color = "var(--tb-gold, #B89B5E)"}
+                          onMouseLeave={e => e.currentTarget.style.color = "rgba(28,37,51,0.3)"}>
+                          <FileDown size={13} strokeWidth={1.6} />
+                          <span>{lang === "ar" ? "تحميل السيرة الذاتية" : "Download CV"}</span>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </article>
               </Reveal>

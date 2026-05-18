@@ -1,14 +1,5 @@
 import PublicLayout from "@/components/layout/PublicLayout";
-import { useTheme } from "@/hooks/useTheme";
 import { useHomeContent } from "@/hooks/useSiteSettings";
-
-import Hero from "@/components/home/Hero";
-import About from "@/components/home/About";
-import MissionVision from "@/components/home/MissionVision";
-import Objectives from "@/components/home/Objectives";
-import FieldsOfWork from "@/components/home/FieldsOfWork";
-import FeaturedPublications from "@/components/home/FeaturedPublications";
-import ContactBlock from "@/components/home/ContactBlock";
 
 import HeroB from "@/components/theme-b/HeroB";
 import AboutB from "@/components/theme-b/AboutB";
@@ -30,9 +21,7 @@ import ContactBlockB from "@/components/theme-b/ContactBlockB";
  * sections render nothing at all.
  */
 export default function HomePage() {
-  const { theme } = useTheme();
   const { data: home } = useHomeContent();
-  const isB = theme === "B";
   const order = (key) => {
     const vs = home?.visible_sections;
     if (!Array.isArray(vs)) return 0;
@@ -42,15 +31,15 @@ export default function HomePage() {
   return (
     <PublicLayout>
       <div className="flex flex-col">
-        <div style={{ order: order("hero") }}>{isB ? <HeroB /> : <Hero />}</div>
-        <div style={{ order: order("about") }}>{isB ? <AboutB /> : <About />}</div>
-        <div style={{ order: order("mission") }}>{isB ? <MissionVisionB /> : <MissionVision />}</div>
-        {isB && <div style={{ order: order("pull_band") }}><PullBandB /></div>}
-        <div style={{ order: order("objectives") }}>{isB ? <ObjectivesB /> : <Objectives />}</div>
-        <div style={{ order: order("fields_of_work") }}>{isB ? <FieldsOfWorkB /> : <FieldsOfWork />}</div>
-        <div style={{ order: order("featured_publications") }}>{isB ? <FeaturedPublicationsB /> : <FeaturedPublications />}</div>
-        {isB && <div style={{ order: order("newsletter") }}><NewsletterB /></div>}
-        <div style={{ order: order("contact") }}>{isB ? <ContactBlockB /> : <ContactBlock />}</div>
+        <div style={{ order: order("hero") }}><HeroB /></div>
+        <div style={{ order: order("about") }}><AboutB /></div>
+        <div style={{ order: order("mission") }}><MissionVisionB /></div>
+        <div style={{ order: order("pull_band") }}><PullBandB /></div>
+        <div style={{ order: order("objectives") }}><ObjectivesB /></div>
+        <div style={{ order: order("fields_of_work") }}><FieldsOfWorkB /></div>
+        <div style={{ order: order("featured_publications") }}><FeaturedPublicationsB /></div>
+        <div style={{ order: order("newsletter") }}><NewsletterB /></div>
+        <div style={{ order: order("contact") }}><ContactBlockB /></div>
       </div>
     </PublicLayout>
   );

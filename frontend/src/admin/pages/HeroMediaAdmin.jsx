@@ -377,15 +377,6 @@ function PageRow({ page, item, onChange, onSave, onReset, onDeleteCustom, saving
               {tr(page.helpAr || "", page.helpEn || "")}
             </p>
           )}
-          {isCustom && (
-            <p className="text-[11.5px] text-mute mt-1 max-w-[60ch] inline-flex items-center gap-1.5">
-              <AlertTriangle size={11} />
-              {tr(
-                "صفحة مخصصة — يحتاج المطوّر إضافة <HeroMediaLayer /> بنفس المعرّف لظهور الصورة على الموقع.",
-                "Custom page — a developer needs to render <HeroMediaLayer /> with this key to make it visible publicly.",
-              )}
-            </p>
-          )}
         </div>
         <div className="flex items-center gap-2">
           <label className="inline-flex items-center gap-2 text-[12.5px] text-navy-deep cursor-pointer">

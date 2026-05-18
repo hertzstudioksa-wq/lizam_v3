@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { Trash2, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Trash2, Plus, FileDown, Upload } from "lucide-react";
 import {
   AdminPage, Field, TextArea, TextInput, SaveBar, useDirtyForm, apiCall,
 } from "@/admin/components/AdminUI";
+import { api, formatApiError } from "@/lib/api";
 import {
   SectionCard, FontScaleSlider, BgImageBlock, ImageUploader,
   BgColorControl, GradientAccentControl, BiInput, EyebrowRow, BiList,
@@ -66,6 +67,62 @@ function ItemRow({ index, total, onMove, onRemove, children, testid }) {
 }
 
 
+function CvPdfUploader({ value, onChange, tr, testid }) {
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  async function handleFile(file) {
+    if (!file) return;
+    setUploading(true);
+    setMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { data } = await api.post("/uploads/pdf", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      onChange(data.url);
+    } catch (e) {
+      setMsg(formatApiError(e.response?.data?.detail) || e.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <Field label={tr("السيرة الذاتية PDF (اختياري)", "CV / Resume PDF (optional)")}>
+      <div className="space-y-2">
+        {value && (
+          <div className="flex items-center gap-2 text-[12.5px]">
+            <FileDown size={13} className="text-brass shrink-0" />
+            <a href={value} target="_blank" rel="noreferrer"
+              className="text-navy hover:text-brass truncate max-w-[200px]" data-testid={`${testid}-link`}>
+              {tr("عرض الملف", "View file")}
+            </a>
+            <button type="button" onClick={() => onChange("")}
+              className="text-mute hover:text-red-700 text-[11px] underline ms-1">
+              {tr("إزالة", "Remove")}
+            </button>
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <TextInput value={value} onChange={onChange} placeholder="https://…pdf"
+            testid={`${testid}-url`} />
+          <button type="button"
+            onClick={() => fileRef.current?.click()}
+            className="shrink-0 inline-flex items-center gap-1 px-3 h-11 border border-rule hover:border-brass text-[12.5px] text-navy-deep hover:text-brass transition-colors"
+            data-testid={`${testid}-upload`}>
+            <Upload size={13} />
+            {uploading ? tr("جارٍ الرفع…", "Uploading…") : tr("رفع", "Upload")}
+          </button>
+        </div>
+        <input ref={fileRef} type="file" accept="application/pdf" hidden
+          onChange={(e) => handleFile(e.target.files?.[0])} />
+        {msg && <div className="text-[11.5px] text-red-700">{msg}</div>}
+      </div>
+    </Field>
+  );
+}
+
 export default function AboutAdmin() {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
@@ -124,7 +181,7 @@ export default function AboutAdmin() {
     form.patch("board_members", board.map((m, idx) => (idx === i ? { ...m, ...patch } : m)));
   const moveMember = (from, to) => form.patch("board_members", moveItem(board, from, to));
   const addMember = () =>
-    form.patch("board_members", [...board, { id: uid(), name_ar: "", name_en: "", role_ar: "", role_en: "", bio_ar: "", bio_en: "", image_url: "", linkedin: "" }]);
+    form.patch("board_members", [...board, { id: uid(), name_ar: "", name_en: "", role_ar: "", role_en: "", bio_ar: "", bio_en: "", image_url: "", linkedin: "", cv_pdf_url: "" }]);
   const removeMember = (i) => form.patch("board_members", board.filter((_, idx) => idx !== i));
 
   // -------- Stats / KPI tiles --------
@@ -433,6 +490,12 @@ export default function AboutAdmin() {
                     <TextInput value={m.linkedin || ""} onChange={(v) => updateMember(i, { linkedin: v })}
                       placeholder="https://www.linkedin.com/in/…" testid={`board-${i}-linkedin`} />
                   </Field>
+                  <CvPdfUploader
+                    value={m.cv_pdf_url || ""}
+                    onChange={(v) => updateMember(i, { cv_pdf_url: v })}
+                    tr={tr}
+                    testid={`board-${i}-cv`}
+                  />
                 </div>
               </ItemRow>
             ))}
@@ -701,6 +764,7 @@ export default function AboutAdmin() {
         </SectionCard>
 
       </div>
+
 
       <SaveBar dirty={form.dirty} saving={saving} onSave={save} onReset={form.reset} savedMessage={msg} />
     </AdminPage>

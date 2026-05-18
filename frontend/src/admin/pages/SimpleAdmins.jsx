@@ -3,7 +3,7 @@ import { Plus, X } from "lucide-react";
 import { AdminPage, Field, TextInput, TextArea, Toggle, apiCall } from "@/admin/components/AdminUI";
 import HelpTip from "@/admin/components/HelpTip";
 import ConfirmDeleteDialog from "@/admin/components/ConfirmDeleteDialog";
-import { ReorderControls, moveItem } from "@/admin/components/ReorderControls";
+import { ImageUploader } from "@/admin/components/sectionControls";
 import { useLang } from "@/i18n/LanguageContext";
 import { invalidateSiteCache } from "@/hooks/useSiteSettings";
 
@@ -64,6 +64,8 @@ function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testid
                   <Toggle checked={!!editing[f.key]} onChange={(v) => setEditing({ ...editing, [f.key]: v })} label={f.label} testid={`${testidBase}-${f.key}`} />
                 ) : f.type === "number" ? (
                   <TextInput type="number" value={editing[f.key]} onChange={(v) => setEditing({ ...editing, [f.key]: Number(v) || 0 })} testid={`${testidBase}-${f.key}`} />
+                ) : f.type === "image" ? (
+                  <ImageUploader value={editing[f.key] ?? ""} onChange={(v) => setEditing({ ...editing, [f.key]: v })} label={f.label} hint={f.hint} testid={`${testidBase}-${f.key}`} />
                 ) : (
                   <TextInput value={editing[f.key] ?? ""} onChange={(v) => setEditing({ ...editing, [f.key]: v })} dir={f.dir} testid={`${testidBase}-${f.key}`} />
                 )}
@@ -97,7 +99,7 @@ function SimpleCrudAdmin({ title, subtitle, resource, fields, defaultDoc, testid
                 <tr key={it.id} className="border-b border-rule last:border-0 hover:bg-ivory-cream" data-testid={`${testidBase}-row-${it.id}`}>
                   <td className="p-4 text-navy">{it.name_ar || it.title_ar}</td>
                   <td className="p-4 text-mute">{it.name_en || it.title_en}</td>
-                  <td className="p-4 text-[12.5px]">{it.active === false ? <span className="text-mute">{tr("غير نشط", "Inactive")}</span> : <span className="text-green-700">{tr("نشط", "Active")}</span>}</td>
+                  <td className="p-4 text-[12.5px]">{it.active === false ? <span className="text-mute">{tr("مخفي", "Hidden")}</span> : <span className="text-green-700">{tr("ظاهر على الموقع", "Visible")}</span>}</td>
                   <td className="p-4 text-end">
                     <button onClick={() => setEditing({ ...it })} className="text-navy hover:text-brass lz-linkline text-[13px]" data-testid={`${testidBase}-edit-${it.id}`}>{tr("تعديل", "Edit")}</button>
                     <button onClick={() => archive(it.id)} className="ms-4 text-amber-700 hover:text-amber-900 lz-linkline text-[13px]">{tr("أرشفة", "Archive")}</button>
@@ -188,72 +190,50 @@ function ReorderPanel({ resource, items, setItems, testidBase, displayKey, helpA
 
 export function AuthorsAdmin() {
   const tr = useTr();
-  const [items, setItems] = useState([]);
-  // Listen for the SimpleCrud list inside to expose its items via callback.
-  // Simplest approach: fetch once here for the reorder panel, and rely on
-  // SimpleCrud to refetch on its own.
-  useEffect(() => {
-    apiCall("get", "/admin/authors").then((r) => r.ok && setItems(r.data.items || []));
-  }, []);
-
   return (
-    <>
-      <div className="px-8 md:px-10 pt-8">
-        <ReorderPanel resource="authors" items={items} setItems={setItems} testidBase="author" displayKey="name_ar"
-          helpAr="رتّب الباحثين كما يظهرون في الصفحة العامة. استخدم الأسهم لتغيير المواضع، ثم اضغط حفظ الترتيب."
-          helpEn="Order researchers as they appear on the public page. Use arrows to move items then click Save order." />
-      </div>
-      <SimpleCrudAdmin
-        title={tr("الباحثون", "Researchers")} subtitle={tr("إدارة المحتوى · الباحثون", "CMS · Authors")} resource="authors" testidBase="author"
-        helpAr="أضف وعدّل بيانات الباحثين والمستشارين الذين يظهرون في صفحاتهم وفي بيانات الإصدارات. عطّل أي بطاقة لإخفائها من الموقع العام."
-        helpEn="Add and edit profiles for researchers and contributors. Deactivate any profile to hide it from the public site."
-        defaultDoc={{ name_ar: "", name_en: "", title_ar: "", title_en: "", bio_ar: "", bio_en: "", active: true }}
-        fields={[
-          { key: "name_ar", label: tr("الاسم بالعربية", "Name AR"), dir: "rtl" },
-          { key: "name_en", label: tr("الاسم بالإنجليزية", "Name EN") },
-          { key: "title_ar", label: tr("الصفة بالعربية", "Title AR"), dir: "rtl" },
-          { key: "title_en", label: tr("الصفة بالإنجليزية", "Title EN") },
-          { key: "bio_ar", label: tr("نبذة بالعربية", "Bio AR"), type: "textarea", dir: "rtl" },
-          { key: "bio_en", label: tr("نبذة بالإنجليزية", "Bio EN"), type: "textarea" },
-          { key: "photo_url", label: tr("رابط الصورة", "Photo URL") },
-          { key: "email", label: tr("البريد الإلكتروني", "Email") },
-          { key: "linkedin", label: "LinkedIn" },
-          { key: "active", label: tr("نشط", "Active"), type: "toggle" },
-        ]}
-      />
-    </>
+    <SimpleCrudAdmin
+      title={tr("الباحثون", "Researchers")}
+      subtitle={tr("إدارة المحتوى · الباحثون", "CMS · Authors")}
+      resource="authors" testidBase="author"
+      helpAr="أضف وعدّل بيانات الباحثين والمستشارين الذين يظهرون في بيانات الإصدارات. عطّل أي بطاقة لإخفائها."
+      helpEn="Add and edit researcher profiles shown on publications. Deactivate any profile to hide it."
+      defaultDoc={{ name_ar: "", name_en: "", title_ar: "", title_en: "", bio_ar: "", bio_en: "", photo_url: "", email: "", linkedin: "", active: false, is_fellow: false }}
+      fields={[
+        { key: "name_ar",   label: tr("الاسم بالعربية", "Name AR"), dir: "rtl" },
+        { key: "name_en",   label: tr("الاسم بالإنجليزية", "Name EN") },
+        { key: "title_ar",  label: tr("الصفة / المنصب — عربية", "Title AR"), dir: "rtl" },
+        { key: "title_en",  label: tr("الصفة / المنصب — إنجليزية", "Title EN") },
+        { key: "bio_ar",    label: tr("نبذة بالعربية", "Bio AR"), type: "textarea", dir: "rtl", rows: 3 },
+        { key: "bio_en",    label: tr("نبذة بالإنجليزية", "Bio EN"), type: "textarea", rows: 3 },
+        { key: "photo_url", label: tr("صورة الباحث", "Author photo"), type: "image", hint: tr("يفضّل صورة مربعة، وجه واضح.", "Square crop preferred, clear face.") },
+        { key: "email",     label: tr("البريد الإلكتروني", "Email") },
+        { key: "linkedin",  label: "LinkedIn" },
+        { key: "active",    label: tr("إظهار على الموقع", "Show on website"), type: "toggle" },
+        { key: "is_fellow", label: tr("زميل لزام (يظهر في صفحة الزملاء)", "LIZAM Fellow (appears in Fellows page)"), type: "toggle" },
+      ]}
+    />
   );
 }
 
 export function CategoriesAdmin() {
   const tr = useTr();
-  const [items, setItems] = useState([]);
-  useEffect(() => {
-    apiCall("get", "/admin/categories").then((r) => r.ok && setItems(r.data.items || []));
-  }, []);
-
   return (
-    <>
-      <div className="px-8 md:px-10 pt-8">
-        <ReorderPanel resource="categories" items={items} setItems={setItems} testidBase="cat" displayKey="title_ar"
-          helpAr="رتّب المجالات كما تظهر في الصفحة الرئيسية وقائمة الإصدارات. هذا الترتيب يلغي الحاجة لتعديل رقم الترتيب اليدوي."
-          helpEn="Order fields of work as they appear on the home page and publications listing. Replaces manual sort_order entry." />
-      </div>
-      <SimpleCrudAdmin
-        title={tr("المجالات والتصنيفات", "Categories / Fields of Work")} subtitle={tr("إدارة المحتوى · التصنيف", "CMS · Taxonomy")} resource="categories" testidBase="cat"
-        helpAr="عرّف مجالات عمل المركز التي تُستخدم لتصنيف الإصدارات وعرضها في الصفحة الرئيسية. الأيقونة لكل مجال تظهر كرمز بصري."
-        helpEn="Define the Center's fields of work used to classify publications and display them on the home page. The icon shows as a visual marker."
-        defaultDoc={{ title_ar: "", title_en: "", description_ar: "", description_en: "", icon: "book-open", sort_order: 0, active: true }}
-        fields={[
-          { key: "title_ar", label: tr("العنوان بالعربية", "Title AR"), dir: "rtl" },
-          { key: "title_en", label: tr("العنوان بالإنجليزية", "Title EN") },
-          { key: "description_ar", label: tr("الوصف بالعربية", "Description AR"), type: "textarea", dir: "rtl" },
-          { key: "description_en", label: tr("الوصف بالإنجليزية", "Description EN"), type: "textarea" },
-          { key: "icon", label: tr("الأيقونة (scroll-text, scale, landmark, book-open, compass, gavel)", "Icon (scroll-text, scale, landmark, book-open, compass, gavel)") },
-          { key: "active", label: tr("نشط", "Active"), type: "toggle" },
-        ]}
-      />
-    </>
+    <SimpleCrudAdmin
+      title={tr("المجالات والتصنيفات", "Categories / Fields of Work")}
+      subtitle={tr("إدارة المحتوى · التصنيف", "CMS · Taxonomy")}
+      resource="categories" testidBase="cat"
+      helpAr="عرّف مجالات عمل المركز التي تُستخدم لتصنيف الإصدارات وعرضها في الصفحة الرئيسية."
+      helpEn="Define the Center's fields of work used to classify publications and display them on the home page."
+      defaultDoc={{ title_ar: "", title_en: "", description_ar: "", description_en: "", icon: "book-open", active: true }}
+      fields={[
+        { key: "title_ar",       label: tr("العنوان بالعربية", "Title AR"), dir: "rtl" },
+        { key: "title_en",       label: tr("العنوان بالإنجليزية", "Title EN") },
+        { key: "description_ar", label: tr("الوصف بالعربية", "Description AR"), type: "textarea", dir: "rtl" },
+        { key: "description_en", label: tr("الوصف بالإنجليزية", "Description EN"), type: "textarea" },
+        { key: "icon",           label: tr("الأيقونة (scroll-text, scale, landmark, book-open, compass, gavel)", "Icon") },
+        { key: "active",         label: tr("نشط", "Active"), type: "toggle" },
+      ]}
+    />
   );
 }
 
@@ -295,61 +275,113 @@ export function UsersAdmin() {
     registered: tr("مسجّل", "Registered"),
   };
 
+  const [activeTab, setActiveTab] = useState("users");
+  const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
+  const admins  = (items || []).filter(u => ADMIN_ROLES.has(u.role));
+  const members = (items || []).filter(u => !ADMIN_ROLES.has(u.role));
+
+  const UserRow = (u) => (
+    <tr key={u.id} className="border-b border-rule last:border-0" data-testid={`user-row-${u.id}`}>
+      <td className="p-4 text-navy">{u.name}</td>
+      <td className="p-4 text-mute">{u.email}</td>
+      <td className="p-4">
+        <select value={u.role} onChange={(e) => changeRole(u.id, e.target.value)}
+          className="text-[13px] border border-rule h-8 px-2 bg-white" data-testid={`role-${u.id}`}>
+          {Object.entries(ROLE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+        </select>
+      </td>
+      <td className="p-4">
+        <button onClick={() => toggleActive(u.id, u.status !== "active")}
+          className={`text-[12.5px] lz-linkline ${u.status === "active" ? "text-green-700 hover:text-green-900" : "text-mute hover:text-navy"}`}>
+          {u.status === "active" ? tr("نشط · تعطيل", "Active · Deactivate") : tr("معطّل · تفعيل", "Inactive · Activate")}
+        </button>
+      </td>
+      <td className="p-4 text-mute text-[12.5px]">{(u.created_at || "").slice(0,10)}</td>
+      <td className="p-4">
+        <button onClick={() => setPermTarget(u)}
+          className="text-[12.5px] text-red-700 hover:text-red-900 lz-linkline"
+          data-testid={`user-delete-${u.id}`}>
+          {tr("حذف نهائي", "Delete")}
+        </button>
+      </td>
+    </tr>
+  );
+
+  const TableHead = () => (
+    <thead>
+      <tr className="text-[11.5px] uppercase tracking-[0.18em] text-mute border-b border-rule">
+        <th className="text-start p-4">{tr("الاسم", "Name")}</th>
+        <th className="text-start p-4">{tr("البريد", "Email")}</th>
+        <th className="text-start p-4">{tr("الدور", "Role")}</th>
+        <th className="text-start p-4">{tr("الحالة", "Status")}</th>
+        <th className="text-start p-4">{tr("تاريخ الانضمام", "Joined")}</th>
+        <th className="text-start p-4">{tr("إجراءات", "Actions")}</th>
+      </tr>
+    </thead>
+  );
+
   return (
-    <AdminPage title={tr("المستخدمون", "Users")} subtitle={tr("إدارة المحتوى · الأعضاء", "CMS · Members")}
-      helpAr="قائمة كل من سجّل في الموقع. يمكنك تغيير الدور (الصلاحيات) أو تعطيل أي حساب. تعطيل الحساب يمنع تسجيل الدخول لكن يحتفظ بالبيانات."
-      helpEn="Every account that has registered on the site. Change a user's role to grant or revoke permissions, or deactivate to block sign-in while keeping the record.">
+    <AdminPage title={tr("المستخدمون والصلاحيات", "Users & Permissions")} subtitle={tr("إدارة الحسابات · الأدوار", "Accounts · Roles")}
+      helpAr="قائمة كل من سجّل في الموقع. يمكنك تغيير الدور (الصلاحيات) أو تعطيل أي حساب. في الأسفل شرح لكل دور."
+      helpEn="Every account registered on the site. Change a user's role or deactivate their account. Scroll down for a full roles guide.">
+      {/* ── Tabs ── */}
+      <div className="flex items-stretch border-b border-rule mb-8">
+        {[
+          { key: "users",  labelAr: "المستخدمون",   labelEn: "Users" },
+          { key: "roles",  labelAr: "الصلاحيات",    labelEn: "Permissions" },
+        ].map((t) => (
+          <button key={t.key} type="button" onClick={() => setActiveTab(t.key)}
+            className={`inline-flex items-center gap-2 px-5 py-3 text-[13.5px] -mb-px border-b-2 transition-colors ${
+              activeTab === t.key ? "border-brass text-navy-deep" : "border-transparent text-mute hover:text-navy-deep"
+            }`}>
+            {tr(t.labelAr, t.labelEn)}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Users tab ── */}
+      {activeTab === "users" && (<>
       <div className="mb-6 max-w-sm">
         <TextInput value={q} onChange={setQ} placeholder={tr("بحث بالاسم أو البريد…", "Search by name or email…")} testid="users-search" />
       </div>
-      <div className="bg-white border border-rule">
-        {items === null ? <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>
-          : items.length === 0 ? <div className="p-10 text-mute text-center">{tr("لا يوجد مستخدمون.", "No users.")}</div>
-          : (
-            <table className="w-full text-[14px]" data-testid="users-table">
-              <thead>
-                <tr className="text-[11.5px] uppercase tracking-[0.18em] text-mute border-b border-rule">
-                  <th className="text-start p-4">{tr("الاسم", "Name")}</th>
-                  <th className="text-start p-4">{tr("البريد", "Email")}</th>
-                  <th className="text-start p-4">{tr("الدور", "Role")}</th>
-                  <th className="text-start p-4">{tr("الحالة", "Status")}</th>
-                  <th className="text-start p-4">{tr("تاريخ الانضمام", "Joined")}</th>
-                  <th className="text-start p-4">{tr("إجراءات", "Actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((u) => (
-                  <tr key={u.id} className="border-b border-rule last:border-0" data-testid={`user-row-${u.id}`}>
-                    <td className="p-4 text-navy">{u.name}</td>
-                    <td className="p-4 text-mute">{u.email}</td>
-                    <td className="p-4">
-                      <select value={u.role} onChange={(e) => changeRole(u.id, e.target.value)}
-                        className="text-[13px] border border-rule h-8 px-2 bg-white" data-testid={`role-${u.id}`}>
-                        {Object.entries(ROLE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                    </td>
-                    <td className="p-4">
-                      <button onClick={() => toggleActive(u.id, u.status !== "active")}
-                        className="text-[12.5px] text-navy hover:text-brass lz-linkline">
-                        {u.status === "active" ? tr("نشط · إلغاء التفعيل", "Active · Deactivate") : tr("غير نشط · تفعيل", "Inactive · Activate")}
-                      </button>
-                    </td>
-                    <td className="p-4 text-mute text-[12.5px]">{(u.created_at || "").slice(0,10)}</td>
-                    <td className="p-4">
-                      <button
-                        onClick={() => setPermTarget(u)}
-                        className="text-[12.5px] text-red-700 hover:text-red-900 lz-linkline"
-                        data-testid={`user-delete-${u.id}`}
-                      >
-                        {tr("حذف نهائي", "Delete")}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-      </div>
+
+      {items === null ? <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div> : (
+        <div className="space-y-10">
+
+          {/* ── Admin users ── */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#B08C5A" }} />
+              <h3 className="text-[12px] uppercase tracking-[0.22em] font-semibold" style={{ color: "#B08C5A" }}>
+                {tr(`الإداريون (${admins.length})`, `Admins (${admins.length})`)}
+              </h3>
+            </div>
+            <div className="bg-white border border-rule">
+              {admins.length === 0
+                ? <div className="p-6 text-mute text-[13.5px] text-center">{tr("لا يوجد إداريون.", "No admins.")}</div>
+                : <table className="w-full text-[14px]" data-testid="admins-table"><TableHead /><tbody>{admins.map(UserRow)}</tbody></table>
+              }
+            </div>
+          </div>
+
+          {/* ── Regular members ── */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: "#7FA8C9" }} />
+              <h3 className="text-[12px] uppercase tracking-[0.22em] font-semibold" style={{ color: "#7FA8C9" }}>
+                {tr(`الأعضاء المسجّلون (${members.length})`, `Registered Members (${members.length})`)}
+              </h3>
+            </div>
+            <div className="bg-white border border-rule">
+              {members.length === 0
+                ? <div className="p-6 text-mute text-[13.5px] text-center">{tr("لا يوجد أعضاء مسجّلون.", "No registered members.")}</div>
+                : <table className="w-full text-[14px]" data-testid="members-table"><TableHead /><tbody>{members.map(UserRow)}</tbody></table>
+              }
+            </div>
+          </div>
+
+        </div>
+      )}
       <ConfirmDeleteDialog
         open={!!permTarget}
         onClose={() => setPermTarget(null)}
@@ -359,146 +391,134 @@ export function UsersAdmin() {
         warningEn="This account and all its data will be permanently removed. You cannot delete your own account or the last Super Admin."
         testid="user-confirm-delete"
       />
-    </AdminPage>
-  );
-}
+      </>)}
 
-// -------- Roles (read-only matrix) --------
-export function RolesAdmin() {
-  const tr = useTr();
-  const [items, setItems] = useState(null);
-  useEffect(() => { apiCall("get", "/admin/roles").then((r) => r.ok && setItems(r.data.items || [])); }, []);
-
-  return (
-    <AdminPage title={tr("الأدوار والصلاحيات", "Roles & Permissions")} subtitle={tr("مصفوفة مُطبَّقة على الخادم", "Server-enforced matrix")}
-      helpAr="مصفوفة الأدوار: تُطبَّق صلاحياتها على الخادم لكل طلب. هذه الصفحة للعرض فقط لتوضيح ما يستطيع كل دور فعله. التعديل سيتاح في مرحلة لاحقة."
-      helpEn="Role-permission matrix enforced server-side on every request. Read-only here for transparency; full editing arrives in a later phase.">
-      <p className="lz-lede mb-6 max-w-[60ch]">{tr("الأدوار يتم فرضها على مستوى الخادم. هذه الواجهة للعرض فقط — التعديل يتطلب مدير عام (سيُتاح التعديل في مرحلة قادمة).", "Roles are enforced server-side. This view is read-only — contact a Super Admin to modify (editable in a future phase).")}</p>
-      <div className="bg-white border border-rule">
-        {items === null ? <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div> : (
-          <table className="w-full text-[14px]" data-testid="roles-table">
-            <thead>
-              <tr className="text-[11.5px] uppercase tracking-[0.18em] text-mute border-b border-rule">
-                <th className="text-start p-4">{tr("الدور", "Role")}</th>
-                <th className="text-start p-4">{tr("المعرّف", "Key")}</th>
-                <th className="text-start p-4">{tr("الصلاحيات", "Permissions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((r) => (
-                <tr key={r.key} className="border-b border-rule last:border-0" data-testid={`role-row-${r.key}`}>
-                  <td className="p-4 text-navy">{r.name_ar} · {r.name_en}</td>
-                  <td className="p-4 text-mute tabular-nums">{r.key}</td>
-                  <td className="p-4 text-[12.5px]">
-                    <div className="flex flex-wrap gap-1.5">
-                      {(r.permissions || []).map((p) => (
-                        <span key={p} className="px-2 py-0.5 bg-paper border border-rule">{p}</span>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-    </AdminPage>
-  );
-}
-
-// -------- Feature toggles --------
-export function TogglesAdmin() {
-  const tr = useTr();
-  const [toggles, setToggles] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState("");
-
-  useEffect(() => { apiCall("get", "/admin/toggles").then((r) => r.ok && setToggles(r.data)); }, []);
-
-  async function save(next) {
-    setToggles(next);
-    setSaving(true);
-    const r = await apiCall("patch", "/admin/toggles", next);
-    setSaving(false);
-    if (r.ok) {
-      invalidateSiteCache("site");
-      setMsg(tr("تم الحفظ ✓", "Saved ✓"));
-      setTimeout(() => setMsg(""), 1500);
-    }
-  }
-
-  const rows = [
-    { key: "registration",
-      label: tr("تسجيل المستخدمين الجدد", "User registration"),
-      tipAr: "عند إيقافه: تختفي صفحة /register للزوار ويرفض الخادم أي طلب تسجيل جديد. الحسابات الموجودة لا تتأثر.",
-      tipEn: "When OFF: /register page becomes unavailable and the server rejects new sign-ups. Existing accounts are not affected." },
-    { key: "gated_content",
-      label: tr("قفل المحتوى (يطلب تسجيل دخول)", "Gated content (require login)"),
-      tipAr: "المفتاح الرئيسي لنظام قفل المقالات. عند الإيقاف، تُفتح كل الإصدارات للجميع حتى لو كانت موسومة \"للمسجلين فقط\".",
-      tipEn: "Master switch for the gating system. When OFF, every publication is open to all visitors regardless of its access_level." },
-    { key: "google_login",
-      label: tr("تسجيل الدخول بـ Google (مؤجل)", "Google login (deferred)"),
-      tipAr: "يفعّل زرار \"الدخول بحساب Google\" في صفحة تسجيل الدخول. متوقف افتراضياً حتى يعتمد المركز عميل OAuth الإنتاجي.",
-      tipEn: "Enables the Google sign-in button on /login. OFF by default until a production OAuth client is configured." },
-    { key: "pdf_download",
-      label: tr("تحميل ملفات PDF", "PDF downloads"),
-      tipAr: "مفتاح عام لتحميل ملفات PDF. عند الإيقاف، تختفي أزرار التحميل ويرفض الخادم تنزيل أي ملف PDF.",
-      tipEn: "Global PDF download switch. When OFF, all download buttons disappear and the server rejects PDF stream requests." },
-    { key: "research_responses",
-      label: tr("استقبال الردود البحثية", "Research responses"),
-      tipAr: "تفعيل نموذج إرسال الردود البحثية على صفحة كل إصدار. عند الإيقاف، يختفي النموذج ويرفض الخادم الإرسالات الجديدة.",
-      tipEn: "Enables the response submission form on each publication page. When OFF, the form is hidden and submissions are rejected." },
-    { key: "public_responses",
-      label: tr("عرض الردود المعتمدة للعموم", "Show approved responses publicly"),
-      tipAr: "إذا فُعِّل، تظهر الردود التي اعتمدتها الإدارة في أسفل صفحة الإصدار. مستقل عن مفتاح \"استقبال الردود\".",
-      tipEn: "When ON, responses approved by moderators appear at the bottom of each publication page. Independent of the submission switch." },
-    { key: "authors_public_page",
-      label: tr("صفحة الباحثين العامة", "Public Authors page"),
-      tipAr: "تفعيل صفحة /authors التي تعرض كل الباحثين والمستشارين. متوقف افتراضياً.",
-      tipEn: "Enables /authors public listing of all researchers. OFF by default." },
-    { key: "contact_form",
-      label: tr("نموذج التواصل", "Contact form"),
-      tipAr: "نموذج التواصل في صفحة /contact. عند الإيقاف يظهر بدلاً منه عنوان البريد الإلكتروني فقط.",
-      tipEn: "/contact page form. When OFF, only the contact email is shown as a fallback." },
-    { key: "policy_pages",
-      label: tr("صفحات السياسات والخصوصية والشروط", "Policy / Privacy / Terms pages"),
-      tipAr: "تفعيل صفحات السياسات في الفوتر. يجب رفع المحتوى أولاً قبل التفعيل.",
-      tipEn: "Enables policy pages linked from the footer. Add content before turning ON." },
-    { key: "featured_publications",
-      label: tr("الإصدارات المميّزة في الرئيسية", "Featured publications on home"),
-      tipAr: "إظهار قسم \"أحدث الإصدارات\" في الصفحة الرئيسية. عند الإيقاف يُخفى القسم بالكامل.",
-      tipEn: "Show the Featured publications section on the home page. When OFF the section is hidden entirely." },
-    { key: "social_icons",
-      label: tr("أيقونات التواصل الاجتماعي في التذييل", "Social media icons in footer"),
-      tipAr: "إظهار أيقونات Twitter / LinkedIn / YouTube في الفوتر إذا أُدخلت روابطها في الإعدادات.",
-      tipEn: "Show Twitter / LinkedIn / YouTube icons in the footer when their URLs are set in Site Settings." },
-  ];
-
-  if (!toggles) return <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>;
-
-  return (
-    <AdminPage
-      title={tr("مفاتيح الميزات", "Feature Toggles")}
-      subtitle={tr("مفاتيح عامة للتحكم بسلوك الموقع", "Global switches")}
-      helpAr="مفاتيح عامة تتحكم بسلوك الموقع لكل الزوار. التغييرات تنعكس فوراً بعد الحفظ. كل مفتاح له شرح تقني — مرّر الفأرة على أيقونة المعلومات لمعرفة أثره الدقيق."
-      helpEn="Global switches that affect every visitor. Changes apply immediately on save. Hover the info icon next to each toggle for the precise behaviour it controls."
-    >
-      {msg && <div className="mb-4 text-[13px] text-green-700">{msg}</div>}
-      {saving && <div className="mb-4 text-[13px] text-mute">{tr("جارٍ الحفظ…", "Saving…")}</div>}
-      <div className="space-y-2 max-w-xl">
-        {rows.map((r) => (
-          <div key={r.key} className="flex items-stretch">
-            <div className="flex-1">
-              <Toggle checked={!!toggles[r.key]} onChange={(v) => save({ ...toggles, [r.key]: v })}
-                label={<span className="inline-flex items-center">{r.label}<HelpTip ar={r.tipAr} en={r.tipEn} testid={`toggle-tip-${r.key}`} /></span>}
-                testid={`toggle-${r.key}`} />
+      {/* ── Roles tab ── */}
+      {activeTab === "roles" && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-[1100px]">
+          {ROLE_CARDS.map((role) => (
+            <div key={role.key} className="bg-white border border-rule p-6" style={{ borderTop: `3px solid ${role.color}` }}>
+              <div className="text-[11px] uppercase tracking-[0.2em] font-semibold mb-1" style={{ color: role.color }}>{role.key}</div>
+              <h3 className="text-[18px] font-medium text-navy-deep mb-4">{role.name_ar}</h3>
+              <p className="text-[13.5px] leading-[1.75] text-ink/70 mb-5">{role.desc_ar}</p>
+              <div className="text-[11px] uppercase tracking-[0.16em] text-mute mb-2">{tr("يستطيع", "Can do")}</div>
+              <ul className="space-y-1.5 mb-4">
+                {role.caps_ar.map((cap, i) => (
+                  <li key={i} className="flex items-start gap-2 text-[13px] text-navy-deep/80">
+                    <span style={{ color: role.color, flexShrink: 0, marginTop: 3 }}>✓</span>
+                    <span>{cap}</span>
+                  </li>
+                ))}
+              </ul>
+              {role.cannot_ar && (<>
+                <div className="text-[11px] uppercase tracking-[0.16em] text-mute mb-2 mt-4">{tr("لا يستطيع", "Cannot do")}</div>
+                <ul className="space-y-1.5">
+                  {role.cannot_ar.map((cap, i) => (
+                    <li key={i} className="flex items-start gap-2 text-[13px] text-mute">
+                      <span style={{ color: "#C47878", flexShrink: 0, marginTop: 3 }}>✗</span>
+                      <span>{cap}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>)}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
     </AdminPage>
   );
 }
+
+// -------- Roles (human-readable cards) --------
+const ROLE_CARDS = [
+  {
+    key: "super_admin",
+    color: "#B08C5A",
+    name_ar: "المدير العام",
+    name_en: "Super Admin",
+    desc_ar: "صلاحيات كاملة وغير محدودة على كل شيء في الموقع والداشبورد — إدارة المستخدمين، الإعدادات، المحتوى، والأدوار.",
+    desc_en: "Full unrestricted access to everything — users, settings, content, and roles.",
+    caps_ar: [
+      "إدارة كل المحتوى (إنشاء، تعديل، نشر، أرشفة)",
+      "إدارة المستخدمين وتغيير أدوارهم",
+      "تعديل إعدادات الموقع والهوية البصرية",
+      "إدارة مفاتيح الميزات",
+      "عرض سجل العمليات (Audit Log)",
+      "الاعتدال على الردود البحثية",
+      "كل ما يستطيعه الأدوار الأخرى",
+    ],
+  },
+  {
+    key: "admin",
+    color: "#7FA8C9",
+    name_ar: "مدير",
+    name_en: "Admin",
+    desc_ar: "صلاحيات واسعة تشمل إدارة كل المحتوى والمستخدمين والإعدادات، ماعدا تغيير أدوار المدير العام.",
+    desc_en: "Broad access covering all content, users, and settings — except Super Admin role management.",
+    caps_ar: [
+      "إنشاء وتعديل ونشر وأرشفة الإصدارات",
+      "إدارة الباحثين والتصنيفات",
+      "تعديل إعدادات الموقع والهوية البصرية",
+      "إدارة المستخدمين (قراءة وتعديل)",
+      "الاعتدال على الردود البحثية",
+      "تعديل مفاتيح الميزات",
+      "عرض الرسائل وسجل العمليات",
+      "رفع الملفات والصور",
+    ],
+  },
+  {
+    key: "editor",
+    color: "#7BA08A",
+    name_ar: "محرر",
+    name_en: "Editor",
+    desc_ar: "يستطيع إنشاء المحتوى وتعديله لكن لا يملك صلاحية النشر أو الأرشفة أو إدارة المستخدمين.",
+    desc_en: "Can create and edit content but cannot publish, archive, or manage users.",
+    caps_ar: [
+      "إنشاء وتعديل الإصدارات (دون نشر أو أرشفة)",
+      "تعديل بيانات الباحثين",
+      "قراءة إعدادات الموقع والهوية (دون تعديل)",
+      "رفع الملفات والصور",
+    ],
+    cannot_ar: [
+      "لا يستطيع نشر أو أرشفة الإصدارات",
+      "لا يستطيع إدارة المستخدمين",
+      "لا يستطيع تعديل الإعدادات أو الهوية البصرية",
+    ],
+  },
+  {
+    key: "reviewer",
+    color: "#9B8ABF",
+    name_ar: "مراجع",
+    name_en: "Reviewer",
+    desc_ar: "دور محدود للمطّلعين على المحتوى فقط — يستطيع قراءة الإصدارات والاعتدال على الردود البحثية فقط.",
+    desc_en: "Limited read-only role — can view publications and moderate research responses only.",
+    caps_ar: [
+      "قراءة الإصدارات المنشورة والمسودات",
+      "قراءة الردود البحثية والاعتدال عليها",
+    ],
+    cannot_ar: [
+      "لا يستطيع تعديل أي محتوى",
+      "لا يستطيع الوصول للإعدادات أو المستخدمين",
+      "لا يستطيع رفع ملفات أو صور",
+    ],
+  },
+  {
+    key: "registered",
+    color: "#C47878",
+    name_ar: "عضو مسجّل",
+    name_en: "Registered",
+    desc_ar: "مستخدم عادي سجّل في الموقع العام — لا يملك أي صلاحيات في الداشبورد الإداري.",
+    desc_en: "Regular public-site member — no dashboard access whatsoever.",
+    caps_ar: [
+      "إرسال ردود بحثية على الإصدارات",
+      "الوصول للمحتوى المقيّد (المتاح للمسجلين)",
+    ],
+    cannot_ar: [
+      "لا يستطيع الدخول على الداشبورد",
+    ],
+  },
+];
 
 // -------- Messages --------
 export function MessagesAdmin() {

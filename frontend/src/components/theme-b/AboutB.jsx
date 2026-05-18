@@ -116,6 +116,7 @@ export default function AboutB() {
                   fontWeight: tsMain.fontWeight,
                   color: tsMain.color,
                   textAlign: alignMain || undefined,
+                  whiteSpace: "pre-line",
                 }}
               >{body}</p>
               {extended && (
@@ -126,6 +127,7 @@ export default function AboutB() {
                     fontWeight: tsExtended.fontWeight,
                     color: tsExtended.color,
                     textAlign: alignExtended || undefined,
+                    whiteSpace: "pre-line",
                   }}
                 >{extended}</p>
               )}

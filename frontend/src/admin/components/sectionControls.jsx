@@ -27,7 +27,7 @@
  *    [styleKey]?: number,  // FontScaleSlider arbitrary keys (e.g. title_scale)
  *  }
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { Field, TextArea, TextInput } from "@/admin/components/AdminUI";
 import { useLang } from "@/i18n/LanguageContext";
@@ -49,7 +49,20 @@ export function SectionCard({
   orderIndex, orderTotal, onMove,
   testid,
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  // Auto-open if URL hash matches this section id (e.g. navigating from Sections Library)
+  const hashMatch = typeof window !== "undefined" && window.location.hash === `#${id}`;
+  const [open, setOpen] = useState(defaultOpen || hashMatch);
+
+  useEffect(() => {
+    if (hashMatch) {
+      setOpen(true);
+      // Scroll into view after a brief delay
+      setTimeout(() => {
+        const el = document.querySelector(`[data-testid="${testid || `section-${id}`}"]`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    }
+  }, []); // eslint-disable-line
   const isVisible = visibleSections.includes(id);
   const hasReorder = typeof orderIndex === "number" && typeof orderTotal === "number" && typeof onMove === "function";
   const canMoveUp = hasReorder && orderIndex > 0;
@@ -504,6 +517,139 @@ export function alignOf(form, sectionKey, fieldKey) {
 // ============================================================================
 // <BgColorControl>
 // ============================================================================
+// Default fallback palette (used before branding loads)
+const DEFAULT_PALETTE = [
+  { hex: "#0A111C", label: "Navy 900" },
+  { hex: "#121A2A", label: "Navy Deep" },
+  { hex: "#23324D", label: "Navy" },
+  { hex: "#B89B5E", label: "Brass" },
+  { hex: "#8B6914", label: "Gold Deep" },
+  { hex: "#D4B896", label: "Brass Light" },
+  { hex: "#F7F8FA", label: "Paper" },
+  { hex: "#FAF9F6", label: "Ivory" },
+  { hex: "#FFFFFF", label: "White" },
+];
+
+/** Fetch branding colors from admin API — cached in module scope */
+let _brandingCache = null;
+let _brandingInflight = null;
+function useBrandingColors() {
+  const [colors, setColors] = useState(_brandingCache);
+  useEffect(() => {
+    if (_brandingCache) { setColors(_brandingCache); return; }
+    if (!_brandingInflight) {
+      _brandingInflight = api.get("/admin/branding")
+        .then(({ data }) => {
+          _brandingCache = data;
+          return data;
+        })
+        .catch(() => null)
+        .finally(() => { _brandingInflight = null; });
+    }
+    _brandingInflight.then(d => { if (d) setColors(d); });
+  }, []);
+  return colors;
+}
+
+/** Build palette from live branding data */
+function buildPalette(branding) {
+  if (!branding) return DEFAULT_PALETTE;
+  const p = branding.primary_color;
+  const s = branding.secondary_color;
+  const a = branding.accent_color;
+  const bg = branding.background_color;
+  const txt = branding.text_color;
+  const muted = branding.muted_text_color;
+
+  const unique = [];
+  const seen = new Set();
+  const add = (hex, label) => {
+    if (!hex) return;
+    const k = hex.toUpperCase();
+    if (!seen.has(k)) { seen.add(k); unique.push({ hex, label }); }
+  };
+
+  // Primary brand colors
+  add(s,     "لون ثانوي داكن");
+  add(p,     "اللون الرئيسي");
+  add(txt,   "لون النص");
+  add(muted, "لون النص الخافت");
+  // Accent
+  add(a,     "لون التمييز (Brass/Gold)");
+  // Shades computed from accent
+  if (a) {
+    add(lighten(a, 0.25), "تمييز فاتح");
+    add(darken(a,  0.2),  "تمييز داكن");
+  }
+  // Backgrounds
+  add(bg,        "خلفية الموقع");
+  add("#FAF9F6",  "عاجي");
+  add("#F3EFE6",  "عاجي داكن");
+  add("#FFFFFF",  "أبيض");
+
+  return unique.length ? unique : DEFAULT_PALETTE;
+}
+
+/** Simple hex lighten/darken helpers */
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b].map(v => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, "0")).join("");
+}
+function lighten(hex, t) {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(r + (255 - r) * t, g + (255 - g) * t, b + (255 - b) * t);
+}
+function darken(hex, t) {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(r * (1 - t), g * (1 - t), b * (1 - t));
+}
+
+function BrandPalette({ current, onSelect }) {
+  const { lang } = useLang();
+  const branding = useBrandingColors();
+  const palette = buildPalette(branding);
+
+  return (
+    <div className="mt-2 px-3 pb-2.5">
+      <div className="text-[9.5px] uppercase tracking-[0.2em] text-mute mb-2">
+        {lang === "ar" ? "ألوان الهوية" : "Brand colors"}
+        {!branding && <span className="ms-1 opacity-50">…</span>}
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {palette.map(({ hex, label }) => {
+          const isSelected = current?.toUpperCase() === hex.toUpperCase();
+          return (
+            <button
+              key={hex}
+              type="button"
+              title={`${hex} — ${label}`}
+              onClick={() => onSelect(hex)}
+              style={{
+                width: 22, height: 22,
+                background: hex,
+                border: isSelected
+                  ? "2px solid var(--tb-gold, #B89B5E)"
+                  : "1.5px solid rgba(28,37,51,0.15)",
+                outline: isSelected ? "2px solid var(--tb-gold, #B89B5E)" : "none",
+                outlineOffset: 2,
+                borderRadius: 2,
+                transition: "transform 0.15s, box-shadow 0.15s",
+                transform: isSelected ? "scale(1.25)" : "scale(1)",
+                boxShadow: isSelected ? "0 0 0 1px rgba(28,37,51,0.15)" : "none",
+                flexShrink: 0,
+              }}
+              aria-label={`${hex} — ${label}`}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function BgColorControl({ form, sectionKey, styleKey = "bg_color", labelAr, labelEn, testid }) {
   const { lang } = useLang();
   const tr = (ar, en) => (lang === "ar" ? ar : en);
@@ -520,27 +666,30 @@ export function BgColorControl({ form, sectionKey, styleKey = "bg_color", labelA
   };
   const tid = testid || `bg-color-${sectionKey}-${styleKey}`;
   return (
-    <div className="mt-4 flex items-center gap-3 px-3 py-2 bg-paper border border-rule" data-testid={tid}>
-      <span className="text-[11.5px] uppercase tracking-[0.14em] text-brass shrink-0">
-        {tr(labelAr || "لون خلفية القسم", labelEn || "Section background")}
-      </span>
-      <input type="color" value={swatchValue}
-        onChange={(e) => setVal(e.target.value)}
-        className="w-9 h-9 cursor-pointer rounded border border-rule"
-        style={{ padding: 2, background: "transparent" }}
-        data-testid={`${tid}-swatch`} aria-label={tr("اختر لون", "Pick color")} />
-      <input type="text" value={current}
-        onChange={(e) => setVal(e.target.value.trim())} placeholder="#1A1A2E" spellCheck={false}
-        className="font-mono text-[12.5px] px-2 py-1 border border-rule bg-paper focus:outline-none focus:border-brass uppercase"
-        style={{ width: 110 }} data-testid={`${tid}-hex`} />
-      <button type="button" onClick={() => setVal("")}
-        className="text-[11.5px] text-mute hover:text-navy-deep underline-offset-2 hover:underline"
-        data-testid={`${tid}-reset`}>{tr("إعادة الافتراضي", "Reset")}</button>
-      {current === "" && (
-        <span className="text-[10.5px] text-mute italic ms-auto">
-          {tr("(يستخدم لون الثيم)", "(theme default)")}
+    <div className="mt-4 bg-paper border border-rule" data-testid={tid}>
+      <div className="flex items-center gap-3 px-3 py-2">
+        <span className="text-[11.5px] uppercase tracking-[0.14em] text-brass shrink-0">
+          {tr(labelAr || "لون خلفية القسم", labelEn || "Section background")}
         </span>
-      )}
+        <input type="color" value={swatchValue}
+          onChange={(e) => setVal(e.target.value)}
+          className="w-8 h-8 cursor-pointer border border-rule shrink-0"
+          style={{ padding: 2, background: "transparent" }}
+          data-testid={`${tid}-swatch`} aria-label={tr("اختر لون", "Pick color")} />
+        <input type="text" value={current}
+          onChange={(e) => setVal(e.target.value.trim())} placeholder="#1A1A2E" spellCheck={false}
+          className="font-mono text-[12px] px-2 py-1 border border-rule bg-white focus:outline-none focus:border-brass uppercase"
+          style={{ width: 100 }} data-testid={`${tid}-hex`} />
+        <button type="button" onClick={() => setVal("")}
+          className="text-[11px] text-mute hover:text-navy-deep hover:underline ms-auto"
+          data-testid={`${tid}-reset`}>{tr("إعادة الافتراضي", "Reset")}</button>
+        {current === "" && (
+          <span className="text-[10px] text-mute italic">
+            {tr("(ثيم)", "(theme)")}
+          </span>
+        )}
+      </div>
+      <BrandPalette current={current} onSelect={setVal} />
     </div>
   );
 }
@@ -565,32 +714,31 @@ export function GradientAccentControl({ form, sectionKey, labelAr, labelEn, test
   };
   const tid = testid || `gradient-${sectionKey}`;
   return (
-    <div className="mt-2" data-testid={tid}>
-      <div className="flex items-center gap-3 px-3 py-2 bg-paper border border-rule">
+    <div className="mt-2 bg-paper border border-rule" data-testid={tid}>
+      <div className="flex items-center gap-3 px-3 py-2">
         <span className="text-[11.5px] uppercase tracking-[0.14em] text-brass shrink-0">
           {tr(labelAr || "لون تدرج الخلفية", labelEn || "Gradient accent")}
         </span>
         <input type="color" value={swatchValue}
           onChange={(e) => setVal(e.target.value)}
-          className="w-9 h-9 cursor-pointer rounded border border-rule"
+          className="w-8 h-8 cursor-pointer border border-rule shrink-0"
           style={{ padding: 2, background: "transparent" }}
           data-testid={`${tid}-swatch`} aria-label={tr("اختر لون", "Pick color")} />
         <input type="text" value={current}
           onChange={(e) => setVal(e.target.value.trim())} placeholder="#8B6914" spellCheck={false}
-          className="font-mono text-[12.5px] px-2 py-1 border border-rule bg-paper focus:outline-none focus:border-brass uppercase"
-          style={{ width: 110 }} data-testid={`${tid}-hex`} />
+          className="font-mono text-[12px] px-2 py-1 border border-rule bg-white focus:outline-none focus:border-brass uppercase"
+          style={{ width: 100 }} data-testid={`${tid}-hex`} />
         <button type="button" onClick={() => setVal("")}
-          className="text-[11.5px] text-mute hover:text-navy-deep underline-offset-2 hover:underline"
+          className="text-[11px] text-mute hover:text-navy-deep hover:underline ms-auto"
           data-testid={`${tid}-reset`}>{tr("إعادة الافتراضي", "Reset")}</button>
         {current === "" && (
-          <span className="text-[10.5px] text-mute italic ms-auto">
-            {tr("(بدون تدرج)", "(no gradient)")}
-          </span>
+          <span className="text-[10px] text-mute italic">{tr("(بدون)", "(none)")}</span>
         )}
       </div>
-      <div className="text-[11px] text-mute mt-1.5 px-1">
-        {tr("يُطبَّق كلون ثانوي في زاوية الخلفية السفلى-اليسرى بشفافية خفيفة.",
-            "Applied as a soft accent in the bottom-left corner of the section.")}
+      <BrandPalette current={current} onSelect={setVal} />
+      <div className="text-[10.5px] text-mute px-3 pb-2">
+        {tr("يُطبَّق كلون ثانوي في زاوية الخلفية بشفافية خفيفة.",
+            "Soft accent applied in the section background corner.")}
       </div>
     </div>
   );

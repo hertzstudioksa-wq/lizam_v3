@@ -1,3 +1,4 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
@@ -117,6 +118,7 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc, alignItemTitl
               color: tsItemDesc.color || "var(--tb-text-muted)",
               fontWeight: tsItemDesc.fontWeight,
               textAlign: alignItemDesc || undefined,
+              whiteSpace: "pre-line",
             }}
           >
             {lede(obj[`description_${lang}`])}
@@ -132,6 +134,38 @@ export default function ObjectivesB() {
   const { data: home } = useHomeContent();
   const { bySlot } = useImageAssets();
   const [railRef, scrollProgress] = useScrollProgress();
+
+  // For English: measure aside height and scale "Objectives" to fill it.
+  // For Arabic: keep a fixed elegant size (no stretch needed).
+  const asideRef = React.useRef(null);
+  const labelRef = React.useRef(null);
+  React.useEffect(() => {
+    const label = labelRef.current;
+    if (!label) return;
+
+    // Arabic — fixed size, no dynamic fitting
+    if (lang === "ar") {
+      label.style.fontSize = "clamp(4.5rem, 10vw, 8.5rem)";
+      return;
+    }
+
+    // English — fit to fill the aside height
+    function fit() {
+      const aside = asideRef.current;
+      if (!aside || !label) return;
+      const h = aside.clientHeight;
+      if (!h) return;
+      label.style.fontSize = "6rem";
+      const w = label.scrollWidth;
+      if (!w) return;
+      const newSize = (h / w) * 6;
+      label.style.fontSize = `${newSize}rem`;
+    }
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (asideRef.current) ro.observe(asideRef.current);
+    return () => ro.disconnect();
+  }, [home, lang]);
 
   if (!home) return null;
   // Visibility — placed AFTER all hooks (hook rules).
@@ -230,7 +264,7 @@ export default function ObjectivesB() {
               (each letter renders in isolated form). Instead we lay out a
               regular horizontal span and rotate it 90° around its center —
               Arabic shaping stays intact and the letters connect naturally. */}
-          <aside className="hidden md:block self-stretch" style={{ position: "relative" }}>
+          <aside ref={asideRef} className="hidden md:block self-stretch" style={{ position: "relative", overflow: "hidden" }}>
             <div
               data-testid="objectives-sticky-label"
               style={{
@@ -239,7 +273,7 @@ export default function ObjectivesB() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                overflow: "hidden",
+                overflow: "visible",
               }}
             >
               {/* Inner rotation box. width=column height (rotated, so visually
@@ -261,16 +295,16 @@ export default function ObjectivesB() {
                 }}
               >
                 <span
+                  ref={labelRef}
                   style={{
                     fontFamily: '"Thmanyah Serif Display", serif',
-                    // Larger size + generous letter-spacing fills the rail length.
-                    // Sized via vh so the label scales with the viewport too.
-                    fontSize: "clamp(4.5rem, 10vw, 8.5rem)",
+                    fontSize: "6rem", // overwritten by JS fit()
                     fontWeight: 500,
                     lineHeight: 1,
                     color: "var(--tb-gold)",
                     letterSpacing: lang === "ar" ? "0.06em" : "0.18em",
                     display: "inline-block",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {lang === "ar" ? "الأهداف" : "Objectives"}

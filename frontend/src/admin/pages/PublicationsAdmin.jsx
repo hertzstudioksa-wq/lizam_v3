@@ -28,7 +28,8 @@ export function PublicationsListAdmin() {
     const r = await apiCall("get", `/admin/publications?${params}`);
     if (r.ok) setItems(r.data.items || []);
   }
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [q, status]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { load(); }, [q, status]);
 
   async function archive(id) {
     if (!window.confirm(tr("أرشفة هذا الإصدار؟ سيُخفى من الموقع العام مع الاحتفاظ بالبيانات.", "Archive this publication? It will be hidden from the public site but data is preserved."))) return;
@@ -72,6 +73,7 @@ export function PublicationsListAdmin() {
                 <th className="text-start p-4">{tr("الوصول", "Access")}</th>
                 <th className="text-start p-4">{tr("الحالة", "Status")}</th>
                 <th className="text-start p-4 tabular-nums">{tr("المشاهدات", "Views")}</th>
+                <th className="text-start p-4 tabular-nums">{tr("تحميلات PDF", "PDF DL")}</th>
                 <th className="text-start p-4">{tr("آخر تحديث", "Updated")}</th>
                 <th className="text-start p-4">{tr("إجراءات", "Actions")}</th>
               </tr>
@@ -87,6 +89,7 @@ export function PublicationsListAdmin() {
                   <td className="p-4"><span className="text-[11.5px] uppercase tracking-[0.14em] text-navy/80">{p.access_level}</span></td>
                   <td className="p-4"><StatusPill s={p.status} tr={tr} /></td>
                   <td className="p-4 tabular-nums text-mute">{p.view_count || 0}</td>
+                  <td className="p-4 tabular-nums text-mute">{p.pdf_download_count || 0}</td>
                   <td className="p-4 text-mute text-[12.5px]">{(p.updated_at || "").slice(0, 10)}</td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1.5">
@@ -239,9 +242,9 @@ export function PublicationEditAdmin() {
         </div>
       }
     >
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main column */}
-        <div className="xl:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <Field label={tr("العنوان بالعربية", "Title AR")}><TextInput value={form.value.title_ar} onChange={(v) => form.patch("title_ar", v)} dir="rtl" testid="pub-title-ar" /></Field>
             <Field label={tr("العنوان بالإنجليزية", "Title EN")}><TextInput value={form.value.title_en} onChange={(v) => form.patch("title_en", v)} testid="pub-title-en" /></Field>
@@ -253,11 +256,29 @@ export function PublicationEditAdmin() {
 
           <div>
             <h3 className="lz-h3 mb-3">{tr("نص المقال — العربية (RTL)", "Article — Arabic (RTL)")}</h3>
-            <TiptapField value={form.value.content_html_ar} onChange={(v) => form.patch("content_html_ar", v)} dir="rtl" testid="tiptap-ar" />
+            <TiptapField
+              value={form.value.content_html_ar}
+              onChange={(v) => form.patch("content_html_ar", v)}
+              dir="rtl"
+              testid="tiptap-ar"
+              onImport={({ title, summary }) => {
+                if (title && !form.value.title_ar) form.patch("title_ar", title);
+                if (summary && !form.value.summary_ar) form.patch("summary_ar", summary);
+              }}
+            />
           </div>
           <div>
             <h3 className="lz-h3 mb-3">{tr("نص المقال — الإنجليزية (LTR)", "Article — English (LTR)")}</h3>
-            <TiptapField value={form.value.content_html_en} onChange={(v) => form.patch("content_html_en", v)} dir="ltr" testid="tiptap-en" />
+            <TiptapField
+              value={form.value.content_html_en}
+              onChange={(v) => form.patch("content_html_en", v)}
+              dir="ltr"
+              testid="tiptap-en"
+              onImport={({ title, summary }) => {
+                if (title && !form.value.title_en) form.patch("title_en", title);
+                if (summary && !form.value.summary_en) form.patch("summary_en", summary);
+              }}
+            />
           </div>
           <div>
             <h3 className="lz-h3 mb-3">{tr("معاينة (تظهر للقراء غير المسجلين) — عربية", "Preview (shown to gated readers) AR")}</h3>
@@ -269,8 +290,9 @@ export function PublicationEditAdmin() {
           </div>
         </div>
 
-        {/* Side metadata panel */}
-        <aside className="space-y-5 xl:sticky xl:top-6 self-start">
+        {/* Side metadata panel — outer div stretches full column height, inner aside is sticky */}
+        <div>
+        <aside className="space-y-5 lg:sticky lg:top-6">
           <Field label={<span className="inline-flex items-center">{tr("الحالة", "Status")}<HelpTip ar={"فقط الإصدارات بحالة «منشور» تظهر للزوار. «مؤرشف» يخفيها مع الاحتفاظ بالبيانات."} en="Only Published items appear publicly. Archived hides them while keeping all data." /></span>}>
             <Select value={form.value.status} onChange={(v) => form.patch("status", v)} options={[
               { value: "draft", label: tr("مسودة", "Draft") },
@@ -351,6 +373,7 @@ export function PublicationEditAdmin() {
 
           <SaveBar dirty={form.dirty || isNew} saving={saving} onSave={save} onReset={form.reset} savedMessage={msg} />
         </aside>
+        </div>
       </div>
       <ConfirmDeleteDialog
         open={permOpen}

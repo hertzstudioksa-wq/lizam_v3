@@ -3,8 +3,8 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from app.config import db
 from app.models import (
-    SiteSettingsIn, BrandingIn, HomeContentIn, AboutContentIn, PublicationIn, AuthorIn, CategoryIn, UserUpdateIn,
-    FeatureToggles,
+    SiteSettingsIn, BrandingIn, HomeContentIn, AboutContentIn, ContactContentIn, PublicationsPageContentIn, ActivitiesPageContentIn, FellowsPageContentIn, PublicationIn, NewsItemIn, AuthorIn, CategoryIn, UserUpdateIn,
+    FeatureToggles, CustomPageIn,
 )
 from app.sanitize import sanitize_html, slugify, estimate_reading_time
 from app.security import (
@@ -36,19 +36,67 @@ async def audit_log(actor: dict, action: str, target_type: str, target_id: str =
 # ---------------------------------------------------------------------------
 @router.get("/overview")
 async def overview(user: dict = Depends(require_admin)):
-    pubs_total = await db.publications.count_documents({})
-    pubs_published = await db.publications.count_documents({"status": "published"})
-    pubs_draft = await db.publications.count_documents({"status": {"$in": ["draft", "under_review"]}})
-    users_total = await db.users.count_documents({})
-    responses_pending = await db.research_responses.count_documents({"status": "submitted"})
-    messages_new = await db.contact_messages.count_documents({"status": "new"})
+    import asyncio
+
+    # Run all counts in parallel
+    (
+        pubs_total, pubs_published, pubs_draft,
+        users_total, responses_pending, messages_new,
+        authors_total, news_total, news_published,
+    ) = await asyncio.gather(
+        db.publications.count_documents({}),
+        db.publications.count_documents({"status": "published"}),
+        db.publications.count_documents({"status": {"$in": ["draft", "under_review"]}}),
+        db.users.count_documents({}),
+        db.research_responses.count_documents({"status": "submitted"}),
+        db.contact_messages.count_documents({"status": "new"}),
+        db.authors.count_documents({"active": True}),
+        db.news_items.count_documents({}),
+        db.news_items.count_documents({"status": "published"}),
+    )
+
+    # Aggregated stats
+    view_agg = await db.publications.aggregate([
+        {"$group": {"_id": None, "total_views": {"$sum": "$view_count"}, "total_pdf": {"$sum": "$pdf_download_count"}}}
+    ]).to_list(length=1)
+    total_views = view_agg[0]["total_views"] if view_agg else 0
+    total_pdf_downloads = view_agg[0]["total_pdf"] if view_agg else 0
+
+    # Top 5 most viewed publications
+    top_viewed = await db.publications.find(
+        {"status": "published"},
+        {"_id": 0, "id": 1, "title_ar": 1, "title_en": 1, "view_count": 1, "pdf_download_count": 1, "published_at": 1, "slug_ar": 1, "slug_en": 1}
+    ).sort("view_count", -1).limit(5).to_list(length=5)
+
+    # Recent 5 publications
+    recent_pubs = await db.publications.find(
+        {},
+        {"_id": 0, "id": 1, "title_ar": 1, "title_en": 1, "status": 1, "updated_at": 1, "publication_type": 1}
+    ).sort("updated_at", -1).limit(5).to_list(length=5)
+
+    # Recent audit log (last 8)
+    recent_activity = await db.audit_log.find(
+        {}, {"_id": 0, "action": 1, "target_type": 1, "target_id": 1, "actor_email": 1, "diff": 1, "at": 1}
+    ).sort("at", -1).limit(8).to_list(length=8)
+
     return {
+        # Counts
         "publications_total": pubs_total,
         "publications_published": pubs_published,
         "publications_draft": pubs_draft,
         "users_total": users_total,
         "responses_pending": responses_pending,
         "messages_new": messages_new,
+        "authors_total": authors_total,
+        "news_total": news_total,
+        "news_published": news_published,
+        # Engagement
+        "total_views": total_views,
+        "total_pdf_downloads": total_pdf_downloads,
+        # Lists
+        "top_viewed": top_viewed,
+        "recent_publications": recent_pubs,
+        "recent_activity": recent_activity,
     }
 
 
@@ -153,6 +201,155 @@ async def admin_update_about(body: AboutContentIn,
     await db.about_content.update_one({"id": "about"}, {"$set": update}, upsert=True)
     await audit_log(user, "update", "about_content", "about", {"fields": list(update.keys())})
     return await db.about_content.find_one({"id": "about"}, {"_id": 0})
+
+
+# ---------------------------------------------------------------------------
+# Contact page content
+# ---------------------------------------------------------------------------
+@router.get("/contact-content")
+async def admin_get_contact_content(user: dict = Depends(require_permission("home.read"))):
+    doc = await db.contact_content.find_one({"id": "contact"}, {"_id": 0})
+    return doc or {}
+
+
+@router.patch("/contact-content")
+async def admin_update_contact_content(body: ContactContentIn,
+                                       user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=400, detail="No fields provided")
+    update["updated_at"] = utc_iso()
+    update["_seed_origin"] = "admin"
+    update["updated_by"] = user["email"]
+    await db.contact_content.update_one({"id": "contact"}, {"$set": update}, upsert=True)
+    await audit_log(user, "update", "contact_content", "contact", {"fields": list(update.keys())})
+    return await db.contact_content.find_one({"id": "contact"}, {"_id": 0})
+
+
+# ---------------------------------------------------------------------------
+# Activities page content
+# ---------------------------------------------------------------------------
+@router.get("/activities-page")
+async def admin_get_activities_content(user: dict = Depends(require_permission("home.read"))):
+    doc = await db.activities_page.find_one({"id": "activities"}, {"_id": 0})
+    return doc or {}
+
+
+@router.patch("/activities-page")
+async def admin_update_activities_content(body: ActivitiesPageContentIn,
+                                          user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    update["updated_at"] = utc_iso()
+    update["_seed_origin"] = "admin"
+    update["updated_by"] = user["email"]
+    await db.activities_page.update_one({"id": "activities"}, {"$set": update}, upsert=True)
+    await audit_log(user, "update", "activities_page", "activities", {"fields": list(update.keys())})
+    return await db.activities_page.find_one({"id": "activities"}, {"_id": 0})
+
+
+# ---------------------------------------------------------------------------
+# Fellows page content
+# ---------------------------------------------------------------------------
+@router.get("/fellows-page")
+async def admin_get_fellows_content(user: dict = Depends(require_permission("home.read"))):
+    doc = await db.fellows_page.find_one({"id": "fellows"}, {"_id": 0})
+    return doc or {}
+
+
+@router.patch("/fellows-page")
+async def admin_update_fellows_content(body: FellowsPageContentIn,
+                                       user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    update["updated_at"] = utc_iso()
+    update["_seed_origin"] = "admin"
+    update["updated_by"] = user["email"]
+    await db.fellows_page.update_one({"id": "fellows"}, {"$set": update}, upsert=True)
+    await audit_log(user, "update", "fellows_page", "fellows", {"fields": list(update.keys())})
+    return await db.fellows_page.find_one({"id": "fellows"}, {"_id": 0})
+
+
+# ---------------------------------------------------------------------------
+# News items (Activities feed)
+# ---------------------------------------------------------------------------
+@router.get("/news")
+async def admin_list_news(status: Optional[str] = None, q: Optional[str] = None,
+                          limit: int = 50, offset: int = 0,
+                          user: dict = Depends(require_permission("home.read"))):
+    filt: dict = {}
+    if status:
+        filt["status"] = status
+    if q:
+        rx = {"$regex": q, "$options": "i"}
+        filt["$or"] = [{"title_ar": rx}, {"title_en": rx}]
+    items = await db.news_items.find(filt, {"_id": 0}).sort("date", -1).skip(offset).limit(limit).to_list(length=limit)
+    total = await db.news_items.count_documents(filt)
+    return {"items": items, "total": total}
+
+
+@router.get("/news/{item_id}")
+async def admin_get_news(item_id: str, user: dict = Depends(require_permission("home.read"))):
+    doc = await db.news_items.find_one({"id": item_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Not found")
+    return doc
+
+
+@router.post("/news")
+async def admin_create_news(body: NewsItemIn, user: dict = Depends(require_permission("home.edit"))):
+    data = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    data["id"] = uid()
+    data["slug_ar"] = data.get("slug_ar") or slugify(data.get("title_ar", "")) or uid()[:8]
+    data["slug_en"] = data.get("slug_en") or slugify(data.get("title_en", "")) or uid()[:8]
+    data["status"] = data.get("status", "draft")
+    data["view_count"] = 0
+    data["created_by"] = user["email"]
+    data["created_at"] = utc_iso()
+    data["updated_at"] = utc_iso()
+    await db.news_items.insert_one(data)
+    await audit_log(user, "create", "news_item", data["id"])
+    return await db.news_items.find_one({"id": data["id"]}, {"_id": 0})
+
+
+@router.patch("/news/{item_id}")
+async def admin_update_news(item_id: str, body: NewsItemIn,
+                            user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    update["updated_at"] = utc_iso()
+    if "title_ar" in update and not update.get("slug_ar"):
+        update["slug_ar"] = slugify(update["title_ar"])
+    await db.news_items.update_one({"id": item_id}, {"$set": update})
+    await audit_log(user, "update", "news_item", item_id)
+    return await db.news_items.find_one({"id": item_id}, {"_id": 0})
+
+
+@router.delete("/news/{item_id}/permanent")
+async def admin_delete_news(item_id: str, user: dict = Depends(require_permission("home.edit"))):
+    await db.news_items.delete_one({"id": item_id})
+    await audit_log(user, "delete", "news_item", item_id)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# Publications page content
+# ---------------------------------------------------------------------------
+@router.get("/publications-page")
+async def admin_get_publications_page(user: dict = Depends(require_permission("home.read"))):
+    doc = await db.publications_page_content.find_one({"id": "publications"}, {"_id": 0})
+    return doc or {}
+
+
+@router.patch("/publications-page")
+async def admin_update_publications_page(body: PublicationsPageContentIn,
+                                         user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    if not update:
+        raise HTTPException(status_code=400, detail="No fields provided")
+    update["updated_at"] = utc_iso()
+    update["_seed_origin"] = "admin"
+    update["updated_by"] = user["email"]
+    await db.publications_page_content.update_one({"id": "publications"}, {"$set": update}, upsert=True)
+    await audit_log(user, "update", "publications_page_content", "publications", {"fields": list(update.keys())})
+    return await db.publications_page_content.find_one({"id": "publications"}, {"_id": 0})
 
 
 # ---------------------------------------------------------------------------
@@ -607,4 +804,56 @@ async def admin_delete_newsletter_permanent(
         raise HTTPException(status_code=404, detail="Subscriber not found")
     await db.newsletter_subscribers.delete_one({"id": sub_id})
     await audit_log(user, "delete_permanent", "newsletter", sub_id, {"email": sub.get("email")})
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# Custom Pages
+# ---------------------------------------------------------------------------
+@router.get("/custom-pages")
+async def admin_list_custom_pages(user: dict = Depends(require_permission("home.read"))):
+    items = await db.custom_pages.find({}, {"_id": 0}).sort("sort_order", 1).to_list(length=200)
+    return {"items": items}
+
+
+@router.post("/custom-pages")
+async def admin_create_custom_page(body: CustomPageIn, user: dict = Depends(require_permission("home.edit"))):
+    data = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    data["id"] = uid()
+    data["created_at"] = utc_iso()
+    data["updated_at"] = utc_iso()
+    data["created_by"] = user["email"]
+    if not data.get("sections"):
+        data["sections"] = []
+    if data.get("visible") is None:
+        data["visible"] = True
+    count = await db.custom_pages.count_documents({})
+    if not data.get("sort_order"):
+        data["sort_order"] = count + 100
+    await db.custom_pages.insert_one(data)
+    await audit_log(user, "create", "custom_page", data["id"])
+    return await db.custom_pages.find_one({"id": data["id"]}, {"_id": 0})
+
+
+@router.get("/custom-pages/{page_id}")
+async def admin_get_custom_page(page_id: str, user: dict = Depends(require_permission("home.read"))):
+    doc = await db.custom_pages.find_one({"$or": [{"id": page_id}, {"slug": page_id}]}, {"_id": 0})
+    if not doc:
+        raise HTTPException(404, "Not found")
+    return doc
+
+
+@router.patch("/custom-pages/{page_id}")
+async def admin_update_custom_page(page_id: str, body: CustomPageIn, user: dict = Depends(require_permission("home.edit"))):
+    update = {k: v for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    update["updated_at"] = utc_iso()
+    await db.custom_pages.update_one({"id": page_id}, {"$set": update}, upsert=False)
+    await audit_log(user, "update", "custom_page", page_id)
+    return await db.custom_pages.find_one({"id": page_id}, {"_id": 0})
+
+
+@router.delete("/custom-pages/{page_id}/permanent")
+async def admin_delete_custom_page(page_id: str, user: dict = Depends(require_permission("home.edit"))):
+    await db.custom_pages.delete_one({"id": page_id})
+    await audit_log(user, "delete", "custom_page", page_id)
     return {"ok": True}

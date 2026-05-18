@@ -3,6 +3,7 @@ import { AdminPage, Field, TextInput, Select, SaveBar, useDirtyForm, apiCall } f
 import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
 import { invalidateSiteCache } from "@/hooks/useSiteSettings";
+import { HeroMediaSection } from "@/admin/pages/HeroMediaAdmin";
 
 const FONT_OPTIONS = [
   { value: "Thmanyah Sans", label_en: "Thmanyah Sans (UI / body — recommended default)", label_ar: "ثمانية سانس (الافتراضي — واجهة ونص)" },
@@ -15,16 +16,9 @@ const FONT_OPTIONS = [
 
 const THEMES = [
   {
-    key: "A",
-    label_en: "Theme A — Baseline",
-    label_ar: "الثيمة A — الأساسية",
-    description_en: "Current public design (split-screen hero, modern editorial). Maintained as baseline.",
-    description_ar: "التصميم العام الحالي. تبقى متاحة كثيمة أساسية.",
-  },
-  {
     key: "B",
-    label_en: "Theme B — Premium Editorial",
-    label_ar: "الثيمة B — التحريرية الفاخرة",
+    label_en: "Premium Editorial",
+    label_ar: "التحريرية الفاخرة",
     description_en: "Refined institutional editorial. Single-layered hero, antique gold accents, refined hover states.",
     description_ar: "تصميم تحريري مؤسسي راقٍ مع تفاصيل ذهبية، يمنح الصفحات حضوراً أكثر فخامة.",
   },
@@ -45,7 +39,7 @@ export default function BrandingAdmin() {
     apiCall("get", "/admin/site-settings").then((r) => {
       if (r.ok) {
         setSiteForm({
-          active_theme: r.data?.active_theme || "A",
+          active_theme: "B",
           font_scale: r.data?.font_scale || { hero: 1, heading: 1, body: 1 },
         });
       }
@@ -109,7 +103,7 @@ export default function BrandingAdmin() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1100px]">
           {THEMES.map((t) => {
-            const active = (siteForm.active_theme || "A") === t.key;
+            const active = (siteForm.active_theme || "B") === t.key;
             return (
               <button
                 key={t.key}
@@ -229,6 +223,16 @@ export default function BrandingAdmin() {
       </div>
 
       <SaveBar dirty={form.dirty || siteDirty} saving={saving} onSave={save} onReset={() => { form.reset(); setSiteDirty(false); }} savedMessage={msg} />
+
+      {/* ── Image Management ── */}
+      <div className="mt-14" style={{ borderTop: "1px solid var(--lz-rule, #E8E2D9)", paddingTop: "3rem" }}>
+        <h3 className="lz-h3 mb-1">{tr("إدارة الصور", "Image Management")}</h3>
+        <p className="text-[13px] text-mute mb-8 max-w-[60ch]">
+          {tr("خلفيات رؤوس الصفحات — صور سينمائية كاملة العرض تظهر خلف الهيدر في كل صفحة.", "Page hero backgrounds — cinematic full-bleed images behind the header on each page.")}
+        </p>
+        <HeroMediaSection />
+      </div>
+
     </AdminPage>
   );
 }

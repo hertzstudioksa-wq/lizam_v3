@@ -3,21 +3,19 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 /**
  * useTheme — single source of truth for the public site theme.
- * Reads `active_theme` from public site_settings and:
- *   1. Applies `data-theme="a" | "b"` to <html> so CSS tokens swap globally.
- *   2. Applies dynamic font-family CSS variables for AR / EN font management.
- * Defaults to "B" when the field is missing on legacy admin-edited records.
+ * Reads font and scale settings from site_settings and applies:
+ *   1. `data-theme="b"` on <html> for CSS token consistency.
+ *   2. Dynamic font-family CSS variables for AR / EN font management.
  */
 export function useTheme() {
   const { data } = useSiteSettings();
-  const theme = (data?.active_theme || "B").toUpperCase() === "A" ? "A" : "B";
+  const theme = "B";
   const fs = data?.font_scale || {};
 
   useEffect(() => {
     const root = document.documentElement;
-    root.setAttribute("data-theme", theme.toLowerCase());
+    root.setAttribute("data-theme", "b");
 
-    // Font management — admin-selected fonts override defaults via CSS vars.
     if (data?.font_ar) {
       root.style.setProperty(
         "--lz-font-ar",
@@ -31,7 +29,6 @@ export function useTheme() {
       );
     }
 
-    // Public-site typography scale (admin-controlled, range 0.85–1.50 each).
     const clamp = (n, fallback) => {
       const v = typeof n === "number" ? n : parseFloat(n);
       if (!Number.isFinite(v)) return fallback;
@@ -41,7 +38,7 @@ export function useTheme() {
     root.style.setProperty("--tb-fs-heading", String(clamp(fs.heading, 1)));
     root.style.setProperty("--tb-fs-body", String(clamp(fs.body, 1)));
     root.style.setProperty("--tb-fs-eyebrow", String(clamp(fs.eyebrow, 1)));
-  }, [theme, data?.font_ar, data?.font_en, fs.hero, fs.heading, fs.body, fs.eyebrow]);
+  }, [data?.font_ar, data?.font_en, fs.hero, fs.heading, fs.body, fs.eyebrow]);
 
   return { theme, settings: data };
 }

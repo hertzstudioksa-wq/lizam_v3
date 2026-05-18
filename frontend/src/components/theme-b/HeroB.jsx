@@ -179,6 +179,7 @@ export default function HeroB() {
               lineHeight: 1.95,
               maxWidth: "60ch",
               textAlign: alignOf("subtitle"),
+              whiteSpace: "pre-line",
             }}
           >
             {subtitle}

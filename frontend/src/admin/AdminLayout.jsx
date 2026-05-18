@@ -1,73 +1,101 @@
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
-import { LogOut, LayoutDashboard, FileText, Users, Palette, Settings, BookOpen, MessageSquare, ToggleLeft, Mail, ShieldCheck, Tag, Image as ImageIcon, Activity, GripVertical, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  LogOut, LayoutDashboard, FileText, Users, Palette, Settings,
+  BookOpen, MessageSquare, Mail, ShieldCheck, Tag,
+  Activity, Home, Phone, ChevronDown, LayoutList, PanelTop, Newspaper,
+} from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useAuth } from "@/auth/AuthContext";
 import { useLang } from "@/i18n/LanguageContext";
 import { api } from "@/lib/api";
-import useAdminNavOrder from "@/admin/hooks/useAdminNavOrder";
 
 const ADMIN_ROLES = new Set(["super_admin", "admin", "editor", "reviewer"]);
 
-const NAV_DEFS = (lang) => ({
-  overview:     { to: "/admin",              icon: LayoutDashboard, label: lang === "ar" ? "نظرة عامة" : "Overview", end: true, testid: "admin-nav-overview" },
-  publications: { to: "/admin/publications", icon: FileText,        label: lang === "ar" ? "الإصدارات" : "Publications", testid: "admin-nav-publications" },
-  authors:      { to: "/admin/authors",      icon: Users,           label: lang === "ar" ? "الباحثون" : "Researchers", testid: "admin-nav-authors" },
-  categories:   { to: "/admin/categories",   icon: Tag,             label: lang === "ar" ? "مجالات العمل" : "Categories", testid: "admin-nav-categories" },
-  responses:    { to: "/admin/responses",    icon: MessageSquare,   label: lang === "ar" ? "الردود البحثية" : "Responses", testid: "admin-nav-responses" },
-  users:        { to: "/admin/users",        icon: ShieldCheck,     label: lang === "ar" ? "المستخدمون" : "Users", testid: "admin-nav-users" },
-  roles:        { to: "/admin/roles",        icon: ShieldCheck,     label: lang === "ar" ? "الأدوار والصلاحيات" : "Roles & Permissions", testid: "admin-nav-roles" },
-  messages:     { to: "/admin/messages",     icon: Mail,            label: lang === "ar" ? "الرسائل" : "Messages", testid: "admin-nav-messages" },
-  home:         { to: "/admin/home",         icon: BookOpen,        label: lang === "ar" ? "محتوى الرئيسية" : "Home Content", testid: "admin-nav-home" },
-  about:        { to: "/admin/about",        icon: BookOpen,        label: lang === "ar" ? "محتوى صفحة عن المركز" : "About Page Content", testid: "admin-nav-about" },
-  branding:     { to: "/admin/branding",     icon: Palette,         label: lang === "ar" ? "الهوية والتصميم" : "Branding & Design", testid: "admin-nav-branding" },
-  images:       { to: "/admin/images",       icon: ImageIcon,       label: lang === "ar" ? "إدارة الصور" : "Image Management", testid: "admin-nav-images" },
-  settings:     { to: "/admin/settings",     icon: Settings,        label: lang === "ar" ? "إعدادات الموقع" : "Site Settings", testid: "admin-nav-settings" },
-  toggles:      { to: "/admin/toggles",      icon: ToggleLeft,      label: lang === "ar" ? "مفاتيح الميزات" : "Feature Toggles", testid: "admin-nav-toggles" },
-  audit:        { to: "/admin/audit",        icon: Activity,        label: lang === "ar" ? "سجل النشاط" : "Audit Log", testid: "admin-nav-audit" },
-});
-const DEFAULT_NAV_KEYS = ["overview","publications","authors","categories","responses","users","roles","messages","home","about","branding","images","settings","toggles","audit"];
+const NAV_GROUPS = (lang) => {
+  const ar = lang === "ar";
+  return [
+    {
+      key: "general",
+      label: null, // no label for first group
+      items: [
+        { key: "overview", to: "/admin", icon: LayoutDashboard, label: ar ? "نظرة عامة" : "Overview", end: true },
+      ],
+    },
+    {
+      key: "content",
+      label: ar ? "المحتوى" : "Content",
+      color: "#B89B5E", // gold — brand primary
+      items: [
+        { key: "publications", to: "/admin/publications", icon: FileText,  label: ar ? "الإصدارات" : "Publications" },
+        { key: "news",         to: "/admin/news",         icon: Newspaper, label: ar ? "الأخبار والفعاليات" : "News & Events" },
+        { key: "authors",      to: "/admin/authors",      icon: Users,     label: ar ? "الباحثون" : "Researchers" },
+        { key: "categories",   to: "/admin/categories",   icon: Tag,       label: ar ? "مجالات العمل" : "Categories" },
+      ],
+    },
+    {
+      key: "pages",
+      label: ar ? "الصفحات" : "Pages",
+      color: "#7FA8C9", // dusty blue
+      items: [
+        { key: "home",             to: "/admin/home",             icon: Home,       label: ar ? "الصفحة الرئيسية" : "Home" },
+        { key: "about",            to: "/admin/about",            icon: BookOpen,   label: ar ? "صفحة عن المركز" : "About" },
+        { key: "publicationsPage", to: "/admin/publications-page", icon: FileText,  label: ar ? "صفحة الإصدارات" : "Publications" },
+        { key: "contact",          to: "/admin/contact",          icon: Phone,      label: ar ? "صفحة التواصل" : "Contact" },
+        { key: "activitiesPage",   to: "/admin/activities-page",  icon: Newspaper,  label: ar ? "الأنشطة" : "Activities" },
+        { key: "fellowsPage",      to: "/admin/fellows-page",     icon: Users,      label: ar ? "زملاء لزام" : "LIZAM Fellows" },
+      ],
+    },
+    {
+      key: "communication",
+      label: ar ? "التواصل" : "Communication",
+      color: "#7BA08A", // sage green
+      items: [
+        { key: "messages",  to: "/admin/messages",  icon: Mail,          label: ar ? "الرسائل" : "Messages" },
+        { key: "responses", to: "/admin/responses", icon: MessageSquare, label: ar ? "الردود البحثية" : "Responses" },
+      ],
+    },
+    {
+      key: "design",
+      label: ar ? "التصميم والإعدادات" : "Design & Settings",
+      color: "#9B8ABF", // soft purple
+      items: [
+        { key: "allSections",      to: "/admin/all-sections",     icon: PanelTop,   label: ar ? "✦ الأقسام" : "✦ All Sections" },
+        { key: "pagesManager",     to: "/admin/pages",            icon: LayoutList, label: ar ? "مدير الصفحات" : "Pages Manager" },
+        { key: "branding",        to: "/admin/branding",         icon: Palette,   label: ar ? "الهوية والتصميم" : "Branding" },
+        { key: "settings",        to: "/admin/settings",         icon: Settings,  label: ar ? "إعدادات الموقع" : "Site Settings" },
+      ],
+    },
+    {
+      key: "admin",
+      label: ar ? "الإدارة" : "Administration",
+      color: "#C47878", // muted coral
+      items: [
+        { key: "users", to: "/admin/users", icon: ShieldCheck, label: ar ? "المستخدمون والصلاحيات" : "Users & Permissions" },
+        { key: "audit", to: "/admin/audit", icon: Activity,    label: ar ? "سجل النشاط" : "Audit Log" },
+      ],
+    },
+  ];
+};
 
 export default function AdminLayout() {
   const { user, bootstrapping, logout } = useAuth();
   const { lang, t, toggle } = useLang();
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
-  const [dragKey, setDragKey] = useState(null);
-  const [dragOverKey, setDragOverKey] = useState(null);
-  const { orderedKeys, setOrder, reset, isCustom } = useAdminNavOrder(DEFAULT_NAV_KEYS);
-  const defs = useMemo(() => NAV_DEFS(lang), [lang]);
+  const [collapsed, setCollapsed] = useState({});
+  const [customPages, setCustomPages] = useState([]);
 
   useEffect(() => {
     if (user && typeof user === "object" && ADMIN_ROLES.has(user.role)) {
       api.get("/admin/overview").then(({ data }) => setOverview(data)).catch(() => {});
+      // Fetch custom pages to show them in sidebar
+      api.get("/admin/custom-pages").then(({ data }) => setCustomPages(data.items || [])).catch(() => {});
     }
   }, [user]);
 
-  function onDragStart(key, e) {
-    setDragKey(key);
-    try { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", key); } catch { /* ignore */ }
-  }
-  function onDragOver(key, e) {
-    e.preventDefault();
-    if (key !== dragOverKey) setDragOverKey(key);
-    try { e.dataTransfer.dropEffect = "move"; } catch { /* ignore */ }
-  }
-  function onDrop(targetKey, e) {
-    e.preventDefault();
-    const sourceKey = dragKey || (e.dataTransfer && e.dataTransfer.getData("text/plain"));
-    setDragKey(null);
-    setDragOverKey(null);
-    if (!sourceKey || sourceKey === targetKey) return;
-    const next = [...orderedKeys];
-    const from = next.indexOf(sourceKey);
-    const to = next.indexOf(targetKey);
-    if (from < 0 || to < 0) return;
-    next.splice(from, 1);
-    next.splice(to, 0, sourceKey);
-    setOrder(next);
-  }
-  function onDragEnd() { setDragKey(null); setDragOverKey(null); }
+  const toggleGroup = (key) =>
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
 
   if (bootstrapping) {
     return (
@@ -83,84 +111,116 @@ export default function AdminLayout() {
     return <Navigate to="/" replace />;
   }
 
+  const ar = lang === "ar";
+  // Build groups with custom pages injected into the pages group
+  const groups = NAV_GROUPS(lang).map(group => {
+    if (group.key !== "pages") return group;
+    // Add custom pages after the static page items
+    const customItems = customPages.map(cp => ({
+      key: `custom-${cp.id}`,
+      to: `/admin/pages/${cp.id}`,
+      icon: LayoutList,
+      label: ar ? (cp.title_ar || cp.title_en) : (cp.title_en || cp.title_ar),
+      testid: `admin-nav-custom-${cp.slug}`,
+    }));
+    return { ...group, items: [...group.items, ...customItems] };
+  });
+
   return (
-    <div className="min-h-screen bg-paper flex" data-testid="admin-layout">
-      {/* Sidebar */}
-      <aside className="w-[260px] min-h-screen bg-navy-deep text-ivory flex flex-col">
+    <div className="bg-paper flex" data-testid="admin-layout">
+      {/* Sidebar — fixed to viewport, independent scroll */}
+      <aside className="fixed top-0 start-0 bottom-0 w-[260px] bg-navy-deep text-ivory flex flex-col z-40">
+
+        {/* Logo */}
         <div className="px-6 py-6 border-b border-ivory/10">
           <Logo variant="light" height={36} data-testid="admin-logo" />
           <div className="mt-3 text-[11px] uppercase tracking-[0.22em] text-ivory/50">
             {t("admin.title")}
           </div>
         </div>
-        <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto lz-scrollbar" data-testid="admin-sidebar-nav">
-          {orderedKeys.map((key) => {
-            const it = defs[key];
-            if (!it) return null;
-            const Icon = it.icon;
-            const isDragging = dragKey === key;
-            const isOver = dragOverKey === key && dragKey && dragKey !== key;
+
+        {/* Nav */}
+        <nav className="flex-1 py-3 overflow-y-auto lz-scrollbar" data-testid="admin-sidebar-nav">
+          {groups.map((group) => {
+            const isCollapsed = collapsed[group.key];
+            const accent = group.color || "#B89B5E";
             return (
-              <div
-                key={key}
-                draggable
-                onDragStart={(e) => onDragStart(key, e)}
-                onDragOver={(e) => onDragOver(key, e)}
-                onDrop={(e) => onDrop(key, e)}
-                onDragEnd={onDragEnd}
-                onDragLeave={() => setDragOverKey((k) => (k === key ? null : k))}
-                className={`relative ${isDragging ? "opacity-40" : ""} ${isOver ? "bg-brass/10 border-y border-brass/40" : ""}`}
-                data-testid={`admin-nav-row-${key}`}
-              >
-                <NavLink
-                  to={it.to}
-                  end={it.end}
-                  className={({ isActive }) =>
-                    `group flex items-center gap-2 ps-2 pe-3 h-10 text-[13.5px] transition-colors duration-300 ${
-                      isActive
-                        ? "bg-ivory/10 text-ivory border-s-2 border-brass ps-[6px]"
-                        : "text-ivory/65 hover:text-ivory hover:bg-ivory/5"
-                    }`
-                  }
-                  data-testid={it.testid}
-                >
-                  <span
-                    className="inline-flex items-center justify-center w-4 h-6 text-ivory/30 group-hover:text-ivory/70 cursor-grab active:cursor-grabbing"
-                    aria-hidden="true"
-                    title={lang === "ar" ? "اسحب لإعادة الترتيب" : "Drag to reorder"}
-                    onMouseDown={(e) => e.stopPropagation()}
+              <div key={group.key} className="mb-1">
+
+                {/* Group label */}
+                {group.label && (
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.key)}
+                    className="w-full flex items-center justify-between px-4 py-1.5 mt-3"
                   >
-                    <GripVertical size={13} strokeWidth={1.6} />
-                  </span>
-                  <Icon size={16} strokeWidth={1.6} />
-                  <span className="truncate">{it.label}</span>
-                </NavLink>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: accent }}
+                      />
+                      <span
+                        className="text-[10px] uppercase tracking-[0.2em] font-medium"
+                        style={{ color: accent, opacity: 0.85 }}
+                      >
+                        {group.label}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      size={10}
+                      strokeWidth={2.5}
+                      style={{ color: accent, opacity: 0.6 }}
+                      className={`transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`}
+                    />
+                  </button>
+                )}
+
+                {/* Items */}
+                {!isCollapsed && (
+                  <div className="px-2 mt-0.5 space-y-0.5">
+                    {group.items.map(({ key, to, icon: Icon, label, end }) => (
+                      <NavLink
+                        key={key}
+                        to={to}
+                        end={end}
+                        data-testid={`admin-nav-${key}`}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-3 h-9 text-[13px] transition-colors duration-200 ${
+                            isActive
+                              ? "text-ivory bg-ivory/10"
+                              : "text-ivory/55 hover:text-ivory hover:bg-ivory/5"
+                          }`
+                        }
+                        style={({ isActive }) => isActive ? { borderInlineStart: `2px solid ${accent}`, paddingInlineStart: "10px" } : {}}
+                      >
+                        <Icon size={14} strokeWidth={1.6} className="shrink-0" style={{ color: "inherit" }} />
+                        <span className="truncate">{label}</span>
+                        {key === "messages"  && overview?.messages_new   > 0 && <Badge count={overview.messages_new}   color={accent} />}
+                        {key === "responses" && overview?.responses_pending > 0 && <Badge count={overview.responses_pending} color={accent} />}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+
+                {/* Subtle separator after each group */}
+                {group.label && !isCollapsed && (
+                  <div className="mx-4 mt-2" style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />
+                )}
               </div>
             );
           })}
-          {isCustom && (
-            <button
-              type="button"
-              onClick={reset}
-              className="mt-3 mx-2 inline-flex items-center gap-1.5 text-[11.5px] text-ivory/45 hover:text-brass transition-colors"
-              data-testid="admin-nav-reset-order"
-            >
-              <RotateCcw size={11} strokeWidth={1.7} />
-              <span>{lang === "ar" ? "إعادة الترتيب الافتراضي" : "Reset default order"}</span>
-            </button>
-          )}
         </nav>
+
+        {/* User footer */}
         <div className="p-4 border-t border-ivory/10 space-y-2">
-          <div className="text-[11px] uppercase tracking-[0.22em] text-ivory/40">
-            {user.name}
-          </div>
-          <div className="text-[13px] text-ivory/75 truncate">{user.email}</div>
-          <div className="text-[11px] text-brass">{user.role}</div>
-          <div className="flex items-center gap-2 pt-2">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/40 truncate">{user.name}</div>
+          <div className="text-[12.5px] text-ivory/65 truncate">{user.email}</div>
+          <div className="text-[10.5px] text-brass uppercase tracking-[0.14em]">{user.role}</div>
+          <div className="flex items-center gap-2 pt-1">
             <button
               type="button"
               onClick={toggle}
-              className="h-8 px-2 text-[12px] border border-ivory/20 text-ivory/70 hover:text-ivory hover:border-ivory/40"
+              className="h-8 px-2 text-[12px] border border-ivory/20 text-ivory/70 hover:text-ivory hover:border-ivory/40 transition-colors"
               data-testid="admin-lang-switch"
             >
               {t("lang.switch")}
@@ -168,20 +228,31 @@ export default function AdminLayout() {
             <button
               type="button"
               onClick={async () => { await logout(); navigate("/"); }}
-              className="flex-1 h-8 inline-flex items-center justify-center gap-2 text-[12.5px] border border-ivory/20 text-ivory/80 hover:text-ivory hover:border-ivory/40"
+              className="flex-1 h-8 inline-flex items-center justify-center gap-1.5 text-[12px] border border-ivory/20 text-ivory/70 hover:text-ivory hover:border-ivory/40 transition-colors"
               data-testid="admin-logout"
             >
-              <LogOut size={14} />
+              <LogOut size={13} />
               <span>{t("nav.logout")}</span>
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 min-w-0" data-testid="admin-main">
+      {/* Main content — offset by sidebar width */}
+      <main className="flex-1 min-w-0 min-h-screen ms-[260px]" data-testid="admin-main">
         <Outlet context={{ overview, user }} />
       </main>
     </div>
+  );
+}
+
+function Badge({ count, color = "#B89B5E" }) {
+  return (
+    <span
+      className="ms-auto shrink-0 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold inline-flex items-center justify-center"
+      style={{ background: color, color: "#0A111C" }}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
   );
 }

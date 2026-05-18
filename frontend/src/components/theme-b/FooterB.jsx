@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Twitter, Linkedin, Youtube, Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
 import Logo from "@/components/brand/Logo";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -20,6 +21,16 @@ export default function FooterB() {
     : lang === "ar"
     ? `© ${year} مركز لزام للدراسات القانونية. جميع الحقوق محفوظة.`
     : `© ${year} LIZAM Center for Legal Research. All rights reserved.`;
+
+  const phone = site?.phone || "";
+  const socials = site?.social_links || {};
+  const socialItems = [
+    { key: "twitter",   Icon: Twitter,   href: socials.twitter },
+    { key: "linkedin",  Icon: Linkedin,  href: socials.linkedin },
+    { key: "youtube",   Icon: Youtube,   href: socials.youtube },
+    { key: "facebook",  Icon: Facebook,  href: socials.facebook },
+    { key: "instagram", Icon: Instagram, href: socials.instagram },
+  ].filter(s => s.href);
 
   const linkCls = "text-[14px] transition-colors duration-400";
   const linkStyle = { color: "rgba(249, 247, 243, 0.78)" };
@@ -87,23 +98,62 @@ export default function FooterB() {
             </h4>
             <ul className="space-y-4">
               {contactEmail && (
-                <li>
-                  <a
-                    href={`mailto:${contactEmail}`}
-                    className={linkCls}
-                    style={linkStyle}
-                    data-testid="footer-email"
-                  >
+                <li className="flex items-center gap-2.5">
+                  <Mail size={13} strokeWidth={1.5} style={{ color: "var(--tb-gold)", flexShrink: 0 }} />
+                  <a href={`mailto:${contactEmail}`} className={linkCls} style={linkStyle} data-testid="footer-email">
                     {contactEmail}
                   </a>
                 </li>
               )}
+              {phone && (
+                <li className="flex items-center gap-2.5">
+                  <Phone size={13} strokeWidth={1.5} style={{ color: "var(--tb-gold)", flexShrink: 0 }} />
+                  <a href={`tel:${phone}`} className={linkCls} style={linkStyle} data-testid="footer-phone">
+                    {phone}
+                  </a>
+                </li>
+              )}
               {address && (
-                <li className="text-[14px]" style={{ color: "rgba(249, 247, 243, 0.55)" }}>
-                  {address}
+                <li className="flex items-start gap-2.5">
+                  <MapPin size={13} strokeWidth={1.5} style={{ color: "var(--tb-gold)", flexShrink: 0, marginTop: 3 }} />
+                  <span className="text-[14px]" style={{ color: "rgba(249, 247, 243, 0.55)" }}>
+                    {address}
+                  </span>
                 </li>
               )}
             </ul>
+
+            {/* Social media icons */}
+            {socialItems.length > 0 && (
+              <div className="mt-8">
+                <div
+                  className="text-[11px] uppercase tracking-[0.2em] mb-4"
+                  style={{ color: "var(--tb-gold-soft)" }}
+                >
+                  {t("footer.followUs")}
+                </div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {socialItems.map(({ key, Icon, href }) => (
+                    <a
+                      key={key}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-testid={`footer-social-${key}`}
+                      className="w-9 h-9 flex items-center justify-center transition-colors duration-300"
+                      style={{
+                        border: "1px solid rgba(212,185,130,0.3)",
+                        color: "rgba(249,247,243,0.6)",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--tb-gold)"; e.currentTarget.style.color = "var(--tb-gold)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(212,185,130,0.3)"; e.currentTarget.style.color = "rgba(249,247,243,0.6)"; }}
+                    >
+                      <Icon size={15} strokeWidth={1.5} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -116,13 +166,6 @@ export default function FooterB() {
           style={{ color: "rgba(249, 247, 243, 0.5)" }}
         >
           <span data-testid="footer-copyright">{footerText}</span>
-          <div className="flex items-center gap-5">
-            <Link to="/policy" className="hover:text-[var(--tb-gold-soft)] transition-colors duration-400">{t("footer.legal")}</Link>
-            <span style={{ width: 8, height: 1, background: "var(--tb-gold)", display: "inline-block" }} />
-            <Link to="/privacy" className="hover:text-[var(--tb-gold-soft)] transition-colors duration-400">{t("footer.privacy")}</Link>
-            <span style={{ width: 8, height: 1, background: "var(--tb-gold)", display: "inline-block" }} />
-            <Link to="/terms" className="hover:text-[var(--tb-gold-soft)] transition-colors duration-400">{t("footer.terms")}</Link>
-          </div>
         </div>
       </div>
     </footer>

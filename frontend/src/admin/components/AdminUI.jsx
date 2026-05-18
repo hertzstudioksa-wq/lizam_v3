@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Save, Lightbulb } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { api, formatApiError } from "@/lib/api";
+import { useEmbeddedAdmin } from "@/admin/components/EmbeddedAdminCtx";
 
 export function AdminPage({ title, subtitle, children, actions, helpAr, helpEn }) {
   const { lang } = useLang();
@@ -42,12 +43,27 @@ export function Field({ label, hint, children, dir }) {
   );
 }
 
-export function TextInput({ value, onChange, dir, placeholder, type = "text", testid, style }) {
+export function TextInput({ value, onChange, dir, placeholder, type = "text", testid, style, rows }) {
+  if (rows && rows > 1) {
+    return (
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        dir={dir}
+        rows={rows}
+        placeholder={placeholder}
+        className="w-full px-3 py-2.5 border border-rule focus:border-navy outline-none text-[14.5px] leading-[1.85] resize-y bg-white"
+        style={style}
+        data-testid={testid}
+      />
+    );
+  }
   return (
     <input
       type={type}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
+      onKeyDown={(e) => { if (e.key === "Enter" && type !== "search") e.preventDefault(); }}
       dir={dir}
       placeholder={placeholder}
       className="w-full h-11 px-3 border border-rule focus:border-navy outline-none text-[14.5px] bg-white"
@@ -103,6 +119,21 @@ export function Toggle({ checked, onChange, label, testid }) {
 
 export function SaveBar({ dirty, saving, onSave, onReset, savedMessage }) {
   const { lang } = useLang();
+  const embedded = useEmbeddedAdmin();
+
+  // Keep a stable ref to the latest onSave so the registration doesn't re-run on every render
+  const onSaveRef = useRef(onSave);
+  useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
+  const stableSave = useCallback(() => onSaveRef.current?.(), []);
+
+  useEffect(() => {
+    if (!embedded?.register) return;
+    return embedded.register(stableSave);
+  }, [embedded, stableSave]);
+
+  // In embedded mode, hide the bar — AllSectionsAdmin provides its own save button
+  if (embedded) return null;
+
   return (
     <div className="mt-8 flex items-center gap-3">
       <button

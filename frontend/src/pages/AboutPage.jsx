@@ -1,5 +1,6 @@
 import PublicLayout from "@/components/layout/PublicLayout";
 import { useAboutContent } from "@/hooks/useSiteSettings";
+import { SectionRenderer } from "@/lib/sectionRegistry";
 import {
   AboutHeroB, AboutIntroB, AboutMissionVisionB, AboutObjectivesB,
   BoardOfDirectorsB, SuccessPartnersB, AboutStatsB, AboutContactCtaB,
@@ -39,6 +40,8 @@ export default function AboutPage() {
     ? about.visible_sections
     : DEFAULT_ORDER;
 
+  const extraSections = Array.isArray(about.extra_sections) ? about.extra_sections : [];
+
   return (
     <PublicLayout>
       {visible.map((key) => {
@@ -46,6 +49,9 @@ export default function AboutPage() {
         if (!Cmp) return null;
         return <Cmp key={key} about={about} />;
       })}
+      {extraSections.map((sec, i) => (
+        <SectionRenderer key={sec._id || i} section={sec} pageKey="about" />
+      ))}
     </PublicLayout>
   );
 }

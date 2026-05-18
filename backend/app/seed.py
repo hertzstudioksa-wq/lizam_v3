@@ -684,4 +684,56 @@ async def seed_all() -> None:
     for doc in hero_defaults:
         await _upsert_if_seed(db.hero_media, {"page_key": doc["page_key"]}, {**doc, "id": uid()})
 
+    # ---- Activities page ----
+    await _upsert_if_seed(db.activities_page, {"id": "activities"}, {
+        "id": "activities",
+        "visible_sections": ["hero", "intro", "news"],
+        "section_styles": {},
+        "hero_eyebrow_ar": "أخبار المركز",
+        "hero_eyebrow_en": "Center News",
+        "hero_title_ar": "الأنشطة والفعاليات",
+        "hero_title_en": "Activities & Events",
+        "hero_subtitle_ar": "آخر أنشطة مركز لزام للدراسات القانونية وفعالياته البحثية والأكاديمية.",
+        "hero_subtitle_en": "Latest activities and research events from LIZAM Center for Legal Studies.",
+        "intro_eyebrow_ar": "نبذة",
+        "intro_eyebrow_en": "Overview",
+        "intro_title_ar": "ما نقوم به",
+        "intro_title_en": "What We Do",
+        "intro_body_ar": "يحرص مركز لزام على إقامة الفعاليات البحثية والندوات الأكاديمية التي تُثري النقاش القانوني وتُسهم في تطوير المنظومة التشريعية.",
+        "intro_body_en": "LIZAM Center organizes research events and academic seminars that enrich legal discourse and contribute to legislative development.",
+        "news_eyebrow_ar": "آخر الأخبار",
+        "news_eyebrow_en": "Latest News",
+        "news_title_ar": "أحدث الفعاليات والأنشطة",
+        "news_title_en": "Recent Activities",
+        "news_body_ar": "تابعونا لمعرفة آخر فعاليات المركز وأنشطته البحثية.",
+        "news_body_en": "Stay tuned for our latest events and research activities.",
+        "created_at": utc_iso(), "updated_at": utc_iso(),
+    })
+
+    # ---- Fellows page ----
+    await _upsert_if_seed(db.fellows_page, {"id": "fellows"}, {
+        "id": "fellows",
+        "visible_sections": ["hero", "intro", "fellows"],
+        "section_styles": {},
+        "hero_eyebrow_ar": "مجتمع البحث",
+        "hero_eyebrow_en": "Research Community",
+        "hero_title_ar": "زملاء لزام",
+        "hero_title_en": "LIZAM Fellows",
+        "hero_subtitle_ar": "باحثون متميزون يساهمون في تطوير المنظومة القانونية بالمملكة العربية السعودية.",
+        "hero_subtitle_en": "Distinguished researchers contributing to the development of Saudi Arabia's legal landscape.",
+        "intro_eyebrow_ar": "من نحن",
+        "intro_eyebrow_en": "About",
+        "intro_title_ar": "برنامج زمالة لزام",
+        "intro_title_en": "LIZAM Fellowship Program",
+        "intro_body_ar": "يجمع برنامج زمالة لزام نخبة من الباحثين القانونيين المتميزين الذين يُسهمون في إثراء الدراسات القانونية وتطوير السياسات العامة في المملكة العربية السعودية.",
+        "intro_body_en": "The LIZAM Fellowship Program brings together a distinguished group of legal researchers who contribute to enriching legal studies and developing public policy in Saudi Arabia.",
+        "fellows_eyebrow_ar": "الزملاء",
+        "fellows_eyebrow_en": "Our Fellows",
+        "fellows_title_ar": "زملاء المركز",
+        "fellows_title_en": "Center Fellows",
+        "fellows_body_ar": "يضم المركز نخبة من الباحثين والمختصين في مجالات القانون المختلفة.",
+        "fellows_body_en": "The Center comprises a distinguished group of researchers and specialists in various fields of law.",
+        "created_at": utc_iso(), "updated_at": utc_iso(),
+    })
+
     logger.info("Seed complete (guarded)")

@@ -31,6 +31,8 @@ let webpackConfig = {
   webpack: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      // Use mammoth's pre-built browser bundle to avoid Node.js polyfill issues
+      'mammoth': path.resolve(__dirname, 'node_modules/mammoth/mammoth.browser.js'),
     },
     configure: (webpackConfig) => {
 
