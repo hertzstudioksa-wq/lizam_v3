@@ -91,13 +91,22 @@ export default function ContactBlockB() {
               <a
                 href={`mailto:${email}`}
                 className="inline-flex items-center gap-3 group transition-colors duration-400"
-                style={{ fontFamily: '"Thmanyah Serif Display", serif', fontSize: 22, color: "var(--tb-navy-900)" }}
+                style={{ fontSize: 22, color: "var(--tb-navy-900)" }}
                 data-testid="contact-email"
                 onMouseEnter={(e) => { e.currentTarget.style.color = "var(--tb-gold)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tb-navy-900)"; }}
               >
-                <Mail size={18} strokeWidth={1.5} />
-                <span>{email}</span>
+                {lang === "ar" ? (
+                  <>
+                    <Mail size={18} strokeWidth={1.5} />
+                    <span style={{ direction: "ltr", unicodeBidi: "embed" }}>{email}</span>
+                  </>
+                ) : (
+                  <>
+                    <Mail size={18} strokeWidth={1.5} />
+                    <span>{email}</span>
+                  </>
+                )}
               </a>
             </div>
 

@@ -33,20 +33,18 @@ function fmtTime(iso) {
 function MetricCard({ icon: Icon, label, value, sub, color, to }) {
   const inner = (
     <div
-      className="bg-white border border-rule p-5 flex flex-col gap-3 hover:border-brass transition-colors duration-200"
-      style={{ borderTop: `3px solid ${color}` }}
+      className="bg-white border border-rule flex flex-col items-center justify-center text-center hover:border-brass transition-colors duration-200 h-full"
+      style={{ borderTop: `3px solid ${color}`, minHeight: "150px", padding: "20px 16px" }}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-[0.2em] text-mute">{label}</span>
-        <div className="w-8 h-8 flex items-center justify-center" style={{ background: color + "18", color }}>
-          <Icon size={15} strokeWidth={1.6} />
-        </div>
+      <div className="w-9 h-9 flex items-center justify-center mb-3" style={{ background: color + "18", color }}>
+        <Icon size={16} strokeWidth={1.6} />
       </div>
-      <div className="text-[2.2rem] font-medium text-navy-deep tabular-nums leading-none">{value}</div>
-      {sub && <div className="text-[12px] text-mute">{sub}</div>}
+      <div className="text-[2rem] font-medium text-navy-deep tabular-nums leading-none mb-2">{value}</div>
+      <div className="text-[11px] uppercase tracking-[0.16em] text-mute leading-tight">{label}</div>
+      {sub && <div className="text-[11px] text-mute mt-1">{sub}</div>}
     </div>
   );
-  return to ? <Link to={to} className="block">{inner}</Link> : inner;
+  return to ? <Link to={to} className="block h-full">{inner}</Link> : inner;
 }
 
 /* ── Alert Card ── */

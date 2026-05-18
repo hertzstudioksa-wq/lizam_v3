@@ -51,8 +51,9 @@ const NAV_GROUPS = (lang) => {
       label: ar ? "التواصل" : "Communication",
       color: "#7BA08A", // sage green
       items: [
-        { key: "messages",  to: "/admin/messages",  icon: Mail,          label: ar ? "الرسائل" : "Messages" },
-        { key: "responses", to: "/admin/responses", icon: MessageSquare, label: ar ? "الردود البحثية" : "Responses" },
+        { key: "messages",    to: "/admin/messages",    icon: Mail,          label: ar ? "الرسائل" : "Messages" },
+        { key: "responses",   to: "/admin/responses",   icon: MessageSquare, label: ar ? "الردود البحثية" : "Responses" },
+        { key: "newsletter",  to: "/admin/newsletter",  icon: Mail,          label: ar ? "النشرة البريدية" : "Newsletter" },
       ],
     },
     {

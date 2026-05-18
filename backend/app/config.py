@@ -62,7 +62,7 @@ PERMISSIONS_MATRIX = {
         "uploads.create",
     },
     "reviewer": {
-        "publications.read", "responses.read", "responses.moderate",
+        "publications.read", "responses.read", "responses.moderate", "messages.read",
     },
     "registered": {
         "responses.submit",

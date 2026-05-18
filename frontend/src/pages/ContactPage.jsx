@@ -163,7 +163,7 @@ export default function ContactPage() {
                 <a
                   href={`mailto:${email}`}
                   className="text-[15px] hover:text-yellow-300 transition-colors"
-                  style={{ color: "var(--tb-paper-base, #FBFAF7)", fontFamily: '"Thmanyah Serif Display", serif' }}
+                  style={{ color: "var(--tb-paper-base, #FBFAF7)", direction: "ltr", unicodeBidi: "embed" }}
                   data-testid="contact-page-email"
                 >
                   {email}

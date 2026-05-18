@@ -37,6 +37,7 @@ import { AuthorsAdmin, CategoriesAdmin, UsersAdmin, MessagesAdmin } from "@/admi
 import AdminLayout from "@/admin/AdminLayout";
 import AdminOverview from "@/admin/pages/AdminOverview";
 import AdminComingSoon from "@/admin/pages/AdminComingSoon";
+import NewsletterAdmin from "@/admin/pages/NewsletterAdmin";
 import DynamicPage from "@/pages/DynamicPage";
 import PagesAdmin from "@/admin/pages/PagesAdmin";
 import CustomPageAdmin from "@/admin/pages/CustomPageAdmin";
@@ -98,6 +99,7 @@ function App() {
               <Route path="audit" element={<AuditLogAdmin />} />
               <Route path="users" element={<UsersAdmin />} />
               <Route path="messages" element={<MessagesAdmin />} />
+              <Route path="newsletter" element={<NewsletterAdmin />} />
               <Route path="home" element={<HomeAdmin />} />
               <Route path="about" element={<AboutAdmin />} />
               <Route path="contact" element={<ContactAdmin />} />
