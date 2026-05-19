@@ -26,12 +26,22 @@ const SECTION_RENDERERS = {
 const DEFAULT_ORDER = ["hero", "intro", "mission_vision", "objectives", "stats", "board", "partners", "contact_cta"];
 
 export default function AboutPage() {
-  const { data: about, loading } = useAboutContent();
+  const { data: about, loading, error } = useAboutContent();
 
-  if (loading || !about) {
+  if (loading) {
     return (
       <PublicLayout>
         <div className="pt-[140px] pb-20 text-center text-mute" data-testid="about-loading">…</div>
+      </PublicLayout>
+    );
+  }
+
+  if (error || !about) {
+    return (
+      <PublicLayout>
+        <div className="pt-[140px] pb-20 text-center text-mute">
+          تعذّر تحميل الصفحة — يرجى المحاولة لاحقاً
+        </div>
       </PublicLayout>
     );
   }
