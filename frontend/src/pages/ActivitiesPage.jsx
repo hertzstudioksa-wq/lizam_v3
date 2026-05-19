@@ -7,6 +7,7 @@ import { useLang } from "@/i18n/LanguageContext";
 import { useActivitiesPageContent } from "@/hooks/useSiteSettings";
 import { api } from "@/lib/api";
 import { getTextAlign } from "@/lib/sectionTypo";
+import Reveal from "@/components/theme-b/Reveal";
 
 function alignToFlex(align, isRtl) {
   if (align === "center") return "center";
@@ -54,42 +55,38 @@ export default function ActivitiesPage() {
       {/* ── HERO ── */}
       {visible.includes("hero") && (
         <section
-          className="relative isolate overflow-hidden flex flex-col"
-          style={{
-            minHeight: "62vh",
-            background: sectionBg("hero") || "var(--tb-navy-900, #0A111C)",
-            color: "var(--tb-paper-base, #FBFAF7)",
-          }}
+          className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[62vh]"
+          style={{ background: sectionBg("hero") || "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
           data-testid="activities-hero"
         >
           <HeroMediaLayer pageKey="activities" extendBehindHeader />
-          <div style={{ paddingTop: "clamp(130px, 16vh, 180px)" }} />
-          <div className="relative z-10 flex-1 flex flex-col justify-end pb-16 md:pb-20 mx-auto w-full max-w-[1200px] px-6 md:px-10 lg:px-14">
+          <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full min-h-[40vh]">
             {t("hero_eyebrow_ar", "hero_eyebrow_en") && (
-              <div className="flex items-center gap-3">
-                <span style={{ height: 1, width: 28, background: "var(--tb-gold, #B08C5A)", flexShrink: 0 }} />
-                <span style={{ color: "var(--tb-gold, #B08C5A)", letterSpacing: "0.22em", fontSize: 11 }} className="tb-overline uppercase">
-                  {t("hero_eyebrow_ar", "hero_eyebrow_en", "أخبار المركز", "Center News")}
-                </span>
-              </div>
+              <Reveal variant="up">
+                <div className="flex items-center gap-3">
+                  <span style={{ height: 1, width: 26, background: "var(--tb-gold, #B08C5A)" }} />
+                  <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)", textAlign: ga("hero","eyebrow") }}>
+                    {t("hero_eyebrow_ar", "hero_eyebrow_en", "أخبار المركز", "Center News")}
+                  </span>
+                </div>
+              </Reveal>
             )}
-            <h1
-              className="tb-display mt-4 max-w-[22ch]"
-              style={{ color: "var(--tb-paper-base, #FBFAF7)", fontSize: "clamp(2rem, 3.6vw, 3rem)", lineHeight: 1.15, textAlign: ga("hero","title") }}
-            >
-              {t("hero_title_ar", "hero_title_en", "الأنشطة والفعاليات", "Activities & Events")}
-            </h1>
+            <Reveal variant="up" delay={1}>
+              <h1
+                className="tb-display mt-5 max-w-[26ch]"
+                style={{ color: "var(--tb-paper-base, #FBFAF7)", fontSize: "clamp(2rem, 3.6vw, 3rem)", lineHeight: 1.2, textAlign: ga("hero","title") }}
+              >
+                {t("hero_title_ar", "hero_title_en", "الأنشطة والفعاليات", "Activities & Events")}
+              </h1>
+            </Reveal>
             {t("hero_subtitle_ar", "hero_subtitle_en") && (
-              <p className="mt-5 max-w-[60ch]"
-                style={{ color: "rgba(251,250,247,0.78)", fontSize: "clamp(14px, 1.5vw, 16.5px)", lineHeight: 1.8, whiteSpace: "pre-line", textAlign: ga("hero","subtitle") }}>
-                {t("hero_subtitle_ar", "hero_subtitle_en")}
-              </p>
+              <Reveal variant="up" delay={2}>
+                <p className="mt-6 max-w-[58ch]"
+                  style={{ color: "rgba(251,250,247,0.82)", fontSize: "1.0625rem", lineHeight: 1.85, whiteSpace: "pre-line", textAlign: ga("hero","subtitle") }}>
+                  {t("hero_subtitle_ar", "hero_subtitle_en")}
+                </p>
+              </Reveal>
             )}
-            <div className="mt-10 flex items-center gap-4">
-              <span style={{ height: 1, width: 48, background: "var(--tb-gold, #B08C5A)", opacity: 0.5 }} />
-              <span style={{ height: 4, width: 4, borderRadius: "50%", background: "var(--tb-gold, #B08C5A)", opacity: 0.5 }} />
-              <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)", opacity: 0.3 }} />
-            </div>
           </div>
         </section>
       )}

@@ -69,7 +69,7 @@ export default function HeroMediaLayer({
           alt=""
           loading="eager"
           decoding="async"
-          className="absolute inset-0 w-full h-full"
+          className="absolute inset-0 w-full h-full tb-ken-burns"
           style={{ objectFit: "cover", objectPosition: `${fx}% ${fy}%` }}
         />
       )}

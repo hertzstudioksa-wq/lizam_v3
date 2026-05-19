@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Reveal from "@/components/theme-b/Reveal";
 import { Mail, MapPin, Phone, Send, Clock, ArrowLeft, ArrowRight, Twitter, Linkedin, Youtube, Facebook, Instagram } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
@@ -86,55 +87,30 @@ export default function ContactPage() {
           HERO
       ───────────────────────────────────────────── */}
       <section
-        className="relative isolate overflow-hidden flex flex-col"
-        style={{
-          minHeight: "62vh",
-          background: "var(--tb-navy-900, #0A111C)",
-          color: "var(--tb-paper-base, #FBFAF7)",
-        }}
+        className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[62vh]"
+        style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
         data-testid="contact-masthead"
       >
         <HeroMediaLayer pageKey="contact" extendBehindHeader />
-
-        {/* Top spacer pushes content down (behind header) */}
-        <div style={{ paddingTop: "clamp(130px, 16vh, 180px)" }} />
-
-        {/* Hero content */}
-        <div className="relative z-10 flex-1 flex flex-col justify-end pb-16 md:pb-20 mx-auto w-full max-w-[1200px] px-6 md:px-10 lg:px-14">
-          <div className="flex items-center gap-3">
-            <span style={{ height: 1, width: 28, background: "var(--tb-gold, #B08C5A)", flexShrink: 0 }} />
-            <span
-              className="tb-overline"
-              style={{ color: "var(--tb-gold, #B08C5A)", letterSpacing: "0.22em", fontSize: 11 }}
-            >
-              {contactEyebrow}
-            </span>
-          </div>
-
-          <h1
-            className="tb-display mt-4 max-w-[22ch]"
-            style={{
-              color: "var(--tb-paper-base, #FBFAF7)",
-              fontSize: "clamp(2rem, 3.6vw, 3rem)",
-              lineHeight: 1.15,
-            }}
-          >
-            {heroTitle}
-          </h1>
-
-          <p
-            className="mt-5 max-w-[60ch]"
-            style={{ color: "rgba(251,250,247,0.78)", fontSize: "clamp(14px, 1.5vw, 16.5px)", lineHeight: 1.8, whiteSpace: "pre-line", textAlign: ga("hero","subtitle") }}
-          >
-            {heroSubtitle}
-          </p>
-
-          {/* decorative bottom line */}
-          <div className="mt-10 flex items-center gap-4">
-            <span style={{ height: 1, width: 48, background: "var(--tb-gold, #B08C5A)", opacity: 0.5 }} />
-            <span style={{ height: 4, width: 4, borderRadius: "50%", background: "var(--tb-gold, #B08C5A)", opacity: 0.5 }} />
-            <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)", opacity: 0.3 }} />
-          </div>
+        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full min-h-[40vh]">
+          <Reveal variant="up">
+            <div className="flex items-center gap-3">
+              <span style={{ height: 1, width: 26, background: "var(--tb-gold, #B08C5A)" }} />
+              <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>{contactEyebrow}</span>
+            </div>
+          </Reveal>
+          <Reveal variant="up" delay={1}>
+            <h1 className="tb-display mt-5 max-w-[26ch]"
+              style={{ color: "var(--tb-paper-base, #FBFAF7)", fontSize: "clamp(2rem, 3.6vw, 3rem)", lineHeight: 1.2 }}>
+              {heroTitle}
+            </h1>
+          </Reveal>
+          <Reveal variant="up" delay={2}>
+            <p className="mt-6 max-w-[58ch]"
+              style={{ color: "rgba(251,250,247,0.82)", fontSize: "1.0625rem", lineHeight: 1.85, whiteSpace: "pre-line", textAlign: ga("hero","subtitle") }}>
+              {heroSubtitle}
+            </p>
+          </Reveal>
         </div>
       </section>
 

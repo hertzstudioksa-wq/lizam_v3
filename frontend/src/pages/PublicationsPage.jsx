@@ -3,6 +3,7 @@ import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import PublicationCard from "@/components/publications/PublicationCard";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
+import Reveal from "@/components/theme-b/Reveal";
 import { useLang } from "@/i18n/LanguageContext";
 import { usePublications, useCategories, useAuthors } from "@/hooks/usePublications";
 import { usePublicationsPageContent } from "@/hooks/useSiteSettings";
@@ -88,31 +89,35 @@ export default function PublicationsPage() {
     <PublicLayout>
       {/* Masthead — cinematic hero band (image background + dark overlay) */}
       <section
-        className="relative isolate pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh] overflow-hidden"
-        data-testid="publications-masthead"
+        className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[62vh]"
         style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
+        data-testid="publications-masthead"
       >
         <HeroMediaLayer pageKey="publications" extendBehindHeader />
-        <div className="relative z-10 mx-auto max-w-[1360px] px-6 md:px-10 lg:px-14">
-          <div className="lz-eyebrow" style={{ color: "var(--tb-gold, #B4914A)" }}>
-            {heroEyebrow}
-          </div>
-          <div className="mt-3 h-px w-12" style={{ background: "var(--tb-gold, #B4914A)" }} />
-          <div className="mt-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-            <div>
-              <h1 className="lz-display max-w-[22ch]" style={{ color: "var(--tb-paper-base, #FBFAF7)" }}>
-                {heroTitle}
-              </h1>
-              {heroSubtitle && (
-                <p className="mt-3 max-w-[56ch]" style={{ color: "rgba(251,250,247,0.75)", fontSize: 15, lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                  {heroSubtitle}
-                </p>
-              )}
+        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full min-h-[40vh]">
+          <Reveal variant="up">
+            <div className="flex items-center gap-3">
+              <span style={{ height: 1, width: 26, background: "var(--tb-gold, #B4914A)" }} />
+              <span className="tb-overline" style={{ color: "var(--tb-gold, #B4914A)" }}>{heroEyebrow}</span>
             </div>
-            <p className="text-[13.5px] uppercase tracking-[0.18em] tabular-nums shrink-0" style={{ color: "rgba(251,250,247,0.72)" }}>
+          </Reveal>
+          <Reveal variant="up" delay={1}>
+            <h1 className="tb-display mt-5 max-w-[26ch]" style={{ color: "var(--tb-paper-base, #FBFAF7)", fontSize: "clamp(2rem, 3.6vw, 3rem)", lineHeight: 1.2 }}>
+              {heroTitle}
+            </h1>
+          </Reveal>
+          {heroSubtitle && (
+            <Reveal variant="up" delay={2}>
+              <p className="mt-6 max-w-[58ch]" style={{ color: "rgba(251,250,247,0.82)", fontSize: "1.0625rem", lineHeight: 1.85, whiteSpace: "pre-line" }}>
+                {heroSubtitle}
+              </p>
+            </Reveal>
+          )}
+          <Reveal variant="up" delay={3}>
+            <p className="mt-4 text-[13.5px] uppercase tracking-[0.18em] tabular-nums" style={{ color: "rgba(251,250,247,0.6)" }}>
               {total} {countSuffix}
             </p>
-          </div>
+          </Reveal>
         </div>
       </section>
 

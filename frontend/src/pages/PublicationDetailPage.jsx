@@ -7,6 +7,7 @@ import {
 import PublicLayout from "@/components/layout/PublicLayout";
 import PublicationCard from "@/components/publications/PublicationCard";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
+import Reveal from "@/components/theme-b/Reveal";
 import { useLang } from "@/i18n/LanguageContext";
 import { useAuth } from "@/auth/AuthContext";
 import { usePublication } from "@/hooks/usePublications";
@@ -155,39 +156,38 @@ export default function PublicationDetailPage() {
     <PublicLayout>
       {/* Cinematic masthead — matches /publications, /about, /contact heights */}
       <section
-        className="relative isolate pt-[130px] md:pt-[150px] pb-14 md:pb-16 min-h-[46vh] md:min-h-[50vh] overflow-hidden"
+        className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[62vh]"
         style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
         data-testid="publication-hero"
       >
         <HeroMediaLayer pageKey="publication_detail" extendBehindHeader />
-        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full">
-          <nav className="flex items-center gap-2 text-[12px] uppercase tracking-[0.18em]" style={{ color: "rgba(251,250,247,0.78)" }}>
-            <Link to="/" className="hover:text-white transition-colors">{lang === "ar" ? "الرئيسية" : "Home"}</Link>
-            <Chevron size={11} />
-            <Link to="/publications" className="hover:text-white transition-colors">{lang === "ar" ? "الإصدارات" : "Publications"}</Link>
-            {category && (<>
+        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full min-h-[40vh]">
+          <Reveal variant="up">
+            <div className="flex items-center gap-3 mb-2">
+              <span style={{ height: 1, width: 26, background: "var(--tb-gold)" }} />
+              <span className="tb-overline" style={{ color: "var(--tb-gold)" }}>{type}</span>
+            </div>
+          </Reveal>
+          <Reveal variant="up" delay={1}>
+            <h1
+              className="tb-display mt-3 max-w-[30ch]"
+              style={{ color: "var(--tb-paper-base)", fontWeight: 500, fontSize: "clamp(2rem, 3.6vw, 3rem)", lineHeight: 1.2 }}
+              data-testid="pub-title"
+            >
+              {title}
+            </h1>
+          </Reveal>
+          <Reveal variant="up" delay={2}>
+            <nav className="mt-5 flex items-center gap-2 text-[12px] uppercase tracking-[0.18em]" style={{ color: "rgba(251,250,247,0.55)" }}>
+              <Link to="/" className="hover:text-white transition-colors">{lang === "ar" ? "الرئيسية" : "Home"}</Link>
               <Chevron size={11} />
-              <span style={{ color: "var(--tb-gold)" }}>{category[`title_${lang}`]}</span>
-            </>)}
-          </nav>
-
-          <div className="mt-6 flex items-center gap-3 text-[11.5px] uppercase tracking-[0.22em] font-semibold" style={{ color: "var(--tb-gold)" }}>
-            <span className="h-px w-10" style={{ background: "var(--tb-gold)" }} />
-            <span>{type}</span>
-          </div>
-
-          <h1
-            className="tb-display mt-5 max-w-[30ch]"
-            style={{
-              color: "var(--tb-paper-base)",
-              fontWeight: 500,
-              fontSize: "clamp(1.85rem, 3.4vw, 2.85rem)",
-              lineHeight: 1.22,
-            }}
-            data-testid="pub-title"
-          >
-            {title}
-          </h1>
+              <Link to="/publications" className="hover:text-white transition-colors">{lang === "ar" ? "الإصدارات" : "Publications"}</Link>
+              {category && (<>
+                <Chevron size={11} />
+                <span style={{ color: "var(--tb-gold)" }}>{category[`title_${lang}`]}</span>
+              </>)}
+            </nav>
+          </Reveal>
         </div>
       </section>
 

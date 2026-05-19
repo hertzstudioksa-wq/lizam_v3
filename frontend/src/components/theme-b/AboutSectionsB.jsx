@@ -90,7 +90,7 @@ export function AboutHeroB({ about }) {
     <section
       id="about-hero"
       data-testid="about-section-hero"
-      className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[60vh]"
+      className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[62vh]"
       style={{ backgroundColor: bgColor, color: "var(--tb-paper-base)" }}
     >
       {hasBg && (
@@ -133,7 +133,7 @@ export function AboutHeroB({ about }) {
             className="tb-display mt-5 max-w-[26ch]"
             style={{
               color: tsTitle.color || "var(--tb-paper-base)",
-              fontSize: `calc(clamp(1.85rem, 3.4vw, 2.85rem) * ${tsTitle.sizeMul})`,
+              fontSize: `calc(clamp(2rem, 3.6vw, 3rem) * ${tsTitle.sizeMul})`,
               lineHeight: 1.2,
               fontWeight: tsTitle.fontWeight,
               textAlign: alignTitle || undefined,

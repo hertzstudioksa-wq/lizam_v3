@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
+import Reveal from "@/components/theme-b/Reveal";
 import PublicLayout from "@/components/layout/PublicLayout";
 import { useLang } from "@/i18n/LanguageContext";
 import { api } from "@/lib/api";
@@ -61,31 +62,34 @@ export default function NewsDetailPage() {
 
       {/* ── Hero ── */}
       <section
-        className="relative isolate overflow-hidden flex flex-col"
-        style={{ minHeight: "52vh", background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
+        className="relative isolate overflow-hidden pt-[140px] md:pt-[160px] pb-20 md:pb-24 min-h-[62vh]"
+        style={{ background: "var(--tb-navy-900, #0A111C)", color: "var(--tb-paper-base, #FBFAF7)" }}
       >
         {item.cover_image_url && (
           <img src={item.cover_image_url} alt={title}
             className="absolute inset-0 w-full h-full object-cover pointer-events-none"
             style={{ opacity: 0.35 }} />
         )}
-        <div style={{ paddingTop: "clamp(130px,16vh,180px)" }} />
-        <div className="relative z-10 flex-1 flex flex-col justify-end pb-14 mx-auto w-full max-w-[900px] px-6 md:px-10">
+        <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full min-h-[40vh]">
           {category && (
-            <div className="flex items-center gap-2 mb-4">
-              <span style={{ height: 1, width: 20, background: "var(--tb-gold,#B08C5A)", flexShrink: 0 }} />
-              <span style={{ fontSize: 10.5, letterSpacing: "0.22em", color: "var(--tb-gold,#B08C5A)" }} className="uppercase">
-                {category}
-              </span>
-            </div>
+            <Reveal variant="up">
+              <div className="flex items-center gap-3 mb-2">
+                <span style={{ height: 1, width: 26, background: "var(--tb-gold,#B08C5A)" }} />
+                <span className="tb-overline" style={{ color: "var(--tb-gold,#B08C5A)" }}>{category}</span>
+              </div>
+            </Reveal>
           )}
-          <h1 className="tb-display" style={{ fontSize: "clamp(1.8rem,3.2vw,2.8rem)", lineHeight: 1.2 }}>
-            {title}
-          </h1>
+          <Reveal variant="up" delay={1}>
+            <h1 className="tb-display mt-3 max-w-[26ch]" style={{ fontSize: "clamp(2rem,3.6vw,3rem)", lineHeight: 1.2 }}>
+              {title}
+            </h1>
+          </Reveal>
           {summary && (
-            <p className="mt-4 max-w-[65ch]" style={{ fontSize: "clamp(14px,1.4vw,16.5px)", lineHeight: 1.8, color: "rgba(251,250,247,0.75)", whiteSpace: "pre-line" }}>
-              {summary}
-            </p>
+            <Reveal variant="up" delay={2}>
+              <p className="mt-6 max-w-[58ch]" style={{ fontSize: "1.0625rem", lineHeight: 1.85, color: "rgba(251,250,247,0.82)", whiteSpace: "pre-line" }}>
+                {summary}
+              </p>
+            </Reveal>
           )}
           <div className="mt-6 flex items-center gap-4 text-[12px]" style={{ color: "rgba(251,250,247,0.5)" }}>
             {item.date && (
