@@ -215,7 +215,7 @@ export default function HeroB() {
           </Link>
           {ctaSecondary && (
             <Link
-              to={ctaSecondaryLink || "#about"}
+              to={ctaSecondaryLink || "/contact"}
               className="inline-flex items-center gap-2 px-7 py-4 transition-colors duration-400"
               style={{
                 color: tsCta2.color || "rgba(251, 250, 247, 0.85)",

@@ -82,7 +82,7 @@ export default function FellowsPage() {
                 <div className="flex items-center gap-3 mb-6"
                   style={{ justifyContent: alignToFlex(ga("intro","eyebrow"), isRtl) }}>
                   <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
-                  <span style={{ fontSize: 10.5, letterSpacing: "0.22em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
+                  <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
                     {t("intro_eyebrow_ar", "intro_eyebrow_en")}
                   </span>
                 </div>
@@ -112,7 +112,7 @@ export default function FellowsPage() {
               <div className="flex items-center gap-3 mb-6"
                 style={{ justifyContent: alignToFlex(ga("fellows","eyebrow"), isRtl) }}>
                 <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
-                <span style={{ fontSize: 10.5, letterSpacing: "0.22em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
+                <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
                   {t("fellows_eyebrow_ar", "fellows_eyebrow_en")}
                 </span>
               </div>

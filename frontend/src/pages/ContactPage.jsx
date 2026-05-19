@@ -122,7 +122,7 @@ export default function ContactPage() {
         data-testid="contact-channels"
       >
         <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14">
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10" style={{ direction: isRtl ? "rtl" : "ltr" }}>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ direction: isRtl ? "rtl" : "ltr" }}>
 
             {/* Email */}
             <div className="flex items-start gap-4 py-8 px-2 md:px-6">
@@ -204,7 +204,7 @@ export default function ContactPage() {
           <div className="mb-12 md:mb-16 text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
               <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
-              <span style={{ fontSize: 10.5, letterSpacing: "0.22em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
+              <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
                 {isRtl ? "أرسل رسالتك" : "Send a message"}
               </span>
               <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
@@ -454,7 +454,7 @@ function SuccessCard({ title, body, isRtl, ArrowIcon }) {
         </svg>
       </div>
 
-      <div style={{ fontSize: 10.5, letterSpacing: "0.22em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase mt-6 mb-3">
+      <div className="tb-overline mt-6 mb-3" style={{ color: "var(--tb-gold, #B08C5A)" }}>
         {isRtl ? "تم الاستلام" : "Received"}
       </div>
       <div style={{ height: 1, width: 40, background: "var(--tb-gold, #B08C5A)", margin: "0 auto 24px" }} />

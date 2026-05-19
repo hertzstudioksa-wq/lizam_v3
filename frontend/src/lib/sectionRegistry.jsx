@@ -253,7 +253,7 @@ function LibrarySectionRenderer({ type, config, lang }) {
           {eyebrow && (
             <div className="flex items-center gap-3 mb-4">
               <span style={{ height:1,width:24,background:"var(--tb-gold,#B08C5A)",flexShrink:0 }} />
-              <span style={{ fontSize:11,letterSpacing:"0.22em",color:"var(--tb-gold,#B08C5A)" }} className="uppercase">{eyebrow}</span>
+              <span className="tb-overline" style={{ color:"var(--tb-gold,#B08C5A)" }}>{eyebrow}</span>
             </div>
           )}
           {title && <h2 className="tb-display" style={{ fontSize:"clamp(1.8rem,3.2vw,2.8rem)",lineHeight:1.2 }}>{title}</h2>}
@@ -316,7 +316,7 @@ function LibrarySectionRenderer({ type, config, lang }) {
             {eyebrow && (
               <div className="flex items-center gap-2 mb-4">
                 <span style={{ height:1,width:20,background:"var(--tb-gold,#B08C5A)" }} />
-                <span style={{ fontSize:10.5,letterSpacing:"0.2em",color:"var(--tb-gold,#B08C5A)" }} className="uppercase">{eyebrow}</span>
+                <span className="tb-overline" style={{ color:"var(--tb-gold,#B08C5A)" }}>{eyebrow}</span>
               </div>
             )}
             {mainTitle && (

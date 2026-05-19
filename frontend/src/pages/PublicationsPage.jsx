@@ -266,7 +266,7 @@ function AuthorsCarousel({ authors, lang, selected, onSelect, heading, subheadin
         <div className="mb-7">
           <div className="flex items-center gap-2 mb-2">
             <span style={{ height: 1, width: 20, background: "var(--tb-gold, #B4914A)", flexShrink: 0 }} />
-            <span style={{ fontSize: 10.5, letterSpacing: "0.2em", color: "var(--tb-gold, #B4914A)" }} className="uppercase">
+            <span className="tb-overline" style={{ color: "var(--tb-gold, #B4914A)" }}>
               {heading}
             </span>
           </div>

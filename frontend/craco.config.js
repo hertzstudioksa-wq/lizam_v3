@@ -59,6 +59,14 @@ let webpackConfig = {
 };
 
 webpackConfig.devServer = (devServerConfig) => {
+  // Proxy /api calls to the VPS backend during local development
+  devServerConfig.proxy = [
+    {
+      context: ["/api", "/uploads"],
+      target: "http://76.13.0.195",
+      changeOrigin: true,
+    },
+  ];
   // Add health check endpoints if enabled
   if (config.enableHealthCheck && setupHealthEndpoints && healthPluginInstance) {
     const originalSetupMiddlewares = devServerConfig.setupMiddlewares;

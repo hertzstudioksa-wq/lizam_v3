@@ -405,7 +405,7 @@ function SidebarHeading({ children }) {
   return (
     <div className="flex items-center gap-2 mb-1">
       <span style={{ height: 1, width: 18, background: "var(--tb-gold, #B08C5A)", flexShrink: 0 }} />
-      <span style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
+      <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
         {children}
       </span>
     </div>

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "@/App.css";
 import "@/styles/theme-b.css";
 import "@/admin/tiptap.css";
@@ -45,6 +46,12 @@ import AllSectionsAdmin from "@/admin/pages/AllSectionsAdmin";
 
 /** Small ambient component that pushes dynamic brand tokens onto :root
  *  once site-settings are loaded (primary_color, accent_color, etc.). */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 function BrandThemeSync() {
   const { data } = useSiteSettings();
   useTheme();
@@ -69,6 +76,7 @@ function App() {
     <LanguageProvider defaultLang="ar">
       <AuthProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <BrandThemeSync />
           <Routes>
             {/* Public */}
