@@ -80,6 +80,7 @@ export default function HeaderB() {
   const isAdmin = isAuthed && ADMIN_ROLES.has(user.role);
 
   return (
+    <>
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300`}
       style={{
@@ -169,7 +170,7 @@ export default function HeaderB() {
             type="button"
             onClick={() => setOpen((o) => !o)}
             className="md:hidden h-11 w-11 inline-flex items-center justify-center"
-            style={{ color: solid ? "var(--tb-navy-900)" : "var(--tb-paper-base)" }}
+            style={{ color: (solid && !scrolled) ? "var(--tb-navy-900)" : "var(--tb-paper-base)" }}
             aria-label={open ? "Close menu" : "Open menu"}
             data-testid="mobile-menu-toggle"
           >
@@ -177,66 +178,69 @@ export default function HeaderB() {
           </button>
         </div>
       </div>
+    </header>
 
-      {/* Mobile full-screen overlay */}
-      {open && (
-        <div
-          className="md:hidden fixed inset-0 top-[72px] tb-mobile-overlay z-40 overflow-y-auto"
-          data-testid="mobile-nav"
-        >
-          <div className="px-6 pt-10 pb-16 max-w-[600px] mx-auto">
-            <div className="tb-section-eyebrow mb-8">
-              <span className="rule" />
-              <span className="tb-overline">{lang === "ar" ? "القائمة" : "Menu"}</span>
-            </div>
-            <nav className="flex flex-col">
-              {items.map((it, i) => (
-                <NavLink
-                  key={it.to}
-                  to={it.to}
-                  end={it.to === "/"}
-                  onClick={() => setOpen(false)}
-                  className="tb-mobile-link tb-rise"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                  data-testid={`${it.testid}-mobile`}
-                >
-                  {it.label}
-                </NavLink>
-              ))}
-            </nav>
-            <div className="mt-10 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={toggle}
-                className="tb-btn-ghost"
-                data-testid="language-switch-mobile"
+    {/* Mobile overlay — rendered OUTSIDE <header> so backdrop-filter doesn't
+        create a containing block that breaks fixed positioning */}
+    {open && (
+      <div
+        className="md:hidden tb-mobile-overlay overflow-y-auto"
+        style={{ position: "fixed", inset: 0, top: 72, zIndex: 45 }}
+        data-testid="mobile-nav"
+      >
+        <div className="px-6 pt-10 pb-16 max-w-[600px] mx-auto">
+          <div className="tb-section-eyebrow mb-8">
+            <span className="rule" />
+            <span className="tb-overline">{lang === "ar" ? "القائمة" : "Menu"}</span>
+          </div>
+          <nav className="flex flex-col">
+            {items.map((it, i) => (
+              <NavLink
+                key={it.to}
+                to={it.to}
+                end={it.to === "/"}
+                onClick={() => setOpen(false)}
+                className="tb-mobile-link tb-rise"
+                style={{ animationDelay: `${i * 80}ms` }}
+                data-testid={`${it.testid}-mobile`}
               >
-                {t("lang.switch")}
-              </button>
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  className="tb-btn-ghost inline-flex items-center gap-1.5"
-                  onClick={() => setOpen(false)}
-                  data-testid="admin-entry-btn-mobile"
-                >
-                  <LayoutDashboard size={14} strokeWidth={1.8} />
-                  <span>{t("nav.admin")}</span>
-                </Link>
-              )}
-              {isAuthed ? (
-                <Link to="/account" className="tb-btn-secondary text-[13px] py-2 px-4" onClick={() => setOpen(false)}>
-                  {t("nav.account")}
-                </Link>
-              ) : (
-                <Link to="/login" className="tb-btn-secondary text-[13px] py-2 px-4" onClick={() => setOpen(false)}>
-                  {t("nav.login")}
-                </Link>
-              )}
-            </div>
+                {it.label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="mt-10 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={toggle}
+              className="tb-btn-ghost"
+              data-testid="language-switch-mobile"
+            >
+              {t("lang.switch")}
+            </button>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className="tb-btn-ghost inline-flex items-center gap-1.5"
+                onClick={() => setOpen(false)}
+                data-testid="admin-entry-btn-mobile"
+              >
+                <LayoutDashboard size={14} strokeWidth={1.8} />
+                <span>{t("nav.admin")}</span>
+              </Link>
+            )}
+            {isAuthed ? (
+              <Link to="/account" className="tb-btn-secondary text-[13px] py-2 px-4" onClick={() => setOpen(false)}>
+                {t("nav.account")}
+              </Link>
+            ) : (
+              <Link to="/login" className="tb-btn-secondary text-[13px] py-2 px-4" onClick={() => setOpen(false)}>
+                {t("nav.login")}
+              </Link>
+            )}
           </div>
         </div>
-      )}
-    </header>
+      </div>
+    )}
+    </>
   );
 }

@@ -135,7 +135,7 @@ export default function HeroB() {
             className="tb-overline"
             style={{
               color: tsEyebrow.color || "var(--tb-gold-soft)",
-              letterSpacing: "0.22em",
+              letterSpacing: lang === "ar" ? "0.08em" : "0.22em",
               fontSize: tsEyebrow.__sizeMul ? `calc(0.78rem * ${tsEyebrow.__sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
               textAlign: alignOf("eyebrow"),
@@ -154,9 +154,10 @@ export default function HeroB() {
             lineHeight: lang === "ar" ? 1.18 : 1.04,
             fontWeight: tsTitle.fontWeight ?? 500,
             letterSpacing: lang === "ar" ? "0" : "-0.018em",
+            wordSpacing: "normal",
             maxWidth: "18ch",
             color: tsTitle.color || "var(--tb-paper-base)",
-            textAlign: alignOf("title"),
+            textAlign: alignOf("title") || "center",
           }}
           data-testid="hero-title"
         >

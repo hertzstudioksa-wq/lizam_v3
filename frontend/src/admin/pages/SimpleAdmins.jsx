@@ -556,9 +556,9 @@ export function MessagesAdmin() {
   ];
 
   return (
-    <AdminPage title={tr("رسائل التواصل", "Contact Messages")} subtitle={tr("صندوق الوارد · تخزين فقط (إرسال البريد متوقف حتى تفعيل Resend)", "Inbox · Store only (email delivery deferred until Resend key configured)")}
-      helpAr="رسائل نموذج التواصل العام. تُخزَّن جميعها في قاعدة البيانات. عند تفعيل خدمة Resend مستقبلاً، سترسل أيضاً إلى بريد المركز تلقائياً. تستطيع تعليم الرسالة كمقروءة أو أرشفتها."
-      helpEn="Submissions from the public contact form. All stored in the database. When Resend is configured later, they'll also forward to the Center inbox automatically. Mark messages as read or archive them.">
+    <AdminPage title={tr("رسائل التواصل", "Contact Messages")} subtitle={tr("صندوق الوارد", "Inbox")}
+      helpAr="رسائل نموذج التواصل العام. تُخزَّن جميعها في قاعدة البيانات. تستطيع تعليم الرسالة كمقروءة أو أرشفتها."
+      helpEn="Submissions from the public contact form. All stored in the database. Mark messages as read or archive them.">
       {msg && <div className="mb-4 px-4 py-2 bg-paper border-l-2 border-brass text-[13px]">{msg}</div>}
       <div className="flex items-center gap-2 mb-5 flex-wrap">
         {FILTERS.map(([k, label]) => (
