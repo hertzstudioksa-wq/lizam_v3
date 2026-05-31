@@ -22,7 +22,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
-          REACT_APP_BACKEND_URL: ''h
+          REACT_APP_BACKEND_URL: ''
           CI: false
         run: |
           npm ci --legacy-peer-deps
