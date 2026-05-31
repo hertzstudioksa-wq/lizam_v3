@@ -22,7 +22,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         env:
-          REACT_APP_BACKEND_URL: ''
+          REACT_APP_BACKEND_URL: ''h
           CI: false
         run: |
           npm ci --legacy-peer-deps
@@ -33,7 +33,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+                    key: ${{ secrets.VPS_SSH_KEY }}
           source: "backend/app/,backend/server.py,backend/requirements.txt"
           target: "/var/www/lizam/backend/"
           strip_components: 1
@@ -43,7 +43,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+                    key: ${{ secrets.VPS_SSH_KEY }}
           source: "frontend/build/"
           target: "/var/www/lizam/frontend/"
           strip_components: 2
@@ -53,7 +53,7 @@ jobs:
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
+                    key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /var/www/lizam/backend
             ./venv/bin/pip install -r requirements.txt -q 2>/dev/null || true
