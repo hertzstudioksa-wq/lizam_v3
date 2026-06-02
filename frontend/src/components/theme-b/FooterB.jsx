@@ -47,7 +47,7 @@ export default function FooterB() {
           <span style={{ height: 1, width: 56, background: "var(--tb-gold)" }} />
           <span
             className="text-[11px] font-semibold"
-            style={{ color: "var(--tb-gold)", letterSpacing: "0.22em", textTransform: "uppercase" }}
+            style={{ color: "var(--tb-gold)", letterSpacing: lang === "ar" ? "0.02em" : "0.22em", textTransform: lang === "ar" ? "none" : "uppercase" }}
           >
             {lang === "ar" ? "المركز البحثي" : "The Research Center"}
           </span>
