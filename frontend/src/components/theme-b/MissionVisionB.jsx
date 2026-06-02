@@ -44,12 +44,10 @@ function Half({
   // Default "outward pull" alignment based on which half + language. Admin
   // per-field overrides (alignLabel / alignTitle / alignBody) take precedence
   // and are independent per language.
-  const defaultAlign = lang === "ar"
-    ? (side === "left" ? "left" : "right")
-    : (side === "left" ? "right" : "left");
+  const defaultAlign = "center";
   const labelAlign = alignLabel || defaultAlign;
   const titleAlign = alignTitle || defaultAlign;
-  const bodyAlign = alignBody || defaultAlign;
+  const bodyAlign = alignBody || "justify";
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const defaultBg = dark ? "var(--tb-navy-900)" : "var(--tb-paper-base)";
   return (
@@ -81,7 +79,6 @@ function Half({
             justifyContent: labelAlign === "right" ? "flex-end" : labelAlign === "center" ? "center" : "flex-start",
           }}
         >
-          <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
           <span
             className="tb-overline"
             style={{
@@ -106,7 +103,7 @@ function Half({
             maxWidth: "26ch",
             color: dark ? "var(--tb-paper-base)" : "var(--tb-navy-900)",
             textAlign: titleAlign,
-            marginInline: titleAlign === "right" ? "auto 0" : titleAlign === "center" ? "auto" : "0 auto",
+            marginInline: "auto",
           }}
         >
           {title}
@@ -123,7 +120,8 @@ function Half({
             fontWeight: ts.fontWeight,
             maxWidth: "48ch",
             textAlign: bodyAlign,
-            marginInline: bodyAlign === "right" ? "auto 0" : bodyAlign === "center" ? "auto" : "0 auto",
+            textAlignLast: "center",
+            marginInline: "auto",
             whiteSpace: "pre-line",
           }}
         >
