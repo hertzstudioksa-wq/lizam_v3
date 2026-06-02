@@ -58,7 +58,7 @@ export default function NewsletterB() {
       <div className="relative z-10 mx-auto max-w-[920px] px-6 md:px-12 py-28 md:py-36 text-center">
         <div className="inline-flex items-center justify-center gap-3">
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
-          <span className="tb-overline" style={{ color: "var(--tb-gold-soft)", letterSpacing: "0.22em" }}>
+          <span className="tb-overline" style={{ color: "var(--tb-gold-soft)", letterSpacing: lang === "ar" ? "0.02em" : "0.22em" }}>
             {home?.[`newsletter_eyebrow_${lang}`] || (lang === "ar" ? "النشرة البحثية" : "Research Newsletter")}
           </span>
           <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />

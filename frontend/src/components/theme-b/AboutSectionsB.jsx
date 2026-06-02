@@ -290,7 +290,7 @@ export function AboutMissionVisionB({ about }) {
             <div className="flex items-center gap-3"
               style={{ justifyContent: alignEyebrow === "center" ? "center" : alignEyebrow === "left" ? "flex-start" : undefined }}>
               <span aria-hidden style={{
-                fontSize: 13, letterSpacing: "0.22em", color: "var(--tb-gold-deep)",
+                fontSize: 13, letterSpacing: lang === "ar" ? "0.02em" : "0.22em", color: "var(--tb-gold-deep)",
                 fontWeight: 600, fontFeatureSettings: '"tnum" 1',
               }}>{idx}</span>
               <span aria-hidden style={{ height: 1, width: 30, background: "var(--tb-gold)" }} />
@@ -437,7 +437,7 @@ export function AboutObjectivesB({ about }) {
               className="tb-card tb-card-hover flex flex-col gap-3"
               style={{ padding: "1.85rem 2.1rem 2.1rem", listStyle: "none" }}>
               <div className="flex items-center gap-3">
-                <span style={{ fontSize: 13, color: "var(--tb-gold)", letterSpacing: "0.22em", fontWeight: 600 }}>
+                <span style={{ fontSize: 13, color: "var(--tb-gold)", letterSpacing: lang === "ar" ? "0.02em" : "0.22em", fontWeight: 600 }}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span style={{ height: 1, width: 22, background: "var(--tb-gold)" }} />
@@ -574,7 +574,7 @@ export function BoardOfDirectorsB({ about }) {
 
                     {role && (
                       <div className="mt-1.5" style={{
-                        fontSize: 10, letterSpacing: "0.15em",
+                        fontSize: 10, letterSpacing: lang === "ar" ? "0.02em" : "0.15em",
                         color: tsRole.color || "var(--tb-gold-deep, #8B6914)",
                         textTransform: "uppercase",
                       }}>{role}</div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
@@ -86,7 +86,7 @@ function Half({
             className="tb-overline"
             style={{
               color: tsEyebrow.color || (dark ? "var(--tb-gold-soft)" : "var(--tb-gold-deep)"),
-              letterSpacing: "0.22em",
+              letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
               fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
               textAlign: labelAlign,

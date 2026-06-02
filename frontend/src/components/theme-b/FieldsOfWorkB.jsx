@@ -142,7 +142,7 @@ export default function FieldsOfWorkB() {
                       fontFamily: '"Thmanyah Sans", sans-serif',
                       fontSize: 11,
                       color: "var(--tb-gold)",
-                      letterSpacing: "0.22em",
+                      letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
                     }}
                   >
                     0{f.sort_order}

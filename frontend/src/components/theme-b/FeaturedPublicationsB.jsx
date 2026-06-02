@@ -103,7 +103,7 @@ export default function FeaturedPublicationsB() {
             className="tb-overline"
             style={{
               color: tsEyebrow.color || "var(--tb-gold-deep)",
-              letterSpacing: "0.22em",
+              letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
               fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
               textAlign: alignEyebrow || undefined,

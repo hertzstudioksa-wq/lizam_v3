@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent, useSiteSettings } from "@/hooks/useSiteSettings";
@@ -135,7 +135,7 @@ export default function HeroB() {
             className="tb-overline"
             style={{
               color: tsEyebrow.color || "var(--tb-gold-soft)",
-              letterSpacing: lang === "ar" ? "0.08em" : "0.22em",
+              letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
               fontSize: tsEyebrow.__sizeMul ? `calc(0.78rem * ${tsEyebrow.__sizeMul})` : undefined,
               fontWeight: tsEyebrow.fontWeight,
               textAlign: alignOf("eyebrow"),

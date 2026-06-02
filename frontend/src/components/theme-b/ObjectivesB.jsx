@@ -88,7 +88,7 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc, alignItemTitl
                 fontFamily: '"Thmanyah Sans", sans-serif',
                 fontSize: 13,
                 color: "var(--tb-gold-deep)",
-                letterSpacing: "0.18em",
+                letterSpacing: lang === "ar" ? "0.02em" : "0.18em",
                 fontFeatureSettings: '"tnum" 1',
                 minWidth: 28,
               }}
@@ -234,7 +234,7 @@ export default function ObjectivesB() {
               className="tb-overline"
               style={{
                 color: tsEyebrow.color || "var(--tb-gold-deep)",
-                letterSpacing: "0.22em",
+                letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
                 fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
                 fontWeight: tsEyebrow.fontWeight,
                 textAlign: alignEyebrow || undefined,
