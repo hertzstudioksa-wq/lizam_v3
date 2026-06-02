@@ -75,6 +75,15 @@ html[dir="rtl"] * {
   -webkit-hyphens: none;
 }
 
+/* Ensure headings in RTL are right-aligned by default */
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] h5 {
+  text-align: right;
+}
+
 html[dir="ltr"] body {
   font-family: "Thmanyah Sans", "Inter", system-ui, sans-serif;
 }

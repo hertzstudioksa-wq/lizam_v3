@@ -179,7 +179,7 @@ export default function HeroB() {
               fontWeight: tsSubtitle.fontWeight,
               lineHeight: 1.95,
               maxWidth: "60ch",
-              textAlign: alignOf("subtitle"),
+              textAlign: alignOf("subtitle") || "center",
               whiteSpace: "pre-line",
             }}
           >

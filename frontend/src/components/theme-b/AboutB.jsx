@@ -97,11 +97,12 @@ export default function AboutB() {
               >{home[`about_eyebrow_${lang}`] || (lang === "ar" ? "عن المركز" : "About")}</span>
             </div>
             <h2
-              className="tb-display mt-8 max-w-[28ch]"
+              className="tb-display mt-8"
               style={{
                 fontSize: `calc(clamp(2.1rem, 3.6vw, 3.1rem) * ${titleScale})`,
                 lineHeight: 1.22,
                 fontWeight: 500,
+                textAlign: lang === "ar" ? "right" : "left",
               }}
             >
               {lang === "ar"
