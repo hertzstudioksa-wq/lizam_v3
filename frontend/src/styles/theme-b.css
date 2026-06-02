@@ -129,8 +129,9 @@ html[dir="rtl"] .tb-overline {
 
 /* Cap letter-spacing for ALL small uppercase/label text in Arabic */
 html[dir="rtl"] .uppercase,
-html[dir="rtl"] [style*="uppercase"],
-html[dir="rtl"] [style*="letterSpacing"] {
+html[dir="rtl"] [class*="tracking-"],
+html[dir="rtl"] [style*="text-transform: uppercase"],
+html[dir="rtl"] [style*="letter-spacing"] {
   letter-spacing: 0.02em !important;
 }
 
