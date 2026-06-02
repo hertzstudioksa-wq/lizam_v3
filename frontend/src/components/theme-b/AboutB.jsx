@@ -101,7 +101,7 @@ export default function AboutB() {
                 fontSize: `calc(clamp(2.1rem, 3.6vw, 3.1rem) * ${titleScale})`,
                 lineHeight: 1.22,
                 fontWeight: 500,
-                textAlign: lang === "ar" ? "right" : "left",
+                textAlign: "center",
               }}
             >
               {lang === "ar"
