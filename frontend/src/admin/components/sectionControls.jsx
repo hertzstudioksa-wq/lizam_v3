@@ -499,6 +499,7 @@ export function AlignToggle({ form, sectionKey, fieldKey, testid, langSuffix, la
         <Btn value="right" glyph="⇥" label="يمين" />
         <Btn value="center" glyph="≡" label="وسط" />
         <Btn value="left" glyph="⇤" label="يسار" />
+        <Btn value="justify" glyph="☰" label="ضبط (justify)" />
       </div>
       {cur && (
         <button type="button" onClick={() => setVal("")}

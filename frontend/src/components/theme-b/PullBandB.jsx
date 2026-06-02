@@ -1,4 +1,4 @@
-import { Quote } from "lucide-react";
+﻿import { Quote } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
@@ -60,7 +60,8 @@ export default function PullBandB() {
               lineHeight: 1.45,
               fontWeight: tsText.fontWeight ?? 500,
               color: tsText.color || "var(--tb-navy-900)",
-              textAlign: alignText || undefined,
+              textAlign: alignText || "justify",
+            textAlignLast: "right",
             }}
           >
             {text}

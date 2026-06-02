@@ -1,4 +1,4 @@
-import { useLang } from "@/i18n/LanguageContext";
+﻿import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
 import { getTextStyles, getTextAlign, getGradientOverlay } from "@/lib/sectionTypo";
@@ -115,7 +115,8 @@ export default function AboutB() {
                   fontSize: tsMain.sizeMul !== 1 ? `calc(1.1875rem * ${tsMain.sizeMul})` : undefined,
                   fontWeight: tsMain.fontWeight,
                   color: tsMain.color,
-                  textAlign: alignMain || undefined,
+                  textAlign: alignMain || "justify",
+                  textAlignLast: "right",
                   whiteSpace: "pre-line",
                 }}
               >{body}</p>
@@ -126,7 +127,8 @@ export default function AboutB() {
                     fontSize: tsExtended.sizeMul !== 1 ? `calc(1.1875rem * ${tsExtended.sizeMul})` : undefined,
                     fontWeight: tsExtended.fontWeight,
                     color: tsExtended.color,
-                    textAlign: alignExtended || undefined,
+                    textAlign: alignExtended || "justify",
+                    textAlignLast: "right",
                     whiteSpace: "pre-line",
                   }}
                 >{extended}</p>

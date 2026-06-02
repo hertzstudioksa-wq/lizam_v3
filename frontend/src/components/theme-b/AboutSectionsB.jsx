@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Theme-B section components for the dedicated /about page.
  * Each section reads from /api/public/about-content and honors:
  *   - section_styles[key].bg          (image + focal + overlay)
@@ -150,7 +150,8 @@ export function AboutHeroB({ about }) {
                 fontSize: tsSub.sizeMul !== 1 ? `calc(1.0625rem * ${tsSub.sizeMul})` : "1.0625rem",
                 lineHeight: 1.85,
                 fontWeight: tsSub.fontWeight,
-                textAlign: alignSub || undefined,
+                textAlign: alignSub || "justify",
+              textAlignLast: "right",
               }}>
               {about[`hero_subtitle_${lang}`]}
             </p>
@@ -211,7 +212,8 @@ export function AboutIntroB({ about }) {
               lineHeight: 1.95,
               color: tsBody.color || "var(--tb-text)",
               fontWeight: tsBody.fontWeight,
-              textAlign: alignBody || undefined,
+              textAlign: alignBody || "justify",
+              textAlignLast: "right",
               whiteSpace: "pre-line",
             }}>
             {about?.[`intro_body_${lang}`]}
@@ -225,7 +227,8 @@ export function AboutIntroB({ about }) {
                 lineHeight: 1.95,
                 color: tsExt.color || "var(--tb-text-muted)",
                 fontWeight: tsExt.fontWeight,
-                textAlign: alignExt || undefined,
+                textAlign: alignExt || "justify",
+                textAlignLast: "right",
                 whiteSpace: "pre-line",
               }}>
               {about[`intro_body_extended_${lang}`]}
@@ -320,7 +323,8 @@ export function AboutMissionVisionB({ about }) {
                 lineHeight: 1.95,
                 color: tsBody.color || "var(--tb-text)",
                 fontWeight: tsBody.fontWeight,
-                textAlign: alignBody || undefined,
+                textAlign: alignBody || "justify",
+                textAlignLast: "right",
                 whiteSpace: "pre-line",
               }}>
               {about?.[`${bodyKey}_${lang}`]}
@@ -329,7 +333,7 @@ export function AboutMissionVisionB({ about }) {
           {points.length > 0 && (
             <Reveal variant="up" delay={3}>
               <ul className="mt-10 space-y-4 max-w-[60ch]"
-                style={{ borderTop: "1px solid var(--tb-hairline)", paddingTop: "1.75rem", textAlign: alignPoints || undefined }}>
+                style={{ borderTop: "1px solid var(--tb-hairline)", paddingTop: "1.75rem", textAlign: alignPoints || "justify" }}>
                 {points.map((p, i) => (
                   <li key={i} className="flex items-start gap-4">
                     <span aria-hidden style={{

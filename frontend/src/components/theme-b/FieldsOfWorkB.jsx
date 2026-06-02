@@ -1,4 +1,4 @@
-import { ScrollText, Scale, Landmark, BookOpen, Compass } from "lucide-react";
+﻿import { ScrollText, Scale, Landmark, BookOpen, Compass } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
 import { useImageAssets } from "@/hooks/useImageAssets";
@@ -110,7 +110,8 @@ export default function FieldsOfWorkB() {
               color: tsSectionBody.color || "var(--tb-text)",
               fontSize: tsSectionBody.sizeMul !== 1 ? `calc(1.1875rem * ${tsSectionBody.sizeMul})` : undefined,
               fontWeight: tsSectionBody.fontWeight,
-              textAlign: alignSectionBody || undefined,
+              textAlign: alignSectionBody || "justify",
+              textAlignLast: "right",
               whiteSpace: "pre-line",
             }}
             data-testid="fields-body"
@@ -180,7 +181,8 @@ export default function FieldsOfWorkB() {
                     lineHeight: 1.9,
                     color: tsItemDesc.color || "var(--tb-text-muted)",
                     fontWeight: tsItemDesc.fontWeight,
-                    textAlign: alignItemDesc || undefined,
+                    textAlign: alignItemDesc || "justify",
+                    textAlignLast: "right",
                     whiteSpace: "pre-line",
                   }}
                 >

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
@@ -117,7 +117,8 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc, alignItemTitl
               lineHeight: 1.9,
               color: tsItemDesc.color || "var(--tb-text-muted)",
               fontWeight: tsItemDesc.fontWeight,
-              textAlign: alignItemDesc || undefined,
+              textAlign: alignItemDesc || "justify",
+              textAlignLast: "right",
               whiteSpace: "pre-line",
             }}
           >

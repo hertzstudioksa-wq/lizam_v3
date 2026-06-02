@@ -32,7 +32,7 @@ export function getTextStyles(home, sectionKey, fieldKey) {
  */
 export function getTextAlign(home, sectionKey, fieldKey) {
   const v = home?.section_styles?.[sectionKey]?.text_aligns?.[fieldKey];
-  return v === "right" || v === "center" || v === "left" ? v : "";
+  return v === "right" || v === "center" || v === "left" || v === "justify" ? v : "";
 }
 
 /**

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Mail, Check } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
@@ -90,7 +90,8 @@ export default function NewsletterB() {
             color: tsBlurb.color || "rgba(251, 250, 247, 0.72)",
             fontWeight: tsBlurb.fontWeight,
             maxWidth: "54ch",
-            textAlign: alignBlurb || undefined,
+            textAlign: alignBlurb || "justify",
+          textAlignLast: "right",
           }}
           data-testid="newsletter-blurb"
         >

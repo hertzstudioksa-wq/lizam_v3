@@ -1,4 +1,4 @@
-import { Mail, ArrowLeft, ArrowRight } from "lucide-react";
+﻿import { Mail, ArrowLeft, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings, useHomeContent } from "@/hooks/useSiteSettings";
@@ -74,7 +74,8 @@ export default function ContactBlockB() {
                 lineHeight: 1.95,
                 color: tsBlurb.color || "var(--tb-text)",
                 fontWeight: tsBlurb.fontWeight,
-                textAlign: alignBlurb || undefined,
+                textAlign: alignBlurb || "justify",
+                textAlignLast: "right",
                 whiteSpace: "pre-line",
               }}
               data-testid="contact-body"

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 import { useHomeContent } from "@/hooks/useSiteSettings";
@@ -135,7 +135,8 @@ export default function FeaturedPublicationsB() {
               color: tsBlurb.color || "var(--tb-text-muted)",
               fontWeight: tsBlurb.fontWeight,
               maxWidth: "58ch",
-              textAlign: alignBlurb || undefined,
+              textAlign: alignBlurb || "justify",
+              textAlignLast: "right",
               whiteSpace: "pre-line",
             }}
             data-testid="featured-blurb"
