@@ -67,6 +67,14 @@ html[dir="rtl"] body {
   font-feature-settings: "kern" 1, "ss01" 1, "ss02" 1;
 }
 
+/* Prevent Arabic word/character breaking across all site */
+html[dir="rtl"] * {
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
 html[dir="ltr"] body {
   font-family: "Thmanyah Sans", "Inter", system-ui, sans-serif;
 }
@@ -113,10 +121,11 @@ body {
 @media (min-width: 768px) { .lz-eyebrow { font-size: 12px; } }
 html[dir="rtl"] .lz-eyebrow {
   font-family: "Thmanyah Sans", sans-serif;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.02em;
   text-transform: none;
   font-weight: 600;
   font-size: 12.5px;
+  white-space: nowrap;
 }
 
 /* Display headings */

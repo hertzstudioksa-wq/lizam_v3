@@ -210,12 +210,12 @@ export default function PublicationDetailPage() {
                 </span>
               </div>
             )}
-            <div>
+            <div style={{ whiteSpace: "nowrap" }}>
               <span className="lz-eyebrow me-2">{lang === "ar" ? "تاريخ النشر" : "Published"}</span>
               <span className="tabular-nums">{fmtDate(pub.published_at, lang)}</span>
             </div>
             {pub.updated_at && pub.updated_at !== pub.published_at && (
-              <div>
+              <div style={{ whiteSpace: "nowrap" }}>
                 <span className="lz-eyebrow me-2">{lang === "ar" ? "آخر تحديث" : "Updated"}</span>
                 <span className="tabular-nums">{fmtDate(pub.updated_at, lang)}</span>
               </div>
