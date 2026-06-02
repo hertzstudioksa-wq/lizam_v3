@@ -285,15 +285,9 @@ export function AboutMissionVisionB({ about }) {
           {idx}
         </span>
 
-        <div className="relative">
+        <div className="relative text-center">
           <Reveal variant="up">
-            <div className="flex items-center gap-3"
-              style={{ justifyContent: alignEyebrow === "center" ? "center" : alignEyebrow === "left" ? "flex-start" : undefined }}>
-              <span aria-hidden style={{
-                fontSize: 13, letterSpacing: lang === "ar" ? "0.02em" : "0.22em", color: "var(--tb-gold-deep)",
-                fontWeight: 600, fontFeatureSettings: '"tnum" 1',
-              }}>{idx}</span>
-              <span aria-hidden style={{ height: 1, width: 30, background: "var(--tb-gold)" }} />
+            <div className="flex items-center justify-center gap-3">
               <span className="tb-overline"
                 style={{
                   color: tsEyebrow.color || "var(--tb-gold-deep)",
@@ -309,14 +303,14 @@ export function AboutMissionVisionB({ about }) {
                 fontSize: `calc(clamp(2.4rem, 5vw, 4rem) * ${tsTitle.sizeMul})`,
                 lineHeight: 1.05,
                 fontWeight: tsTitle.fontWeight ?? 400,
-                textAlign: alignTitle || undefined,
+                textAlign: alignTitle || "center",
                 letterSpacing: "-0.01em",
               }}>
               {about?.[`${titleKey}_${lang}`]}
             </h2>
           </Reveal>
           <Reveal variant="up" delay={2}>
-            <p className="mt-8 max-w-[64ch]"
+            <p className="mt-8 mx-auto max-w-[64ch]"
               style={{
                 fontFamily: '"Thmanyah Serif Text", serif',
                 fontSize: tsBody.sizeMul !== 1 ? `calc(1.0625rem * ${tsBody.sizeMul})` : "1.0625rem",
@@ -324,7 +318,7 @@ export function AboutMissionVisionB({ about }) {
                 color: tsBody.color || "var(--tb-text)",
                 fontWeight: tsBody.fontWeight,
                 textAlign: alignBody || "justify",
-                textAlignLast: "right",
+                textAlignLast: "center",
                 whiteSpace: "pre-line",
               }}>
               {about?.[`${bodyKey}_${lang}`]}

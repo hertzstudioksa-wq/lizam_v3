@@ -127,7 +127,7 @@ function Half({
             whiteSpace: "pre-line",
           }}
         >
-          {lede(body)}
+          {body}
         </p>
 
         {/* Hover veil + read-more caption (fades in only on hover) */}

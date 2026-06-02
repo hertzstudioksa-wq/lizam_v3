@@ -122,7 +122,7 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc, alignItemTitl
               whiteSpace: "pre-line",
             }}
           >
-            {lede(obj[`description_${lang}`])}
+            {obj[`description_${lang}`]}
           </p>
         </div>
       </Link>
