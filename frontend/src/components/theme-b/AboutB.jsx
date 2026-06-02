@@ -104,9 +104,9 @@ export default function AboutB() {
                 textAlign: "center",
               }}
             >
-              {lang === "ar"
+              {home?.[`about_title_${lang}`] || (lang === "ar"
                 ? "مركز بحثي سعودي للدراسات القانونية والسياسات العامة."
-                : "A Saudi research center for legal studies and public policy."}
+                : "A Saudi research center for legal studies and public policy.")}
             </h2>
             <div className="mt-10 space-y-7 max-w-[64ch]">
               <p

@@ -1156,6 +1156,12 @@ export default function HomeAdmin() {
             <EyebrowRow form={form} keyAr="about_eyebrow_ar" keyEn="about_eyebrow_en" sectionKey="about" testid="about" />
           </div>
           <div className="mt-4">
+            <BiInput form={form} keyAr="about_title_ar" keyEn="about_title_en"
+              labelAr="العنوان الرئيسي للقسم" labelEn="Section main title"
+              multiline rows={2} testid="about-title"
+              sectionKey="about" fieldKey="title" perLangAlign />
+          </div>
+          <div className="mt-4">
             <BiInput form={form} keyAr="about_ar" keyEn="about_en"
               labelAr="النص الرئيسي" labelEn="Main copy"
               multiline rows={5} testid="about-main"
