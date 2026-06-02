@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
 import Reveal from "@/components/theme-b/Reveal";
@@ -9,7 +9,7 @@ import { api } from "@/lib/api";
 function fmtDate(iso, lang) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-GB", {
+    return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA-u-ca-gregory" : "en-GB", {
       year: "numeric", month: "long", day: "numeric",
     });
   } catch { return iso; }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -19,7 +19,7 @@ function alignToFlex(align, isRtl) {
 function fmtDate(iso, lang) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-GB", {
+    return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA-u-ca-gregory" : "en-GB", {
       year: "numeric", month: "long", day: "numeric",
     });
   } catch { return iso; }

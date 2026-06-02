@@ -6,7 +6,7 @@ function fmtDate(iso, lang) {
   if (!iso) return "";
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString(lang === "ar" ? "ar-SA" : "en-GB", {
+    return d.toLocaleDateString(lang === "ar" ? "ar-SA-u-ca-gregory" : "en-GB", {
       year: "numeric", month: "short", day: "numeric",
     });
   } catch {

@@ -17,7 +17,7 @@ import { api, formatApiError, BACKEND_URL } from "@/lib/api";
 function fmtDate(iso, lang) {
   if (!iso) return "";
   try {
-    return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-GB", {
+    return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-SA-u-ca-gregory" : "en-GB", {
       year: "numeric", month: "long", day: "numeric",
     });
   } catch { return iso.slice(0, 10); }
