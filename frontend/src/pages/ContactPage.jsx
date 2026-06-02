@@ -212,6 +212,7 @@ export default function ContactPage() {
                 color: "var(--tb-navy-deep, #0A111C)",
                 fontSize: "clamp(1.6rem, 2.6vw, 2.2rem)",
                 lineHeight: 1.2,
+                textAlign: "center",
               }}
             >
               {formHeading}
