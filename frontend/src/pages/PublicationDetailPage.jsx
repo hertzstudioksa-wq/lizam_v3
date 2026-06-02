@@ -265,7 +265,9 @@ export default function PublicationDetailPage() {
                   <span>{lang === "ar" ? "استشهاد" : "Cite"}</span>
                 </button>
                 {showCite && (
-                  <div className="absolute top-full end-0 mt-2 w-[320px] bg-white border border-rule shadow-sm z-10" data-testid="cite-dropdown">
+                  <div className="absolute top-full end-0 mt-2 bg-white border border-rule shadow-sm z-10"
+                    style={{ width: "min(320px, calc(100vw - 2rem))", maxWidth: "calc(100vw - 2rem)" }}
+                    data-testid="cite-dropdown">
                     <div className="p-4 border-b border-rule">
                       <div className="lz-eyebrow text-mute">{lang === "ar" ? "نسق الاستشهاد" : "Citation format"}</div>
                     </div>
