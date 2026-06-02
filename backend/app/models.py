@@ -85,6 +85,8 @@ class HomeContentIn(BaseModel):
     hero_eyebrow_en: Optional[str] = None
     about_eyebrow_ar: Optional[str] = None
     about_eyebrow_en: Optional[str] = None
+    about_title_ar: Optional[str] = None
+    about_title_en: Optional[str] = None
     mission_eyebrow_ar: Optional[str] = None
     mission_eyebrow_en: Optional[str] = None
     objectives_eyebrow_ar: Optional[str] = None
