@@ -95,7 +95,6 @@ export default function ContactPage() {
         <div className="relative z-10 mx-auto max-w-[1200px] px-6 md:px-10 lg:px-14 flex flex-col justify-end h-full min-h-[40vh]">
           <Reveal variant="up">
             <div className="flex items-center gap-3">
-              <span style={{ height: 1, width: 26, background: "var(--tb-gold, #B08C5A)" }} />
               <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>{contactEyebrow}</span>
             </div>
           </Reveal>

@@ -64,7 +64,6 @@ export default function ActivitiesPage() {
             {t("hero_eyebrow_ar", "hero_eyebrow_en") && (
               <Reveal variant="up">
                 <div className="flex items-center gap-3">
-                  <span style={{ height: 1, width: 26, background: "var(--tb-gold, #B08C5A)" }} />
                   <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)", textAlign: ga("hero","eyebrow") }}>
                     {t("hero_eyebrow_ar", "hero_eyebrow_en", "أخبار المركز", "Center News")}
                   </span>

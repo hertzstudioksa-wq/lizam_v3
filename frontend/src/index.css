@@ -75,12 +75,12 @@ html[dir="rtl"] * {
   -webkit-hyphens: none;
 }
 
-/* Ensure headings in RTL are right-aligned by default */
-html[dir="rtl"] h1,
-html[dir="rtl"] h2,
-html[dir="rtl"] h3,
-html[dir="rtl"] h4,
-html[dir="rtl"] h5 {
+/* Ensure headings in RTL are right-aligned by default (only when no explicit alignment is set) */
+html[dir="rtl"] h1:not([style*="text-align"]),
+html[dir="rtl"] h2:not([style*="text-align"]),
+html[dir="rtl"] h3:not([style*="text-align"]),
+html[dir="rtl"] h4:not([style*="text-align"]),
+html[dir="rtl"] h5:not([style*="text-align"]) {
   text-align: right;
 }
 

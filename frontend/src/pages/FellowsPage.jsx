@@ -46,7 +46,6 @@ export default function FellowsPage() {
             {t("hero_eyebrow_ar", "hero_eyebrow_en") && (
               <Reveal variant="up">
                 <div className="flex items-center gap-3">
-                  <span style={{ height: 1, width: 26, background: "var(--tb-gold, #B08C5A)" }} />
                   <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
                     {t("hero_eyebrow_ar", "hero_eyebrow_en", "مجتمع البحث", "Research Community")}
                   </span>
@@ -81,7 +80,6 @@ export default function FellowsPage() {
               {t("intro_eyebrow_ar", "intro_eyebrow_en") && (
                 <div className="flex items-center gap-3 mb-6"
                   style={{ justifyContent: alignToFlex(ga("intro","eyebrow"), isRtl) }}>
-                  <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
                   <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
                     {t("intro_eyebrow_ar", "intro_eyebrow_en")}
                   </span>
