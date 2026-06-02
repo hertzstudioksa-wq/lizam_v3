@@ -222,7 +222,7 @@ export default function HeroB() {
                 color: tsCta2.color || "rgba(251, 250, 247, 0.85)",
                 fontFamily: '"Thmanyah Sans", sans-serif',
                 fontSize: `calc(14px * ${tsCta2.__sizeMul ?? 1})`,
-                letterSpacing: "0.14em",
+                letterSpacing: lang === "ar" ? "0.02em" : "0.14em",
                 textTransform: lang === "ar" ? "none" : "uppercase",
                 fontWeight: tsCta2.fontWeight ?? 500,
                 borderBottom: "1px solid rgba(251, 250, 247, 0.35)",

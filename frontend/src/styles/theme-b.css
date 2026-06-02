@@ -127,6 +127,13 @@ html[dir="rtl"] .tb-overline {
   text-transform: none;
 }
 
+/* Cap letter-spacing for ALL small uppercase/label text in Arabic */
+html[dir="rtl"] .uppercase,
+html[dir="rtl"] [style*="uppercase"],
+html[dir="rtl"] [style*="letterSpacing"] {
+  letter-spacing: 0.02em !important;
+}
+
 .tb-meta {
   font-family: "Thmanyah Sans", sans-serif;
   font-size: 13px;

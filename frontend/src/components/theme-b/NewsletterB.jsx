@@ -150,7 +150,7 @@ export default function NewsletterB() {
                 color: "var(--tb-navy-900)",
                 fontFamily: '"Thmanyah Sans", sans-serif',
                 fontSize: 14,
-                letterSpacing: "0.14em",
+                letterSpacing: lang === "ar" ? "0.02em" : "0.14em",
                 textTransform: lang === "ar" ? "none" : "uppercase",
                 fontWeight: 600,
                 height: 54,

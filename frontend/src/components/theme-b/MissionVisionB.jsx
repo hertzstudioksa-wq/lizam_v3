@@ -154,7 +154,7 @@ function Half({
             style={{
               fontFamily: '"Thmanyah Sans", sans-serif',
               fontSize: 13,
-              letterSpacing: "0.14em",
+              letterSpacing: lang === "ar" ? "0.02em" : "0.14em",
               color: dark ? "var(--tb-gold)" : "var(--tb-navy-900)",
               fontWeight: 500,
               textTransform: lang === "ar" ? "none" : "uppercase",

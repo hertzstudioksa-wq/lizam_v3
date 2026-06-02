@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Eye, Clock, Lock, FileDown, Share2, Copy, Twitter, Linkedin,
@@ -486,7 +486,7 @@ function SidebarPubCard({ pub, lang }) {
       )}
       <div className="flex-1 min-w-0">
         {type && (
-          <div style={{ fontSize: 10, letterSpacing: "0.14em", color: "rgba(28,37,51,0.4)" }} className="uppercase mb-1">
+          <div style={{ fontSize: 10, letterSpacing: lang === "ar" ? "0.02em" : "0.14em", color: "rgba(28,37,51,0.4)" }} className="uppercase mb-1">
             {type}
           </div>
         )}

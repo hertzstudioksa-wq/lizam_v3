@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 import { useLang } from "@/i18n/LanguageContext";
 import { api } from "@/lib/api";
@@ -103,7 +103,7 @@ function PageHeroSection({ config, pageKey, lang }) {
         {(config[`eyebrow_${lang}`] || config.eyebrow_ar) && (
           <div className="flex items-center gap-3 mb-4">
             <span style={{ height: 1, width: 28, background: "var(--tb-gold, #B08C5A)", flexShrink: 0 }} />
-            <span style={{ fontSize: 11, letterSpacing: "0.22em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
+            <span style={{ fontSize: 11, letterSpacing: lang === "ar" ? "0.02em" : "0.22em", color: "var(--tb-gold, #B08C5A)" }} className="uppercase">
               {config[`eyebrow_${lang}`] || config.eyebrow_ar}
             </span>
           </div>

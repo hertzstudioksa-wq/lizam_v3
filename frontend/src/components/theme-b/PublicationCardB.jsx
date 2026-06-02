@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Eye, Clock, Lock, ArrowLeft, ArrowRight } from "lucide-react";
 import { useLang } from "@/i18n/LanguageContext";
 
@@ -197,7 +197,7 @@ export default function PublicationCardB({ pub, testid = "pub-card" }) {
             style={{
               color: "var(--tb-navy-900)",
               fontSize: 12,
-              letterSpacing: "0.14em",
+              letterSpacing: lang === "ar" ? "0.02em" : "0.14em",
               textTransform: "uppercase",
               fontWeight: 500,
               fontFamily: '"Thmanyah Sans", sans-serif',

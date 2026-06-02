@@ -1,4 +1,4 @@
-import { Linkedin, FileDown } from "lucide-react";
+﻿import { Linkedin, FileDown } from "lucide-react";
 import PublicLayout from "@/components/layout/PublicLayout";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 import { useLang } from "@/i18n/LanguageContext";
@@ -161,7 +161,7 @@ export default function FellowsPage() {
                           {name}
                         </h3>
                         {role && (
-                          <div className="mt-1.5" style={{ fontSize: 10, letterSpacing: "0.15em", color: "var(--tb-gold-deep,#8B6914)", textTransform: "uppercase" }}>
+                          <div className="mt-1.5" style={{ fontSize: 10, letterSpacing: lang === "ar" ? "0.02em" : "0.15em", color: "var(--tb-gold-deep,#8B6914)", textTransform: "uppercase" }}>
                             {role}
                           </div>
                         )}
