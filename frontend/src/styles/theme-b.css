@@ -610,3 +610,37 @@ html[dir="rtl"] .tb-prose blockquote { font-style: normal; }
   font-weight: 500;
   line-height: 1;
 }
+
+/* =====================================================================
+   Mobile hero eyebrow fix — center-align and hide decorative lines
+   when text is long and wraps on narrow screens
+   ===================================================================== */
+@media (max-width: 767px) {
+  /* Homepage hero (HeroB) — centered eyebrow */
+  [data-testid="hero-eyebrow"] {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  [data-testid="hero-eyebrow"] .tb-overline {
+    text-align: center;
+    flex: 1 1 100%;
+    order: 0;
+  }
+  /* Hide decorative gold lines on mobile when text wraps */
+  [data-testid="hero-eyebrow"] span[aria-hidden],
+  [data-testid="hero-eyebrow"] > span:not(.tb-overline) {
+    display: none;
+  }
+
+  /* All page hero sections — ensure eyebrow text wraps cleanly */
+  .tb-overline {
+    white-space: normal;
+    word-break: normal;
+  }
+
+  /* Page hero titles — reduce size slightly for long titles */
+  .tb-display {
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+}

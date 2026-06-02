@@ -130,7 +130,7 @@ export default function HeroB() {
       <div className="relative z-10 mx-auto max-w-[920px] px-6 md:px-10 text-center flex flex-col items-center justify-center" style={{ minHeight: "calc(82vh - 240px)" }}>
         {/* Eyebrow — falls in from above at t=0 */}
         <div className="tb-fall tb-delay-0 inline-flex items-center gap-3" data-testid="hero-eyebrow">
-          <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
+          <span aria-hidden="true" style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
           <span
             className="tb-overline"
             style={{
@@ -143,7 +143,7 @@ export default function HeroB() {
           >
             {eyebrow}
           </span>
-          <span style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
+          <span aria-hidden="true" style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
         </div>
 
         {/* Title — slides up at t=0.15s */}
