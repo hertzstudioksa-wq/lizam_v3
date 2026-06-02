@@ -38,25 +38,24 @@ export default function ContactBlockB() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 items-start">
           <Reveal variant="right" className="md:col-span-5" style={{ transitionDuration: "0.7s" }}>
             <div className="tb-section-eyebrow">
-              <span className="rule" />
               <span
                 className="tb-overline"
                 style={{
                   color: tsEyebrow.color,
                   fontSize: tsEyebrow.sizeMul !== 1 ? `calc(0.78rem * ${tsEyebrow.sizeMul})` : undefined,
                   fontWeight: tsEyebrow.fontWeight,
-                  textAlign: alignEyebrow || undefined,
+                  textAlign: alignEyebrow || "right",
                 }}
               >{home?.[`contact_eyebrow_${lang}`] || (lang === "ar" ? "تواصل" : "Contact")}</span>
             </div>
             <h2
-              className="tb-display mt-8 max-w-[22ch]"
+              className="tb-display mt-8"
               style={{
                 fontSize: `calc(clamp(1.85rem, 3.2vw, 2.6rem) * ${tsTitle.sizeMul})`,
                 lineHeight: 1.3,
                 fontWeight: tsTitle.fontWeight ?? 500,
                 color: tsTitle.color,
-                textAlign: alignTitle || undefined,
+                textAlign: alignTitle || "right",
               }}
               data-testid="contact-headline"
             >

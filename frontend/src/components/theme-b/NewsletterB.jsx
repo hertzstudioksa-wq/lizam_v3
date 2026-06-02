@@ -72,7 +72,7 @@ export default function NewsletterB() {
             fontWeight: tsTitle.fontWeight ?? 500,
             color: tsTitle.color || "var(--tb-paper-base)",
             maxWidth: "22ch",
-            textAlign: alignTitle || undefined,
+            textAlign: alignTitle || "center",
           }}
           data-testid="newsletter-title"
         >

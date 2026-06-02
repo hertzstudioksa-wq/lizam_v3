@@ -86,7 +86,6 @@ export default function AboutB() {
             style={{ transitionDuration: "0.8s", textAlign: alignEyebrow || undefined }}
           >
             <div className="tb-section-eyebrow">
-              <span className="rule" />
               <span
                 className="tb-overline"
                 style={{

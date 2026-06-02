@@ -203,11 +203,9 @@ export default function ContactPage() {
           {/* Section heading — centered */}
           <div className="mb-12 md:mb-16 text-center">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
               <span className="tb-overline" style={{ color: "var(--tb-gold, #B08C5A)" }}>
                 {isRtl ? "أرسل رسالتك" : "Send a message"}
               </span>
-              <span style={{ height: 1, width: 24, background: "var(--tb-gold, #B08C5A)" }} />
             </div>
             <h2
               className="tb-display mx-auto"
