@@ -37,7 +37,9 @@ export default function HeaderB() {
   const [scrolled, setScrolled] = useState(false);
 
   // On any non-hero page the header must paint solid from the start.
-  const overDarkHero = DARK_HERO_ROUTES.has(pathname);
+  const overDarkHero = DARK_HERO_ROUTES.has(pathname)
+    || pathname.startsWith("/publications/")
+    || pathname.startsWith("/activities/");
   const solid = scrolled || !overDarkHero;
 
   useEffect(() => {
