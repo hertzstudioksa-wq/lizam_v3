@@ -37,6 +37,8 @@ jobs:
           source: "backend/app/,backend/server.py,backend/requirements.txt"
           target: "/var/www/lizam/backend/"
           strip_components: 1
+          timeout: 60s
+          command_timeout: 10m
 
       - name: Deploy frontend to VPS
         uses: appleboy/scp-action@v0.1.7
@@ -47,6 +49,8 @@ jobs:
           source: "frontend/build/"
           target: "/var/www/lizam/frontend/"
           strip_components: 2
+          timeout: 60s
+          command_timeout: 10m
 
       - name: Restart services
         uses: appleboy/ssh-action@v1.0.3
@@ -54,6 +58,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          connect_timeout: 60s
           script: |
             cd /var/www/lizam/backend
             ./venv/bin/pip install -r requirements.txt -q 2>/dev/null || true
@@ -68,6 +73,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          connect_timeout: 60s
           script: |
             if [ -d /etc/letsencrypt/live/lizamcenter.com ]; then
               # SSL cert exists — write full HTTPS nginx config manually
