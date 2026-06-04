@@ -113,9 +113,14 @@ jobs:
                   && echo "SSL setup complete!" \
                   || echo "WARNING: Certbot failed — DNS may not be propagated yet."
             else
-                # SSL already configured — just renew if needed and reload
+                # Cert exists — re-install into nginx in case config was overwritten
+                certbot install --nginx \
+                  -d lizamcenter.com \
+                  -d www.lizamcenter.com \
+                  --non-interactive \
+                  && echo "SSL re-installed into nginx OK" \
+                  || echo "certbot install failed"
                 certbot renew --quiet || true
-                echo "SSL cert already exists — renewed if needed."
             fi
 
-            systemctl reload nginx
+            systemctl reload nginx && echo "nginx reloaded OK"
