@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
 
+# Only one deploy runs at a time. Rapid pushes used to launch overlapping
+# workflows that opened many simultaneous SSH connections to the VPS, tripping
+# sshd's MaxStartups limit and causing random "i/o timeout" failures. This
+# queues deploys so each one has the VPS's sshd to itself.
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
