@@ -69,8 +69,10 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Update Nginx config to accept new domain
-            cat > /etc/nginx/sites-available/lizam << 'NGINXEOF'
+            # Only write nginx config on first-time setup (before certbot has touched it)
+            # After certbot runs, it owns the config — we must NOT overwrite it
+            if [ ! -d /etc/letsencrypt/live/lizamcenter.com ]; then
+                cat > /etc/nginx/sites-available/lizam << 'NGINXEOF'
             server {
                 listen 80;
                 server_name lizamcenter.com www.lizamcenter.com _;
@@ -96,14 +98,12 @@ jobs:
                 }
             }
             NGINXEOF
+                nginx -t && systemctl reload nginx && echo "Nginx config written OK"
 
-            nginx -t && systemctl reload nginx && echo "Nginx updated OK"
+                # Install certbot
+                which certbot || (apt-get update -qq && apt-get install -y -q certbot python3-certbot-nginx)
 
-            # Install certbot if not present
-            which certbot || (apt-get update -qq && apt-get install -y -q certbot python3-certbot-nginx)
-
-            # Get SSL cert (idempotent — skips if cert already exists)
-            if [ ! -d /etc/letsencrypt/live/lizamcenter.com ]; then
+                # Get SSL cert
                 certbot --nginx \
                   -d lizamcenter.com \
                   -d www.lizamcenter.com \
@@ -111,8 +111,9 @@ jobs:
                   --email admin@lizam.sa \
                   --redirect \
                   && echo "SSL setup complete!" \
-                  || echo "WARNING: Certbot failed — DNS may not be propagated yet. Will retry on next deploy."
+                  || echo "WARNING: Certbot failed — DNS may not be propagated yet."
             else
+                # SSL already configured — just renew if needed and reload
                 certbot renew --quiet || true
                 echo "SSL cert already exists — renewed if needed."
             fi
