@@ -232,6 +232,15 @@ async def seed_all() -> None:
     }
     await _upsert_if_seed(db.home_content, {"id": "home"}, home_defaults)
 
+    # One-time backfill: add objectives_title fields to existing admin-edited home docs
+    await db.home_content.update_one(
+        {"id": "home", "objectives_title_ar": {"$exists": False}},
+        {"$set": {
+            "objectives_title_ar": "خمسة أهداف تحدد أولوياتنا البحثية.",
+            "objectives_title_en": "Five priorities that shape our research.",
+        }}
+    )
+
     # ---- About page content (dedicated page, separate collection) ----
     about_defaults = {
         "id": "about",
