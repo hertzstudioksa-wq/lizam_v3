@@ -521,11 +521,16 @@ const ROLE_CARDS = [
 ];
 
 // -------- Messages --------
+const PAGE_SIZE = 20;
+
 export function MessagesAdmin() {
   const tr = useTr();
-  const [items, setItems] = useState(null);
-  const [filter, setFilter] = useState("");
-  const [msg, setMsg] = useState("");
+  const [items, setItems]         = useState(null);
+  const [filter, setFilter]       = useState("");
+  const [search, setSearch]       = useState("");
+  const [expanded, setExpanded]   = useState(null);
+  const [page, setPage]           = useState(1);
+  const [msg, setMsg]             = useState("");
   const [permTarget, setPermTarget] = useState(null);
 
   async function load() {
@@ -536,18 +541,38 @@ export function MessagesAdmin() {
 
   async function setStatus(id, status) {
     const r = await apiCall("patch", `/admin/messages/${id}`, { status });
-    if (r.ok) { setMsg(tr(`تم التحديث إلى ${status} ✓`, `Marked ${status} ✓`)); setTimeout(() => setMsg(""), 2000); load(); }
-    else setMsg(`${tr("ملاحظة", "Note")}: ${r.error}`);
+    if (r.ok) { setMsg(tr(`تم التحديث ✓`, `Marked ${status} ✓`)); setTimeout(() => setMsg(""), 2000); load(); }
+    else setMsg(`${tr("خطأ", "Error")}: ${r.error}`);
   }
 
   async function permanentDelete() {
     if (!permTarget) return;
     const r = await apiCall("delete", `/admin/messages/${permTarget.id}/permanent`);
     if (!r.ok) throw new Error(r.error);
+    if (expanded === permTarget.id) setExpanded(null);
     load();
   }
 
-  const filtered = items?.filter((m) => !filter || (m.status || "new") === filter) || [];
+  const q = search.trim().toLowerCase();
+  const filtered = (items || []).filter((m) => {
+    if (filter && (m.status || "new") !== filter) return false;
+    if (q) return [m.name, m.email, m.subject, m.message].some(f => (f || "").toLowerCase().includes(q));
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const paged      = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // reset to page 1 when filter/search changes
+  useEffect(() => { setPage(1); }, [filter, search]);
+
+  const STATUS_STYLE = {
+    new:      "bg-blue-50 text-blue-700 border-blue-200",
+    read:     "bg-gray-50 text-gray-500 border-gray-200",
+    archived: "bg-amber-50 text-amber-600 border-amber-200",
+  };
+
   const FILTERS = [
     ["", tr("الكل", "All")],
     ["new", tr("جديد", "New")],
@@ -557,61 +582,146 @@ export function MessagesAdmin() {
 
   return (
     <AdminPage title={tr("رسائل التواصل", "Contact Messages")} subtitle={tr("صندوق الوارد", "Inbox")}
-      helpAr="رسائل نموذج التواصل العام. تُخزَّن جميعها في قاعدة البيانات. تستطيع تعليم الرسالة كمقروءة أو أرشفتها."
-      helpEn="Submissions from the public contact form. All stored in the database. Mark messages as read or archive them.">
+      helpAr="رسائل نموذج التواصل العام. اضغط على الرسالة لفتحها."
+      helpEn="Public contact form submissions. Click a message to expand it.">
+
       {msg && <div className="mb-4 px-4 py-2 bg-paper border-l-2 border-brass text-[13px]">{msg}</div>}
-      <div className="flex items-center gap-2 mb-5 flex-wrap">
-        {FILTERS.map(([k, label]) => (
-          <button key={k || "all"} type="button"
-            onClick={() => setFilter(k)}
-            className={`px-3 py-1.5 text-[13px] border ${filter === k ? "bg-navy-deep text-white border-navy-deep" : "bg-white text-ink border-rule"}`}
-            data-testid={`messages-filter-${k || "all"}`}>
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="bg-white border border-rule">
-        {items === null ? <div className="p-10 text-mute">{tr("جارٍ التحميل…", "Loading…")}</div>
-          : filtered.length === 0 ? <div className="p-10 text-mute text-center">{tr("لا توجد رسائل بعد. الرسائل الواردة من نموذج التواصل ستظهر هنا.", "No messages yet. Public contact form submissions will land here.")}</div>
-          : (
-            <table className="w-full text-[14px]" data-testid="messages-table">
-              <thead>
-                <tr className="text-[11.5px] uppercase tracking-[0.18em] text-mute border-b border-rule">
-                  <th className="text-start p-4">{tr("الحالة", "Status")}</th>
-                  <th className="text-start p-4">{tr("من", "From")}</th>
-                  <th className="text-start p-4">{tr("الموضوع / الرسالة", "Subject / Message")}</th>
-                  <th className="text-start p-4">{tr("تاريخ الاستلام", "Received")}</th>
-                  <th className="text-start p-4">{tr("إجراءات", "Actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((m) => (
-                  <tr key={m.id} className="border-b border-rule last:border-0 align-top" data-testid={`message-row-${m.id}`}>
-                    <td className="p-4">
-                      <span className="text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 border border-rule">{m.status || "new"}</span>
-                    </td>
-                    <td className="p-4">{m.name}<div className="text-[12px] text-mute mt-0.5">{m.email}</div></td>
-                    <td className="p-4">
-                      <div className="text-[14px] text-navy-deep font-medium">{m.subject || <em className="text-mute">{tr("(بدون موضوع)", "(no subject)")}</em>}</div>
-                      <div className="text-[12.5px] text-ink mt-2 max-w-[60ch] whitespace-pre-wrap leading-relaxed border-t border-rule pt-2">{m.message}</div>
-                    </td>
-                    <td className="p-4 text-mute text-[12.5px] whitespace-nowrap tabular-nums">{(m.created_at || "").slice(0, 10)}</td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-1.5">
-                        <button className="text-[11px] px-2 py-1 border border-rule hover:border-navy"
-                                onClick={() => setStatus(m.id, "read")} data-testid={`message-action-read-${m.id}`}>{tr("تحديد كمقروء", "Mark read")}</button>
-                        <button className="text-[11px] px-2 py-1 border border-rule hover:border-navy text-mute"
-                                onClick={() => setStatus(m.id, "archived")} data-testid={`message-action-archive-${m.id}`}>{tr("أرشفة", "Archive")}</button>
-                        <button className="text-[11px] px-2 py-1 border border-red-300 hover:border-red-600 text-red-700"
-                                onClick={() => setPermTarget(m)} data-testid={`message-action-delete-${m.id}`}>{tr("حذف نهائي", "Delete")}</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        {/* Search */}
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={tr("ابحث بالاسم أو البريد أو الموضوع أو الرسالة…", "Search by name, email, subject or message…")}
+            className="w-full border border-rule px-3 py-2 text-[13px] pr-8 focus:outline-none focus:border-navy"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute top-1/2 -translate-y-1/2 end-2 text-mute hover:text-ink text-[16px]">×</button>
           )}
+        </div>
+        {/* Filters */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {FILTERS.map(([k, label]) => (
+            <button key={k || "all"} type="button"
+              onClick={() => setFilter(k)}
+              className={`px-3 py-2 text-[12.5px] border ${filter === k ? "bg-navy-deep text-white border-navy-deep" : "bg-white text-ink border-rule hover:border-navy"}`}
+              data-testid={`messages-filter-${k || "all"}`}>
+              {label}
+              {k === "" && items && <span className="ms-1.5 text-[11px] opacity-60">({items.length})</span>}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* List */}
+      <div className="border border-rule divide-y divide-rule bg-white">
+        {items === null
+          ? <div className="p-10 text-mute text-center">{tr("جارٍ التحميل…", "Loading…")}</div>
+          : paged.length === 0
+          ? <div className="p-10 text-mute text-center">
+              {q || filter
+                ? tr("لا توجد نتائج مطابقة.", "No matching results.")
+                : tr("لا توجد رسائل بعد.", "No messages yet.")}
+            </div>
+          : paged.map((m) => {
+              const isNew      = (m.status || "new") === "new";
+              const isExpanded = expanded === m.id;
+              const statusKey  = m.status || "new";
+              return (
+                <div key={m.id} data-testid={`message-row-${m.id}`}
+                  className={`transition-colors ${isNew ? "bg-blue-50/30" : "bg-white"}`}>
+
+                  {/* Header row — always visible, click to expand */}
+                  <button type="button" onClick={() => setExpanded(isExpanded ? null : m.id)}
+                    className="w-full text-start px-4 py-3 flex items-start gap-3 hover:bg-gray-50/60 transition-colors">
+                    {/* status badge */}
+                    <span className={`mt-0.5 shrink-0 text-[10px] uppercase tracking-[0.12em] px-2 py-0.5 border ${STATUS_STYLE[statusKey] || STATUS_STYLE.read}`}>
+                      {tr(statusKey === "new" ? "جديد" : statusKey === "read" ? "مقروء" : "مؤرشف", statusKey)}
+                    </span>
+                    {/* sender */}
+                    <div className="shrink-0 w-36">
+                      <div className={`text-[13px] leading-snug ${isNew ? "font-semibold text-ink" : "text-ink"}`}>{m.name || "—"}</div>
+                      <div className="text-[11.5px] text-mute truncate max-w-[130px]">{m.email}</div>
+                    </div>
+                    {/* subject + preview */}
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-[13.5px] leading-snug ${isNew ? "font-semibold text-navy-deep" : "text-ink"}`}>
+                        {m.subject || <em className="text-mute font-normal">{tr("(بدون موضوع)", "(no subject)")}</em>}
+                      </div>
+                      {!isExpanded && (
+                        <div className="text-[12px] text-mute mt-0.5 truncate max-w-[60ch]">{m.message}</div>
+                      )}
+                    </div>
+                    {/* date + chevron */}
+                    <div className="shrink-0 text-end">
+                      <div className="text-[12px] text-mute tabular-nums whitespace-nowrap">{(m.created_at || "").slice(0, 10)}</div>
+                      <div className={`text-[14px] text-mute mt-1 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>⌄</div>
+                    </div>
+                  </button>
+
+                  {/* Expanded body */}
+                  {isExpanded && (
+                    <div className="px-4 pb-4 border-t border-rule bg-white">
+                      <div className="mt-3 p-4 bg-paper border border-rule rounded-sm">
+                        <div className="text-[12px] text-mute mb-2 flex gap-4">
+                          <span><strong>{tr("من:", "From:")}</strong> {m.name} &lt;{m.email}&gt;</span>
+                          <span><strong>{tr("في:", "On:")}</strong> {(m.created_at || "").replace("T", " ").slice(0, 16)}</span>
+                        </div>
+                        <div className="text-[13.5px] text-ink whitespace-pre-wrap leading-[1.85]">{m.message}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {statusKey !== "read" && (
+                          <button className="text-[12px] px-3 py-1.5 border border-rule hover:border-navy bg-white"
+                            onClick={() => setStatus(m.id, "read")} data-testid={`message-action-read-${m.id}`}>
+                            {tr("✓ تحديد كمقروء", "✓ Mark read")}
+                          </button>
+                        )}
+                        {statusKey !== "archived" && (
+                          <button className="text-[12px] px-3 py-1.5 border border-rule hover:border-navy bg-white text-mute"
+                            onClick={() => setStatus(m.id, "archived")} data-testid={`message-action-archive-${m.id}`}>
+                            {tr("أرشفة", "Archive")}
+                          </button>
+                        )}
+                        {statusKey !== "new" && (
+                          <button className="text-[12px] px-3 py-1.5 border border-rule hover:border-navy bg-white text-mute"
+                            onClick={() => setStatus(m.id, "new")} data-testid={`message-action-new-${m.id}`}>
+                            {tr("إعادة كجديد", "Mark as new")}
+                          </button>
+                        )}
+                        <button className="text-[12px] px-3 py-1.5 border border-red-200 hover:border-red-500 text-red-600 bg-white ms-auto"
+                          onClick={() => setPermTarget(m)} data-testid={`message-action-delete-${m.id}`}>
+                          {tr("حذف نهائي", "Delete")}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+        }
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4 text-[13px] text-mute">
+          <span>{tr(`${filtered.length} رسالة`, `${filtered.length} messages`)}</span>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
+              className="px-3 py-1.5 border border-rule hover:border-navy disabled:opacity-40 disabled:cursor-not-allowed bg-white">
+              {tr("السابق", "Prev")}
+            </button>
+            <span className="px-2">{tr(`${safePage} / ${totalPages}`, `${safePage} / ${totalPages}`)}</span>
+            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages}
+              className="px-3 py-1.5 border border-rule hover:border-navy disabled:opacity-40 disabled:cursor-not-allowed bg-white">
+              {tr("التالي", "Next")}
+            </button>
+          </div>
+        </div>
+      )}
+
       <ConfirmDeleteDialog
         open={!!permTarget}
         onClose={() => setPermTarget(null)}
