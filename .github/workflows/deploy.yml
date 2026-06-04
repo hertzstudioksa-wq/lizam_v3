@@ -69,13 +69,23 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Only write nginx config on first-time setup (before certbot has touched it)
-            # After certbot runs, it owns the config — we must NOT overwrite it
-            if [ ! -d /etc/letsencrypt/live/lizamcenter.com ]; then
-                cat > /etc/nginx/sites-available/lizam << 'NGINXEOF'
+            if [ -d /etc/letsencrypt/live/lizamcenter.com ]; then
+              # SSL cert exists — write full HTTPS nginx config manually
+              cat > /etc/nginx/sites-available/lizam << 'NGINXEOF'
             server {
                 listen 80;
-                server_name lizamcenter.com www.lizamcenter.com _;
+                server_name lizamcenter.com www.lizamcenter.com;
+                return 301 https://$host$request_uri;
+            }
+
+            server {
+                listen 443 ssl;
+                server_name lizamcenter.com www.lizamcenter.com;
+
+                ssl_certificate     /etc/letsencrypt/live/lizamcenter.com/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/lizamcenter.com/privkey.pem;
+                include             /etc/letsencrypt/options-ssl-nginx.conf;
+                ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 
                 root /var/www/lizam/frontend;
                 index index.html;
@@ -98,29 +108,43 @@ jobs:
                 }
             }
             NGINXEOF
-                nginx -t && systemctl reload nginx && echo "Nginx config written OK"
+              certbot renew --quiet || true
+              echo "HTTPS nginx config written OK"
 
-                # Install certbot
-                which certbot || (apt-get update -qq && apt-get install -y -q certbot python3-certbot-nginx)
-
-                # Get SSL cert
-                certbot --nginx \
-                  -d lizamcenter.com \
-                  -d www.lizamcenter.com \
-                  --non-interactive --agree-tos \
-                  --email admin@lizam.sa \
-                  --redirect \
-                  && echo "SSL setup complete!" \
-                  || echo "WARNING: Certbot failed — DNS may not be propagated yet."
             else
-                # Cert exists — re-install into nginx in case config was overwritten
-                certbot install --nginx \
-                  -d lizamcenter.com \
-                  -d www.lizamcenter.com \
-                  --non-interactive \
-                  && echo "SSL re-installed into nginx OK" \
-                  || echo "certbot install failed"
-                certbot renew --quiet || true
+              # First time — write HTTP-only config, run certbot to get cert + set up HTTPS
+              cat > /etc/nginx/sites-available/lizam << 'NGINXEOF'
+            server {
+                listen 80;
+                server_name lizamcenter.com www.lizamcenter.com _;
+
+                root /var/www/lizam/frontend;
+                index index.html;
+
+                location / { try_files $uri $uri/ /index.html; }
+
+                location /api/ {
+                    proxy_pass http://127.0.0.1:8000;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    client_max_body_size 50M;
+                }
+
+                location /uploads/ {
+                    alias /var/www/lizam/backend/uploads/;
+                }
+            }
+            NGINXEOF
+              nginx -t && systemctl reload nginx
+              which certbot || (apt-get update -qq && apt-get install -y -q certbot python3-certbot-nginx)
+              certbot --nginx \
+                -d lizamcenter.com -d www.lizamcenter.com \
+                --non-interactive --agree-tos \
+                --email admin@lizam.sa --redirect \
+                && echo "SSL setup complete!" \
+                || echo "WARNING: Certbot failed — retry on next deploy"
             fi
 
-            systemctl reload nginx && echo "nginx reloaded OK"
+            nginx -t && systemctl reload nginx && echo "nginx reloaded OK"
