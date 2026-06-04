@@ -593,7 +593,7 @@ export function MessagesAdmin() {
                     <td className="p-4">{m.name}<div className="text-[12px] text-mute mt-0.5">{m.email}</div></td>
                     <td className="p-4">
                       <div className="text-[14px] text-navy-deep font-medium">{m.subject || <em className="text-mute">{tr("(بدون موضوع)", "(no subject)")}</em>}</div>
-                      <div className="text-[12.5px] text-mute mt-1 max-w-[55ch]">{m.message}</div>
+                      <div className="text-[12.5px] text-ink mt-2 max-w-[60ch] whitespace-pre-wrap leading-relaxed border-t border-rule pt-2">{m.message}</div>
                     </td>
                     <td className="p-4 text-mute text-[12.5px] whitespace-nowrap tabular-nums">{(m.created_at || "").slice(0, 10)}</td>
                     <td className="p-4">
