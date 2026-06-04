@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Twitter, Linkedin, Youtube, Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import { Linkedin, Youtube, Facebook, Instagram, Mail, Phone, MapPin } from "lucide-react";
+import XIcon from "@/components/icons/XIcon";
 import Logo from "@/components/brand/Logo";
 import { useLang } from "@/i18n/LanguageContext";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -25,7 +26,7 @@ export default function FooterB() {
   const phone = site?.phone || "";
   const socials = site?.social_links || {};
   const socialItems = [
-    { key: "twitter",   Icon: Twitter,   href: socials.twitter },
+    { key: "twitter",   Icon: XIcon,     href: socials.twitter },
     { key: "linkedin",  Icon: Linkedin,  href: socials.linkedin },
     { key: "youtube",   Icon: Youtube,   href: socials.youtube },
     { key: "facebook",  Icon: Facebook,  href: socials.facebook },

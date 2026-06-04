@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Reveal from "@/components/theme-b/Reveal";
-import { Mail, MapPin, Phone, Send, Clock, ArrowLeft, ArrowRight, Twitter, Linkedin, Youtube, Facebook, Instagram } from "lucide-react";
+import { Mail, MapPin, Phone, Send, Clock, ArrowLeft, ArrowRight, Linkedin, Youtube, Facebook, Instagram } from "lucide-react";
+import XIcon from "@/components/icons/XIcon";
 import PublicLayout from "@/components/layout/PublicLayout";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
 import { useLang } from "@/i18n/LanguageContext";
@@ -48,7 +49,7 @@ export default function ContactPage() {
   // Social links from site settings — only show ones that are filled
   const socials = site?.social_links || {};
   const socialItems = [
-    { key: "twitter",   label: "Twitter / X", icon: <Twitter size={14} strokeWidth={1.5} />,   href: socials.twitter },
+    { key: "twitter",   label: "X",           icon: <XIcon size={14} />,                       href: socials.twitter },
     { key: "linkedin",  label: "LinkedIn",     icon: <Linkedin size={14} strokeWidth={1.5} />,  href: socials.linkedin },
     { key: "youtube",   label: "YouTube",      icon: <Youtube size={14} strokeWidth={1.5} />,   href: socials.youtube },
     { key: "facebook",  label: "Facebook",     icon: <Facebook size={14} strokeWidth={1.5} />,  href: socials.facebook },

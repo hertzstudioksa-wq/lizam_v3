@@ -1,9 +1,10 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
-  Eye, Clock, Lock, FileDown, Share2, Copy, Twitter, Linkedin,
+  Eye, Clock, Lock, FileDown, Share2, Copy, Linkedin,
   ChevronLeft, ChevronRight, MessageSquare, Check, Mail, Quote,
 } from "lucide-react";
+import XIcon from "@/components/icons/XIcon";
 import PublicLayout from "@/components/layout/PublicLayout";
 import PublicationCard from "@/components/publications/PublicationCard";
 import HeroMediaLayer from "@/components/hero/HeroMediaLayer";
@@ -292,8 +293,8 @@ export default function PublicationDetailPage() {
                 {copied ? <Check size={14} className="text-green-700" /> : <Copy size={14} />}
                 <span>{copied ? (lang === "ar" ? "تم النسخ" : "Copied") : (lang === "ar" ? "نسخ الرابط" : "Copy link")}</span>
               </button>
-              <a href={shareUrls.twitter} target="_blank" rel="noopener" className="h-10 w-10 inline-flex items-center justify-center border border-rule hover:border-navy transition-colors" aria-label="Share on Twitter" data-testid="share-twitter">
-                <Twitter size={15} />
+              <a href={shareUrls.twitter} target="_blank" rel="noopener" className="h-10 w-10 inline-flex items-center justify-center border border-rule hover:border-navy transition-colors" aria-label="Share on X" data-testid="share-twitter">
+                <XIcon size={15} />
               </a>
               <a href={shareUrls.linkedin} target="_blank" rel="noopener" className="h-10 w-10 inline-flex items-center justify-center border border-rule hover:border-navy transition-colors" aria-label="Share on LinkedIn" data-testid="share-linkedin">
                 <Linkedin size={15} />
