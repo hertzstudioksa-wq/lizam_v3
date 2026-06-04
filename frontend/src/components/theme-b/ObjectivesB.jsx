@@ -253,7 +253,7 @@ export default function ObjectivesB() {
               maxWidth: "26ch",
             }}
           >
-            {lang === "ar" ? "خمسة محاور تقود برنامج المركز." : "Five priorities that shape our agenda."}
+            {home[`objectives_title_${lang}`] || (lang === "ar" ? "خمسة محاور تقود برنامج المركز." : "Five priorities that shape our agenda.")}
           </h2>
         </div>
 

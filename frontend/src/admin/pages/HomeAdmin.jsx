@@ -1334,6 +1334,11 @@ export default function HomeAdmin() {
           <div className="mt-4">
             <EyebrowRow form={form} keyAr="objectives_eyebrow_ar" keyEn="objectives_eyebrow_en" sectionKey="objectives" testid="objectives" />
           </div>
+          <div className="mt-4">
+            <BiInput form={form} keyAr="objectives_title_ar" keyEn="objectives_title_en"
+              labelAr="عنوان القسم الرئيسي — عربية" labelEn="Section main title — EN"
+              testid="objectives-title" />
+          </div>
           <div className="mt-4 max-w-[420px]">
             <FontScaleSlider form={form} sectionKey="objectives" styleKey="title_scale"
               labelAr="حجم خط عناوين الأهداف (شامل)" labelEn="Objective titles font scale (overall)"
