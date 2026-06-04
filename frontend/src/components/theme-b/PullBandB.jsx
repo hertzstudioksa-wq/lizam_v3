@@ -61,7 +61,7 @@ export default function PullBandB() {
               fontWeight: tsText.fontWeight ?? 500,
               color: tsText.color || "var(--tb-navy-900)",
               textAlign: alignText || "justify",
-            textAlignLast: "right",
+            textAlignLast: "start",
             }}
           >
             {text}

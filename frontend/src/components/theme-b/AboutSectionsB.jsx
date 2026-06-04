@@ -151,7 +151,7 @@ export function AboutHeroB({ about }) {
                 lineHeight: 1.85,
                 fontWeight: tsSub.fontWeight,
                 textAlign: alignSub || "justify",
-              textAlignLast: "right",
+              textAlignLast: "start",
               }}>
               {about[`hero_subtitle_${lang}`]}
             </p>
@@ -213,7 +213,7 @@ export function AboutIntroB({ about }) {
               color: tsBody.color || "var(--tb-text)",
               fontWeight: tsBody.fontWeight,
               textAlign: alignBody || "justify",
-              textAlignLast: "right",
+              textAlignLast: "start",
               whiteSpace: "pre-line",
             }}>
             {about?.[`intro_body_${lang}`]}
@@ -228,7 +228,7 @@ export function AboutIntroB({ about }) {
                 color: tsExt.color || "var(--tb-text-muted)",
                 fontWeight: tsExt.fontWeight,
                 textAlign: alignExt || "justify",
-                textAlignLast: "right",
+                textAlignLast: "start",
                 whiteSpace: "pre-line",
               }}>
               {about[`intro_body_extended_${lang}`]}

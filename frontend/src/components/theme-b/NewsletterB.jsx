@@ -91,7 +91,7 @@ export default function NewsletterB() {
             fontWeight: tsBlurb.fontWeight,
             maxWidth: "54ch",
             textAlign: alignBlurb || "justify",
-          textAlignLast: "right",
+          textAlignLast: "start",
           }}
           data-testid="newsletter-blurb"
         >
@@ -172,7 +172,7 @@ export default function NewsletterB() {
         )}
 
         <p
-          className="mt-7 text-[12px]"
+          className="mt-7 text-[12px] text-center"
           style={{ color: "rgba(251, 250, 247, 0.45)", fontFamily: '"Thmanyah Sans", sans-serif' }}
         >
           {lang === "ar"

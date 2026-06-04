@@ -74,7 +74,7 @@ export default function ContactBlockB() {
                 color: tsBlurb.color || "var(--tb-text)",
                 fontWeight: tsBlurb.fontWeight,
                 textAlign: alignBlurb || "justify",
-                textAlignLast: "right",
+                textAlignLast: "start",
                 whiteSpace: "pre-line",
               }}
               data-testid="contact-body"

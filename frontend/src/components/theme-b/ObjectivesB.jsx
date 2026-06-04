@@ -118,7 +118,7 @@ function TimelineItem({ obj, index, lang, tsItemTitle, tsItemDesc, alignItemTitl
               color: tsItemDesc.color || "var(--tb-text-muted)",
               fontWeight: tsItemDesc.fontWeight,
               textAlign: alignItemDesc || "justify",
-              textAlignLast: "right",
+              textAlignLast: "start",
               whiteSpace: "pre-line",
             }}
           >

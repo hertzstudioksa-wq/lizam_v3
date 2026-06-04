@@ -91,6 +91,8 @@ class HomeContentIn(BaseModel):
     mission_eyebrow_en: Optional[str] = None
     objectives_eyebrow_ar: Optional[str] = None
     objectives_eyebrow_en: Optional[str] = None
+    objectives_title_ar: Optional[str] = None
+    objectives_title_en: Optional[str] = None
     fields_eyebrow_ar: Optional[str] = None
     fields_eyebrow_en: Optional[str] = None
     featured_eyebrow_ar: Optional[str] = None

@@ -464,7 +464,7 @@ function SuccessCard({ title, body, isRtl, ArrowIcon }) {
       >
         {title}
       </h2>
-      <p className="mt-4 mx-auto" style={{ fontSize: 15, color: "rgba(28,37,51,0.6)", lineHeight: 1.8, maxWidth: "48ch" }}>
+      <p className="mt-4 mx-auto" style={{ fontSize: 15, color: "rgba(28,37,51,0.6)", lineHeight: 1.8, maxWidth: "48ch", textAlign: "center" }}>
         {body}
       </p>
 

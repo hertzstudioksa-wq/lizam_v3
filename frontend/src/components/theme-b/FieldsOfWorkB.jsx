@@ -111,7 +111,7 @@ export default function FieldsOfWorkB() {
               fontSize: tsSectionBody.sizeMul !== 1 ? `calc(1.1875rem * ${tsSectionBody.sizeMul})` : undefined,
               fontWeight: tsSectionBody.fontWeight,
               textAlign: alignSectionBody || "justify",
-              textAlignLast: "right",
+              textAlignLast: "start",
               whiteSpace: "pre-line",
             }}
             data-testid="fields-body"
@@ -182,7 +182,7 @@ export default function FieldsOfWorkB() {
                     color: tsItemDesc.color || "var(--tb-text-muted)",
                     fontWeight: tsItemDesc.fontWeight,
                     textAlign: alignItemDesc || "justify",
-                    textAlignLast: "right",
+                    textAlignLast: "start",
                     whiteSpace: "pre-line",
                   }}
                 >

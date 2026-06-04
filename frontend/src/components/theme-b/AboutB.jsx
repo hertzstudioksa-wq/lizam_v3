@@ -116,7 +116,7 @@ export default function AboutB() {
                   fontWeight: tsMain.fontWeight,
                   color: tsMain.color,
                   textAlign: alignMain || "justify",
-                  textAlignLast: "right",
+                  textAlignLast: "start",
                   whiteSpace: "pre-line",
                 }}
               >{body}</p>
@@ -128,7 +128,7 @@ export default function AboutB() {
                     fontWeight: tsExtended.fontWeight,
                     color: tsExtended.color,
                     textAlign: alignExtended || "justify",
-                    textAlignLast: "right",
+                    textAlignLast: "start",
                     whiteSpace: "pre-line",
                   }}
                 >{extended}</p>
