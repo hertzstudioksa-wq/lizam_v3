@@ -61,3 +61,60 @@ jobs:
             systemctl reload nginx
             sleep 3
             curl -s http://localhost/api/healthz | grep -q "ok" && echo "Deploy SUCCESS!" || echo "ERROR: backend not responding"
+
+      - name: Setup domain & SSL
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Update Nginx config to accept new domain
+            cat > /etc/nginx/sites-available/lizam << 'NGINXEOF'
+            server {
+                listen 80;
+                server_name lizamcenter.com www.lizamcenter.com _;
+
+                root /var/www/lizam/frontend;
+                index index.html;
+
+                location / {
+                    try_files $uri $uri/ /index.html;
+                }
+
+                location /api/ {
+                    proxy_pass http://127.0.0.1:8000;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    client_max_body_size 50M;
+                }
+
+                location /uploads/ {
+                    alias /var/www/lizam/backend/uploads/;
+                }
+            }
+            NGINXEOF
+
+            nginx -t && systemctl reload nginx && echo "Nginx updated OK"
+
+            # Install certbot if not present
+            which certbot || (apt-get update -qq && apt-get install -y -q certbot python3-certbot-nginx)
+
+            # Get SSL cert (idempotent — skips if cert already exists)
+            if [ ! -d /etc/letsencrypt/live/lizamcenter.com ]; then
+                certbot --nginx \
+                  -d lizamcenter.com \
+                  -d www.lizamcenter.com \
+                  --non-interactive --agree-tos \
+                  --email admin@lizam.sa \
+                  --redirect \
+                  && echo "SSL setup complete!" \
+                  || echo "WARNING: Certbot failed — DNS may not be propagated yet. Will retry on next deploy."
+            else
+                certbot renew --quiet || true
+                echo "SSL cert already exists — renewed if needed."
+            fi
+
+            systemctl reload nginx
