@@ -50,10 +50,10 @@ export default function HeroB() {
     return v === "right" || v === "center" || v === "left" ? v : undefined;
   };
 
-  // Eyebrow — admin override first, then sensible default
-  const eyebrow = home?.[`hero_eyebrow_${lang}`] || (lang === "ar"
-    ? "مركز بحثي مستقل · المملكة العربية السعودية"
-    : "Independent Research Center · Kingdom of Saudi Arabia");
+  // Eyebrow — fully admin-controlled. An empty (or whitespace-only) box means
+  // the eyebrow is hidden entirely, including its two gold side rules. No
+  // default fallback: what the admin types is exactly what shows.
+  const eyebrow = (home?.[`hero_eyebrow_${lang}`] || "").trim();
 
   const Arrow = lang === "ar" ? ArrowLeft : ArrowRight;
   const [line1, line2] = (title || "").split("\n");
@@ -128,27 +128,30 @@ export default function HeroB() {
       )}
 
       <div className="relative z-10 mx-auto max-w-[920px] px-6 md:px-10 text-center flex flex-col items-center justify-center" style={{ minHeight: "calc(82vh - 240px)" }}>
-        {/* Eyebrow — falls in from above at t=0 */}
-        <div className="tb-fall tb-delay-0 inline-flex items-center gap-3" data-testid="hero-eyebrow">
-          <span aria-hidden="true" style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
-          <span
-            className="tb-overline"
-            style={{
-              color: tsEyebrow.color || "var(--tb-gold-soft)",
-              letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
-              fontSize: tsEyebrow.__sizeMul ? `calc(0.78rem * ${tsEyebrow.__sizeMul})` : undefined,
-              fontWeight: tsEyebrow.fontWeight,
-              textAlign: alignOf("eyebrow"),
-            }}
-          >
-            {eyebrow}
-          </span>
-          <span aria-hidden="true" style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
-        </div>
+        {/* Eyebrow — falls in from above at t=0. Hidden entirely (text + the
+            two gold side rules) when the admin leaves the box empty. */}
+        {eyebrow && (
+          <div className="tb-fall tb-delay-0 inline-flex items-center gap-3" data-testid="hero-eyebrow">
+            <span aria-hidden="true" style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
+            <span
+              className="tb-overline"
+              style={{
+                color: tsEyebrow.color || "var(--tb-gold-soft)",
+                letterSpacing: lang === "ar" ? "0.02em" : "0.22em",
+                fontSize: tsEyebrow.__sizeMul ? `calc(0.78rem * ${tsEyebrow.__sizeMul})` : undefined,
+                fontWeight: tsEyebrow.fontWeight,
+                textAlign: alignOf("eyebrow"),
+              }}
+            >
+              {eyebrow}
+            </span>
+            <span aria-hidden="true" style={{ height: 1, width: 28, background: "var(--tb-gold)" }} />
+          </div>
+        )}
 
         {/* Title — slides up at t=0.15s */}
         <h1
-          className="tb-display tb-up tb-delay-150 mt-12 mx-auto"
+          className={`tb-display tb-up tb-delay-150 mx-auto${eyebrow ? " mt-12" : ""}`}
           style={{
             fontSize: `calc(clamp(2.8rem, 6.4vw, 5.4rem) * ${titleScale} * ${tsTitle.__sizeMul ?? 1})`,
             lineHeight: lang === "ar" ? 1.18 : 1.04,

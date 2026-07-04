@@ -107,12 +107,25 @@ export default function PublicationDetailPage() {
 
   async function handlePdf() {
     setPdfState(null);
+    // Open the tab synchronously, inside the click gesture. Safari/iOS blocks
+    // window.open() that runs after an await (it's no longer tied to the user
+    // gesture), which is why the button worked on Chrome but not mobile Safari.
+    // We grab a blank window now and point it at the PDF once the URL is ready.
+    // (No "noopener" here — that flag makes window.open return null, so we'd
+    // lose the handle. The destination is same-origin, so opener access is safe.)
+    const win = window.open("", "_blank");
     try {
       const { data } = await api.get(`/public/publications/${pub.id}/pdf`);
       const fullUrl = `${BACKEND_URL}${data.stream_url}`;
       setPdfState({ ok: true, url: fullUrl });
-      window.open(fullUrl, "_blank", "noopener");
+      if (win) {
+        win.location.href = fullUrl;
+      } else {
+        // Popup was blocked entirely — navigate the current tab as a fallback.
+        window.location.href = fullUrl;
+      }
     } catch (e) {
+      if (win) win.close();
       setPdfState({ ok: false, error: formatApiError(e.response?.data?.detail) || e.message, status: e.response?.status });
     }
   }
