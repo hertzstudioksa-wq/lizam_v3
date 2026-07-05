@@ -1,8 +1,9 @@
 """Public read-only endpoints + hardened PDF streaming."""
 from typing import Any, Optional
-import os
+import re
 import jwt
 from pathlib import Path
+from urllib.parse import quote
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse, RedirectResponse
 import httpx
@@ -280,6 +281,31 @@ async def request_pdf_token(slug: str, request: Request):
             "stream_url": f"/api/public/pdf-stream/{token}"}
 
 
+def _safe_pdf_filename(title: Optional[str]) -> str:
+    """Build a human-readable download filename from a publication title.
+
+    Strips characters that are invalid in filenames on common OSes, collapses
+    whitespace, and caps the length so it stays under filesystem limits (Arabic
+    letters are multi-byte in UTF-8). Falls back to a generic name when empty.
+    """
+    name = (title or "").strip()
+    name = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "", name)  # invalid + control chars
+    name = re.sub(r"\s+", " ", name).strip()
+    if len(name) > 120:
+        name = name[:120].strip()
+    if not name:
+        name = "publication"
+    return f"{name}.pdf"
+
+
+def _content_disposition(filename: str) -> str:
+    """RFC 5987 Content-Disposition that survives non-ASCII (Arabic) names."""
+    quoted = quote(filename)
+    if quoted == filename:
+        return f'attachment; filename="{filename}"'
+    return f"attachment; filename*=utf-8''{quoted}"
+
+
 @router.get("/pdf-stream/{token}")
 async def pdf_stream(token: str, request: Request):
     """Protected PDF delivery — validates short-lived token."""
@@ -292,10 +318,14 @@ async def pdf_stream(token: str, request: Request):
 
     pub = await db.publications.find_one(
         {"id": payload["pub"], "status": "published"},
-        {"_id": 0, "pdf_file_url": 1, "external_pdf_url": 1, "pdf_access_level": 1, "access_level": 1},
+        {"_id": 0, "pdf_file_url": 1, "external_pdf_url": 1, "pdf_access_level": 1,
+         "access_level": 1, "title_ar": 1, "title_en": 1},
     )
     if not pub or pub.get("access_level") == "hidden" or pub.get("pdf_access_level") == "disabled":
         raise HTTPException(status_code=404, detail="PDF not available")
+
+    # Downloaded file is named after the publication title, not the stored hash.
+    download_name = _safe_pdf_filename(pub.get("title_ar") or pub.get("title_en"))
 
     toggles = await _load_toggles()
     if not toggles.get("pdf_download", True):
@@ -313,7 +343,7 @@ async def pdf_stream(token: str, request: Request):
                 file_path = UPLOAD_DIR / rel[len(prefix):]
                 if file_path.is_file():
                     return FileResponse(str(file_path), media_type="application/pdf",
-                                        filename=os.path.basename(str(file_path)))
+                                        filename=download_name)
                 break
     # Fallback to external URL via server-side fetch (hides the raw URL)
     url = pub.get("external_pdf_url")
@@ -329,7 +359,7 @@ async def pdf_stream(token: str, request: Request):
                     yield chunk
 
     return StreamingResponse(_stream(), media_type="application/pdf",
-                             headers={"Content-Disposition": "inline; filename=\"publication.pdf\""})
+                             headers={"Content-Disposition": _content_disposition(download_name)})
 
 
 @router.get("/authors")
