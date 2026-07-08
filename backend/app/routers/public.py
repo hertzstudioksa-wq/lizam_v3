@@ -277,8 +277,13 @@ async def request_pdf_token(slug: str, request: Request):
         raise HTTPException(status_code=404, detail="No PDF attached")
 
     token = create_pdf_token(pub["id"], current["id"] if current else None, ttl_seconds=300)
+    # Append the title as the URL's last path segment. iOS Safari ignores the
+    # Content-Disposition filename when a PDF is opened in a tab and instead
+    # names the download after the last path component — so the URL itself must
+    # end in "<title>.pdf".
+    fname = _safe_pdf_filename(pub.get("title_ar") or pub.get("title_en"))
     return {"ok": True, "token": token, "title": pub.get("title_ar") or pub.get("title_en"),
-            "stream_url": f"/api/public/pdf-stream/{token}"}
+            "stream_url": f"/api/public/pdf-stream/{token}/{quote(fname, safe='')}"}
 
 
 def _safe_pdf_filename(title: Optional[str]) -> str:
@@ -307,8 +312,14 @@ def _content_disposition(filename: str) -> str:
 
 
 @router.get("/pdf-stream/{token}")
-async def pdf_stream(token: str, request: Request):
-    """Protected PDF delivery — validates short-lived token."""
+@router.get("/pdf-stream/{token}/{filename}")
+async def pdf_stream(token: str, request: Request, filename: Optional[str] = None):
+    """Protected PDF delivery — validates short-lived token.
+
+    The optional trailing ``filename`` segment is cosmetic: it lets iOS Safari
+    name the download after the publication title (it reads the URL's last path
+    component). It is not trusted for anything server-side.
+    """
     try:
         payload = decode_pdf_token(token)
     except jwt.ExpiredSignatureError:
